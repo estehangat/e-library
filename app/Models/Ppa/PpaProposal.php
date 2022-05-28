@@ -5,23 +5,33 @@ namespace App\Models\Ppa;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use Jenssegers\Date\Date;
+
 class PpaProposal extends Model
 {
     use HasFactory;
 
     protected $table = "ppa_proposal";
     protected $fillable = [
-    	'desc',
-    	'amount',
         'ppa_detail_id',
-    	'employee_id',
+        'date',
+        'year',
+        'academic_year_id',
+        'title',
+        'total_value',
+        'employee_id',
         'unit_id',
-    	'position_id'
+        'position_id'
     ];
 
-    public function detail()
+    public function ppa()
     {
         return $this->belongsTo('App\Models\Ppa\PpaDetail','ppa_detail_id');
+    }
+
+    public function tahunPelajaran()
+    {
+        return $this->belongsTo('App\Models\Kbm\TahunAjaran','academic_year_id');
     }
 
     public function pegawai()
@@ -38,14 +48,34 @@ class PpaProposal extends Model
     {
         return $this->belongsTo('App\Models\Penempatan\Jabatan','position_id');
     }
-
+    
     public function details()
     {
-        return $this->hasMany('App\Models\Ppa\PpaProposalDetail','ppa_proposal_id');
+        return $this->hasMany('App\Models\Ppa\PpaProposalDetail','proposal_id');
     }
 
-    public function getAmountWithSeparatorAttribute()
+    public function getDateIdAttribute()
     {
-        return number_format($this->amount, 0, ',', '.');
+        Date::setLocale('id');
+        return Date::parse($this->date)->format('j F Y');
+    }
+
+    public function getTotalValueWithSeparatorAttribute()
+    {
+        return number_format($this->total_value, 0, ',', '.');
+    }
+
+    public function getTotalValueOriAttribute()
+    {
+        $sum = 0;
+        foreach($this->details()->withTrashed()->get() as $d){
+            $sum += $d->price_ori*$d->quantity_ori;
+        }
+        return $sum;
+    }
+
+    public function getTotalValueOriWithSeparatorAttribute()
+    {
+        return number_format($this->totalValueOri, 0, ',', '.');
     }
 }

@@ -22,16 +22,21 @@ class PelajaranController extends Controller
     public function index()
     {
         $unit = Auth::user()->pegawai->unit_id;
-
         if(Auth::user()->role_id == 5){
             $employee = Auth::user()->user_id;
             $skbm = Skbm::aktif()->where('unit_id',$unit)->first();
             // dd(Auth::user()->pegawai());
             $mapellist = $skbm->detail->where('employee_id', $employee);
             // dd($mapellist);
+            // if()
+            
         }else{
             // memanggil semua mapel
-            $mapellist = MataPelajaran::where('unit_id',$unit)->get();
+            if($unit == 5){
+                $mapellist = MataPelajaran::all();
+            }else{
+                $mapellist = MataPelajaran::where('unit_id',$unit)->get();
+            }
         }
 
         // inisialisasi
@@ -50,6 +55,7 @@ class PelajaranController extends Controller
                 $kkm[$index] = 'Belum diatur';
             }
         }
+        // dd($mapellist[0]);
 
         return view('kbm.matapelajaran.index',compact('mapellist','unit','kkm','smsaktif'));
     }
@@ -268,7 +274,11 @@ class PelajaranController extends Controller
     {
         //
         $unit = Auth::user()->pegawai->unit_id;
-        $lists = kelompokMataPelajaran::where('unit_id',$unit)->get();
+        if($unit == 5){
+            $lists = kelompokMataPelajaran::all();
+        }else{
+            $lists = kelompokMataPelajaran::where('unit_id',$unit)->get();
+        }
         $jurusans = Jurusan::all();
         return view('kbm.kelompokmatapelajaran.index',compact('lists','jurusans'));
     }

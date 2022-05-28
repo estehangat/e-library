@@ -38,7 +38,11 @@ class JadwalPelajaranController extends Controller
         // check tahun akademik yg sedang aktif
         $tahunsekarang = TahunAjaran::where('is_active',1)->first();
 
-        $kelases = Kelas::where('unit_id',$unit)->where('academic_year_id',$tahunsekarang->id)->orderBy('level_id','asc')->get();
+        if($unit == 5){
+            $kelases = Kelas::where('academic_year_id',$tahunsekarang->id)->orderBy('level_id','asc')->orderBy('major_id','asc')->get();
+        }else{
+            $kelases = Kelas::where('unit_id',$unit)->where('academic_year_id',$tahunsekarang->id)->orderBy('level_id','asc')->orderBy('major_id','asc')->get();
+        }
         
         return view('kbm.jadwalpelajaran.index',compact('kelases'));
     }
@@ -71,14 +75,19 @@ class JadwalPelajaranController extends Controller
             });
         })->aktif()->get()->sortBy('name')->all();
 
-        // cek daftar mapel
-        $mapels = MataPelajaran::where('unit_id',$unit)->get();
+        if($unit == 5){
+            // cek daftar mapel
+            $mapels = MataPelajaran::all();
+        }else{
+            // cek daftar mapel
+            $mapels = MataPelajaran::where('unit_id',$unit)->get();
+        }
 
         // check tahun akademik yg sedang aktif
         $tahunsekarang = TahunAjaran::where('is_active',1)->first();
 
         // cek data kelas dipilih
-    	$kelasnya = Kelas::find($kelas);
+        $kelasnya = Kelas::find($kelas);
         // dd($kelasnya);
 
         // cek daftar jam pelajaran hari yang dipilih
@@ -87,8 +96,12 @@ class JadwalPelajaranController extends Controller
         // check semester yg sedang aktif
         $smsaktif = Semester::where('is_active',1)->first();
 
+        if($unit == 5){
+            $kelases = Kelas::where('academic_year_id',$tahunsekarang->id)->orderBy('level_id','asc')->get();
+        }else{
+            $kelases = Kelas::where('unit_id',$unit)->where('academic_year_id',$tahunsekarang->id)->orderBy('level_id','asc')->get();
+        }
         // kelas daftar kelas
-        $kelases = Kelas::where('unit_id',$unit)->where('academic_year_id',$tahunsekarang->id)->orderBy('level_id','asc')->get();
 
         // jadwal
         $jadwals = JadwalPelajaran::where('class_id',$kelas)->where('semester_id',$smsaktif->id)->where('day',$hari)->orderBy('hour_start','asc')->get();
@@ -109,11 +122,15 @@ class JadwalPelajaranController extends Controller
         // check unit_id user
         $unit = Auth::user()->pegawai->unit_id;
 
-
         // check tahun akademik yg sedang aktif
         $tahunsekarang = TahunAjaran::where('is_active',1)->first();
 
-        $kelases = Kelas::where('unit_id',$unit)->where('academic_year_id',$tahunsekarang->id)->orderBy('level_id','asc')->get();
+        if($unit == 5){
+            $kelases = Kelas::where('academic_year_id',$tahunsekarang->id)->orderBy('level_id','asc')->get();
+        }else{
+            $kelases = Kelas::where('unit_id',$unit)->where('academic_year_id',$tahunsekarang->id)->orderBy('level_id','asc')->get();
+        }
+
         return view('kbm.jadwalpelajaran.tambah',compact('kelases'));
     }
 
@@ -232,8 +249,13 @@ class JadwalPelajaranController extends Controller
 
         $siunit= Unit::find($unit);
 
-        // check level
-        $levels = Level::where('unit_id',$unit)->get();
+        if($unit == 5){
+            // check level
+            $levels = Level::all();
+        }else{
+            // check level
+            $levels = Level::where('unit_id',$unit)->get();
+        }
 
         // init sheet
         $spreadsheet = new Spreadsheet;

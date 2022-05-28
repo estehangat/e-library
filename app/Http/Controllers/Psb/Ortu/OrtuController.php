@@ -4,8 +4,6 @@ namespace App\Http\Controllers\Psb\Ortu;
 
 use App\Additionals\getAnak;
 use App\Http\Controllers\Controller;
-
-use Session;
 use App\Models\LoginUser;
 use App\Models\Siswa\CalonSiswa;
 use App\Models\Siswa\IdentitasSiswa;
@@ -14,6 +12,8 @@ use App\Models\Siswa\Siswa;
 use App\Models\User;
 
 use Illuminate\Http\Request;
+
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 
 class OrtuController extends Controller
@@ -161,44 +161,6 @@ class OrtuController extends Controller
         //
     }
 
-    /**
-     * Reset password the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function reset(Request $request,$id){
-        $ortu = OrangTua::find($id);
-
-        if($ortu){
-            $user = $ortu->user;
-            $name = $request->calon ? 'orang tua dari Ananda '.$request->calon : 'orang tua';
-            $phone = $password = null;
-            if($ortu->father_phone){
-                $password = $ortu->father_phone;
-                $phone = 'ayah';
-            }
-            else{
-                if($ortu->mother_phone){
-                    $password = $ortu->mother_phone;
-                    $phone = 'ibu';
-                }
-                else{
-                    $password = $ortu->guardian_phone_number;
-                    $phone = 'wali';
-                }
-            }
-            $user->password = bcrypt($password);
-            $user->save();
-
-            Session::flash('success','Sandi '.$name.' berhasil di-reset ke pengaturan awal (nomor telepon '.$phone.')');
-        }
-        else Session::flash('danger','Akun tidak ditemukan. Sandi gagal di-reset.');
-
-        return redirect()->back();
-    }
-
     public function password()
     {
         return view('psb.ortu.profile.password');
@@ -217,6 +179,22 @@ class OrtuController extends Controller
             return redirect()->back()->with('danger', 'Password lama tidak sesuai');
         }
     }
+
+//     public function resetPassword(Request $request)
+//     {
+//         $token = Str::random(64);
+
+//         $whatsAppText = rawurlencode("*[SISTA] Konfirmasi Reset Sandi*
+
+// Assalamu'alaikum Ayah Bunda Ananda Hari.
+// Baru-baru ini kami menerima permintaan untuk mereset sandi akun SISTA Anda. Jika Anda tidak melakukannya, silahkan abaikan pesan ini. Pesan ini akan kadaluarsa setelah 2 jam.
+
+// Klik tautan di bawah untuk reset sandi:
+
+// ".route('reset.password.get', $token));
+
+//         return redirect('https://api.whatsapp.com/send?phone=085770711800&text='.$whatsAppText);
+//     }
 
     public function encrypt()
     {

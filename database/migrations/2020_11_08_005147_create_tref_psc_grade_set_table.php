@@ -18,6 +18,7 @@ class CreateTrefPscGradeSetTable extends Migration
 			$table->string('name');
 			$table->smallInteger('status_id')->nullable();
             $table->timestamps();
+			$table->softDeletes();
         });
     }
 

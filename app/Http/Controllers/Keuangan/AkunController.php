@@ -29,7 +29,7 @@ class AkunController extends Controller
         $kategori = KategoriAkun::all();
         $jenisAnggaran = JenisAnggaranAnggaran::all();
 
-        $tahunPelajaran = TahunAjaran::where('is_active',1)->latest()->first();
+        $tahunPelajaran = TahunAjaran::where('is_finance_year',1)->latest()->first();
         $tahun = Date::now('Asia/Jakarta')->format('Y');
 
         return view('keuangan.'.$role.'.akun_index', compact('akun','kategori','jenisAnggaran','tahunPelajaran','tahun'));
@@ -201,7 +201,7 @@ class AkunController extends Controller
     {
         $akun = Akun::find($id);
         if($akun){
-            $tahunPelajaran = TahunAjaran::where('is_active',1)->latest()->first();
+            $tahunPelajaran = TahunAjaran::where('is_finance_year',1)->latest()->first();
             $tahun = Date::now('Asia/Jakarta')->format('Y');
 
             $usedCount = $exUsedCount = null;

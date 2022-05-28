@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Penempatan\PenempatanPegawai;
+use App\Models\Rekrutmen\Pegawai;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -33,7 +35,7 @@ class Unit extends Model
 
     public function penempatanPegawai()
     {
-        return $this->hasMany('App\Models\Penempatan\PenempatanPegawai','unit_id');
+        return $this->hasMany(PenempatanPegawai::class,'unit_id');
     }
 
     public function calonPegawai()
@@ -43,7 +45,7 @@ class Unit extends Model
 
     public function pegawai()
     {
-        return $this->hasMany('App\Models\Rekrutmen\Pegawai','unit_id');
+        return $this->hasMany(Pegawai::class,'unit_id');
     }
 
     public function skbm()
@@ -98,11 +100,48 @@ class Unit extends Model
 
     public function psbRegisterCounter()
     {
-        return $this->hasMany('App\Models\Psb\RegisterCounter','academic_year_id');
+        return $this->hasMany('App\Models\Psb\RegisterCounter','unit_id');
+    }
+
+    public function bmsSiswa()
+    {
+        return $this->hasMany('App\Models\Pembayaran\BMS','unit_id');
+    }
+
+    public function bmsCalon()
+    {
+        return $this->hasMany('App\Models\Pembayaran\BmsCalonSiswa','unit_id');
+    }
+
+    public function bmsNominal()
+    {
+        return $this->hasMany('App\Models\Pembayaran\BmsNominal','unit_id');
+    }
+
+    public function spp()
+    {
+        return $this->hasMany('App\Models\Pembayaran\Spp','unit_id');
+    }
+
+    public function sppBill()
+    {
+        return $this->hasMany('App\Models\Pembayaran\SppBill','unit_id');
+    }
+
+    public function sppNominal()
+    {
+        return $this->hasMany('App\Models\Pembayaran\SppNominal','unit_id');
     }
     
     public function scopeSekolah($query)
     {
         return $query->where('is_school',1);
+    }
+
+    public function kepala()
+    {
+        return $this->hasMany(Pegawai::class,'unit_id')->whereHas('login', function ($q){
+            $q->where('role_id',2);
+        });
     }
 }

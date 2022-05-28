@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 
+use App\Helpers\PhoneHelper;
+
 use File;
 use Jenssegers\Date\Date;
 
@@ -179,6 +181,11 @@ class Pegawai extends Model
         return $this->hasOne('App\Models\LoginUser','user_id');
     }
 
+    public function getTitleNameAttribute()
+    {
+        return ($this->gender_id == 1 ? 'Bapak ' : 'Ibu ').$this->name;
+    }
+
     public function getBirthDateIdAttribute()
     {
         Date::setLocale('id');
@@ -253,6 +260,11 @@ class Pegawai extends Model
     {
         $phone_number = $this->phone_number[0] == '0' ? '+62'.substr($this->phone_number, 1) : $this->phone_number;
         return $phone_number;
+    }
+    
+    public function getPhoneNumberWithDashIdAttribute()
+    {
+        return PhoneHelper::addDashesId((string)$this->phone_number,'mobile','0');
     }
 
     public function getJoinDateIdAttribute()

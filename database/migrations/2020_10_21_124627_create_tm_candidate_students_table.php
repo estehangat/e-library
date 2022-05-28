@@ -17,7 +17,7 @@ class CreateTmCandidateStudentsTable extends Migration
             $table->bigIncrements('id');
             $table->string('student_name');
             $table->integer('unit_id');
-            $table->integer('reg_number');
+            $table->string('reg_number');
             $table->string('birth_place');
             $table->date('birth_date');
             $table->integer('gender_id');

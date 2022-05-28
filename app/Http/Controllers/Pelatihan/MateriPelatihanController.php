@@ -264,9 +264,23 @@ class MateriPelatihanController extends Controller
                     'unit','pegawai','sasaran','jabatan','semester','status'));
             }
             elseif($role == 'etl'){
-                $acc = StatusAcc::all();
+                if($pelatihan->active_status_id != 2){
+                    if($pelatihan->education_acc_status_id != 1){
+                        $acc = StatusAcc::all();
 
-                return view('kepegawaian.'.$role.'.pelatihan_materi_ubah', compact('pelatihan','acc'));
+                        return view('kepegawaian.'.$role.'.pelatihan_materi_validasi', compact('pelatihan','acc'));
+                    }
+                    else{
+                        $pegawai = Pegawai::select('name','id')->whereNotNull(['position_id','unit_id'])->whereHas('units',function($query){
+                            $query->has('jabatans');
+                        })->aktif()->orderBy('name')->get();
+
+                        return view('kepegawaian.'.$role.'.pelatihan_materi_ubah', compact('pelatihan','pegawai'));
+                    }
+                }
+                else{
+                    return "Ups, tidak dapat memuat data";
+                }
             }
         }
     }
@@ -390,24 +404,48 @@ class MateriPelatihanController extends Controller
             }
 
             elseif($role == 'etl'){
-                $messages = [
-                    'acc_status.required' => 'Mohon tentukan persetujuan'
-                ];
+                if($pelatihan->active_status_id != 2){
+                    if($pelatihan->education_acc_status_id != 1){
+                        $messages = [
+                            'acc_status.required' => 'Mohon tentukan persetujuan'
+                        ];
 
-                $this->validate($request, [
-                    'acc_status' => 'required'
-                ], $messages);
+                        $this->validate($request, [
+                            'acc_status' => 'required'
+                        ], $messages);
 
-                if($pelatihan->education_acc_status_id != 1 && $pelatihan->active_status_id != 2){
-                    $pelatihan->education_acc_id = $request->user()->pegawai->id;
-                    $pelatihan->education_acc_status_id = $request->acc_status;
-                    $pelatihan->education_acc_time = Date::now('Asia/Jakarta');
+                        $pelatihan->education_acc_id = $request->user()->pegawai->id;
+                        $pelatihan->education_acc_status_id = $request->acc_status;
+                        $pelatihan->education_acc_time = Date::now('Asia/Jakarta');
 
-                    $pelatihan->save();
+                        $pelatihan->save();
 
-                    Session::flash('success','Data '.$nama.' berhasil diubah');
+                        Session::flash('success','Data '.$nama.' berhasil diubah');
+                    }
+                    else{
+                        $messages = [
+                            'name.required' => 'Mohon tuliskan materi pelatihan',
+                            'speaker.required_if' => 'Mohon tentukan narasumber pelatihan',
+                            'speaker_name.required_if' => 'Mohon tentukan narasumber pelatihan'
+                        ];
+
+                        $this->validate($request, [
+                            'name' => 'required',
+                            'speaker_category' => 'required',
+                            'speaker' => 'required_if:speaker_category,1',
+                            'speaker_name' => 'required_if:speaker_category,2',
+                        ], $messages);
+
+                        $pelatihan->name = $request->name;
+                        $pelatihan->desc = isset($request->desc) ? $request->desc : null;
+                        $pelatihan->speaker_id = isset($request->speaker) && $request->speaker_category == 1 ? $request->speaker : null;
+                        $pelatihan->speaker_name = isset($request->speaker_name) && $request->speaker_category == 2 ? $request->speaker_name : null;
+
+                        $pelatihan->save();
+
+                        Session::flash('success','Data '.$nama.' berhasil diubah');
+                    }
                 }
-                
                 else Session::flash('danger','Data '.$nama.' gagal diubah');
             }
         }
@@ -475,10 +513,11 @@ class MateriPelatihanController extends Controller
      */
     public function destroy(Request $request,$id)
     {
+        $role = $request->user()->role->name;
         $pelatihan = $request->id ? Pelatihan::find($request->id) : null;
         $nama = $pelatihan ? $pelatihan->name : null;
 
-        if($pelatihan && (!$pelatihan->education_acc_status_id || $pelatihan->education_acc_status_id == 2) && $pelatihan->active_status_id != 2){
+        if($pelatihan && (($role == 'etm' && (!$pelatihan->education_acc_status_id || $pelatihan->education_acc_status_id == 2)) || ($role == 'etl' && $pelatihan->education_acc_status_id == 1)) && $pelatihan->active_status_id != 2){
             $pelatihan->presensi()->delete();
             $pelatihan->sasaran()->delete();
             $pelatihan->delete();

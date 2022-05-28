@@ -50,7 +50,7 @@ class RealisasiController extends Controller
             }
         }
         
-        $jenisAktif = $years = $academicYears = $latest = $tahunPelajaran = $isYear = $apby = $budgetings = $datasets = null;
+        $jenisAktif = $years = $academicYears = $latest = $tahunPelajaran = $isYear = $apby = $budgetings = $datasets = $total = null;
         $yearsCount = $academicYearsCount = 0;
         $isKso = false;
 
@@ -91,12 +91,12 @@ class RealisasiController extends Controller
                 $isYear = $jenisAktif->is_academic_year == 1 ? false : true;
             }
 
-            $tahunPelajaran = TahunAjaran::where('is_active',1)->latest()->take(1)->get();
+            $tahunPelajaran = TahunAjaran::where('is_finance_year',1)->latest()->take(1)->get();
 
             if($academicYearsCount > 0){
                 $tahunPelajaran = TahunAjaran::where(function($q)use($academicYears){
                     $q->where(function($q){
-                        $q->where('is_active',1);
+                        $q->where('is_finance_year',1);
                     })->orWhere(function($q)use($academicYears){
                         $q->whereIn('id',$academicYears);
                     });
@@ -143,6 +143,38 @@ class RealisasiController extends Controller
                 $apby = $apby->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->with('jenisAnggaranAnggaran',function($q){$q->select('id','number','budgeting_type_id','budgeting_id')->with('anggaran:id,name');})->aktif()->latest()->get()->sortBy('jenisAnggaranAnggaran.number');
                 
                 $budgetings = $apby ? $apby->pluck('jenisAnggaranAnggaran') : null;
+
+                $totalAnggaran = 0;
+
+                // Counter
+                $apbyDetail = ApbyDetail::whereHas('apby',function($q)use($apby){$q->whereIn('id',$apby->pluck('id'));});
+
+                $totalPendapatan = clone $apbyDetail;
+                $totalPendapatan = $totalPendapatan->whereHas('akun',function($q){
+                    $q->where('is_fillable',1)->whereHas('kategori.parent',function($q){
+                        $q->where('name','Pendapatan');
+                    });
+                })->sum('value');
+
+                $totalPembiayaan = clone $apbyDetail;
+                $totalPembiayaan = $totalPembiayaan->whereHas('akun',function($q){
+                    $q->where('is_fillable',1)->whereHas('kategori.parent',function($q){
+                        $q->where('name','Pembiayaan');
+                    });
+                })->sum('value');
+
+                $totalBelanja = clone $apbyDetail;
+                $totalBelanja = $totalBelanja->whereHas('akun',function($q){
+                    $q->where('is_fillable',1)->whereHas('kategori.parent',function($q){
+                        $q->where('name','Belanja');
+                    });
+                })->sum('used');
+
+                $total = collect([
+                    'pendapatanPembiayaan' => $totalPendapatan + $totalPembiayaan,
+                    'belanja' => $totalBelanja,
+                    'operasionalPembiayaan' => $totalPendapatan - $totalBelanja + $totalPembiayaan
+                ]);
                 
                 if($budgetings && count($budgetings) > 0){
                     $num = 12;
@@ -255,7 +287,7 @@ class RealisasiController extends Controller
             }
         }
 
-        return view('keuangan.read-only.realisasi_index', compact('jenisAnggaran','jenisAnggaranCount','jenisAktif','tahun','tahunPelajaran','isYear','apby','years','academicYears','isKso','budgetings','datasets'));
+        return view('keuangan.read-only.realisasi_index', compact('jenisAnggaran','jenisAnggaranCount','jenisAktif','tahun','tahunPelajaran','isYear','apby','years','academicYears','isKso','budgetings','datasets','total'));
     }
 
     /**

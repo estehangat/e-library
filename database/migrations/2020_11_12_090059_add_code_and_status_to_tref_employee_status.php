@@ -15,7 +15,7 @@ class AddCodeAndStatusToTrefEmployeeStatus extends Migration
     {
         Schema::table('tref_employee_status', function (Blueprint $table) {
             $table->string('code')->after('id');
-			$table->smallInteger('status_id')->nullable()->after('desc');
+			$table->smallInteger('status_id')->default(1)->after('desc');
         });
     }
 

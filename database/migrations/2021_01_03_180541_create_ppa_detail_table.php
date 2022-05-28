@@ -17,7 +17,7 @@ class CreatePpaDetailTable extends Migration
             $table->id();
 			$table->bigInteger('ppa_id');
 			$table->bigInteger('account_id');
-			$table->string('note');
+			$table->string('note')->nullable();
 			$table->bigInteger('value')->default(0);
 			$table->bigInteger('value_pa')->nullable();
 			$table->bigInteger('value_fam')->nullable();

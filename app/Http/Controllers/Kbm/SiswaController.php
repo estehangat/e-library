@@ -12,6 +12,8 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 
 use App\Models\Kbm\Semester;
 
+use App\Models\Rekrutmen\Pegawai;
+
 use App\Models\Siswa\OrangTua;
 use App\Models\Siswa\Siswa;
 
@@ -321,6 +323,15 @@ class SiswaController extends Controller
         $jeniskelamin = JenisKelamin::all();
         $units = Unit::all();
 
+        $pegawais = Pegawai::where(function($q){
+            $q->whereHas('statusPernikahan',function($q){
+                $q->where('status','menikah');
+            })->aktif();
+        });
+        if($siswa && $siswa->identitas && $siswa->identitas->orangtua)
+            $pegawais = $pegawais->orWhere('id',$siswa->identitas->orangtua->employee_id);
+        $pegawais = $pegawais->orderBy('name','asc')->pluck('name','id');
+
         // dd($listkabupaten);
         return view(
             'kbm.siswa.ubah',
@@ -338,7 +349,8 @@ class SiswaController extends Controller
                 'levels',
                 'units',
                 'semesters',
-                'jeniskelamin'
+                'jeniskelamin',
+                'pegawais'
             )
         );
     }
@@ -414,9 +426,20 @@ class SiswaController extends Controller
         $siswa->position = $request->posisi;
         $siswa->save();
         $idensis->save();
+
+        $pegawai = Pegawai::select('id')->where('id',$request->employee)->where(function($q){
+            $q->whereHas('statusPernikahan',function($q){
+                $q->where('status','menikah');
+            })->aktif();
+        });
+        if($siswa && $siswa->identitas && $siswa->identitas->orangtua)
+            $pegawai = $pegawai->orWhere('id',$siswa->identitas->orangtua->employee_id);
+        $pegawai = $pegawai->first();
         
         $ortu = OrangTua::find($parentid);
-        $ortu->employee_id = $request->kode_pegawai;
+        //$ortu->employee_id = $request->kode_pegawai;
+        if($pegawai) $ortu->employee_id = $request->employee;
+        elseif(!$pegawai && $request->employeeOpt == 'no') $ortu->employee_id = null;
         $ortu->father_name = $request->nama_ayah;
         $ortu->father_nik = $request->nik_ayah;
         $ortu->father_phone = $request->hp_ayah;
@@ -452,7 +475,24 @@ class SiswaController extends Controller
         $ortu->guardian_address = $request->alamat_wali;
         $ortu->save();
 
-        return redirect('/kependidikan/kbm/siswa')->with('sukses','Ubah Siswa Berhasil');
+        return redirect('/kependidikan/kbm/siswa/aktif')->with('sukses','Ubah Siswa Berhasil');
+    }
+
+    /**
+     * Update an existing resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function updateStartOfSpp(Request $request)
+    {
+        $siswa = Siswa::find($request->id);
+        if(!$siswa) return redirect()->back()->with('error', 'Ubah awal mula SPP siswa gagal');
+        $siswa->year_spp = $request->year_spp;
+        $siswa->month_spp = $request->month_spp;
+        $siswa->save();
+
+        return redirect()->back()->with('success', 'Awal mula SPP siswa berhasil diubah');
     }
 
     public function updateNisn(Request $request)

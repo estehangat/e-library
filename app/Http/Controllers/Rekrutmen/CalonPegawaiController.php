@@ -75,7 +75,7 @@ class CalonPegawaiController extends Controller
         $penerimaan = StatusPenerimaan::all();
         $unit = Unit::all();
         $jabatan = JabatanUnit::all();
-        $status = StatusPegawai::statusCalonPegawai()->get();
+        $status = StatusPegawai::pegawaiAktif()->get();
 
         return view('kepegawaian.etm.calon_pegawai_tambah', compact('jeniskelamin','pernikahan','provinsi','pendidikan','latar','universitas','penerimaan','unit','jabatan','status'));
     }
@@ -281,7 +281,7 @@ class CalonPegawaiController extends Controller
             $penerimaan = StatusPenerimaan::all();
             $unit = Unit::all();
             $jabatan = JabatanUnit::all();
-            $status = StatusPegawai::statusCalonPegawai()->get();
+            $status = StatusPegawai::pegawaiAktif()->get();
 
             return view('kepegawaian.etm.calon_pegawai_ubah', compact('calon','jeniskelamin','pernikahan','provinsi','kabupaten','kecamatan','desa','pendidikan','latar','universitas','penerimaan','unit','jabatan','status'));
         }
@@ -303,7 +303,7 @@ class CalonPegawaiController extends Controller
             $penerimaan = StatusPenerimaan::all();
             $unit = Unit::all();
             $jabatan = JabatanUnit::all();
-            $status = StatusPegawai::statusCalonPegawai()->get();
+            $status = StatusPegawai::pegawaiAktif()->get();
 
             return view('kepegawaian.etl.calon_pegawai_ubah', compact('calon','penerimaan','unit','jabatan','status'));
         }
@@ -464,7 +464,7 @@ class CalonPegawaiController extends Controller
                 if($request->acceptance_status == 1 && isset($request->position) && count($request->position) > 0){
                     $calon->jabatans()->sync($request->position);
                 }
-                elseif($request->acceptance_status != 1){
+                elseif($request->acceptance_status != 1 || !isset($request->position) || count($request->position) < 1){
                     $calon->jabatans()->detach();
                 }
 
@@ -510,7 +510,7 @@ class CalonPegawaiController extends Controller
                 if($request->acceptance_status == 1 && isset($request->position) && count($request->position) > 0){
                     $calon->jabatans()->sync($request->position);
                 }
-                elseif($request->acceptance_status != 1){
+                elseif($request->acceptance_status != 1 || !isset($request->position) || count($request->position) < 1){
                     $calon->jabatans()->detach();
                 }
 
@@ -710,7 +710,7 @@ class CalonPegawaiController extends Controller
                     }
 
                     $user = new LoginUser();
-                    $user->username = $pegawai->nip;
+                    $user->username = $pegawai->email;
                     $user->password = bcrypt(Date::parse($pegawai->birth_date)->format('dmY'));
                     $user->role_id = $activeRole ? $activeRole : 37;
                     $user->active_status_id = 1;

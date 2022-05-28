@@ -15,11 +15,15 @@ class CreatePpaProposalTable extends Migration
     {
         Schema::create('ppa_proposal', function (Blueprint $table) {
             $table->id();
-			$table->string('desc');
-			$table->bigInteger('amount')->default(0);
 			$table->bigInteger('ppa_detail_id')->nullable();
+			$table->date('date');
+			$table->year('year')->nullable();
+			$table->bigInteger('academic_year_id')->nullable();
+			$table->string('title',100);
+			$table->bigInteger('total_value')->default(0);
 			$table->bigInteger('employee_id');
-            $table->integer('position_id');
+            $table->smallInteger('unit_id');
+			$table->integer('position_id');
             $table->timestamps();
         });
     }

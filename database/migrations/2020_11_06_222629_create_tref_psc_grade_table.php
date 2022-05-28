@@ -17,8 +17,8 @@ class CreateTrefPscGradeTable extends Migration
             $table->increments('id');
 			$table->smallInteger('set_id');
 			$table->string('name',5);
-			$table->double('start',8,2);
-			$table->double('end',8,2);
+			$table->double('start',4,3);
+			$table->double('end',4,3);
             $table->timestamps();
         });
     }

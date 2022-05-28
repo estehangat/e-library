@@ -45,9 +45,9 @@ class RentangNilaiController extends Controller
     {
         $messages = [
             'name.required' => 'Mohon tuliskan nama daftar rentang nilai',
-            'grade.required' => 'Mohon tuliskan nama daftar nilai',
-            'start.required' => 'Mohon tuliskan nama daftar nilai',
-            'end.required' => 'Mohon tuliskan nama daftar nilai',
+            'grade.required' => 'Mohon tuliskan nilai huruf',
+            'start.required' => 'Mohon tuliskan awal rentang',
+            'end.required' => 'Mohon tuliskan akhir rentang',
         ];
 
         $this->validate($request, [
@@ -128,9 +128,9 @@ class RentangNilaiController extends Controller
     {
         $messages = [
             'name.required' => 'Mohon tuliskan nama daftar rentang nilai',
-            'grade.required' => 'Mohon tuliskan nama daftar nilai',
-            'start.required' => 'Mohon tuliskan nama daftar nilai',
-            'end.required' => 'Mohon tuliskan nama daftar nilai',
+            'grade.required' => 'Mohon tuliskan nilai huruf',
+            'start.required' => 'Mohon tuliskan awal rentang',
+            'end.required' => 'Mohon tuliskan akhir rentang',
         ];
 
         $this->validate($request, [

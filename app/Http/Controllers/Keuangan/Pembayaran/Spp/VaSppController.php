@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Keuangan\Pembayaran\Spp;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Keuangan\Spp\SppVaCollection;
 use Illuminate\Http\Request;
 
 use App\Models\Level;
@@ -11,13 +12,24 @@ use App\Models\Pembayaran\VirtualAccountSiswa;
 class VaSppController extends Controller
 {
     /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->template = 'keuangan.pembayaran.';
+        $this->active = 'Virtual Account SPP';
+        $this->route = 'spp.va';
+    }
+
+    /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
     public function index()
     {
-        //
         $levels = Level::all();
         $level = 'semua';
 
@@ -31,7 +43,40 @@ class VaSppController extends Controller
             $lists = VirtualAccountSiswa::where('unit_id',$unit_id)->orderBy('created_at','desc')->get();
         }
 
-        return view('keuangan.pembayaran.spp.va.index', compact('lists','levels','level'));
+        $active = $this->active;
+        $route = $this->route;
+
+        return view($this->template.$route.'-index', compact('active','route','lists','levels','level'));
+    }
+
+    /**
+     * Get a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function vaGet(Request $request)
+    {
+        $unit_id = $request->unit_id;
+        $level_id = $request->level_id;
+
+        $datas = VirtualAccountSiswa::when($level_id, function($q, $level_id){
+                return $q->whereHas('siswa', function($q) use ($level_id){
+                    $q->where('level_id',$level_id);
+                });
+            })
+            ->whereHas('siswa', function($q){
+                $q->where('is_lulus',0);
+            });
+        if($request->user()->pegawai->unit_id == 5){
+            $datas = $datas->where('unit_id',$unit_id);
+        }else{
+            $datas = $datas->where('unit_id',$request->user()->pegawai->unit_id);
+        }
+        $datas = $datas->get();
+
+        $data = new SppVaCollection($datas);
+
+        return response()->json([$data]);
     }
 
     /**

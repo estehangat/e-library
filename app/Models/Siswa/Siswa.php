@@ -2,6 +2,10 @@
 
 namespace App\Models\Siswa;
 
+use App\Models\Kbm\Kelas;
+use App\Models\Pembayaran\BMS;
+use App\Models\Pembayaran\SppBill;
+use App\Models\Unit;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -50,12 +54,12 @@ class Siswa extends Model
 
     public function kelas()
     {
-        return $this->belongsTo('App\Models\Kbm\Kelas', 'class_id');
+        return $this->belongsTo(Kelas::class, 'class_id');
     }
 
     public function unit()
     {
-        return $this->belongsTo('App\Models\Unit', 'unit_id');
+        return $this->belongsTo(Unit::class, 'unit_id');
     }
 
     public function nilaiRapor()
@@ -88,8 +92,18 @@ class Siswa extends Model
         return $this->hasOne('App\Models\Pembayaran\Spp','student_id');
     }
 
+public function bms()
+    {
+        return $this->hasOne(BMS::class,'student_id');
+    }
+
     public function virtualAccount()
     {
         return $this->hasOne('App\Models\Pembayaran\VirtualAccountSiswa','student_id');
+    }
+
+    public function sppBill()
+    {
+        return $this->hasMany(SppBill::class,'student_id');
     }
 }

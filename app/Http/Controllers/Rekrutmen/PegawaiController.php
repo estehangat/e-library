@@ -440,6 +440,7 @@ class PegawaiController extends Controller
     public function update(Request $request)
     {
         $role = $request->user()->role->name;
+        $id = $request->id;
         
         // Setttings
         $viewYayasan = in_array($role,['admin','pembinayys','ketuayys','direktur','etl','etm','fam','am']);
@@ -552,6 +553,14 @@ class PegawaiController extends Controller
             $pegawai->university_id = isset($request->university) ? $request->university : null;
 
             $pegawai->save();
+            
+            $pegawai->fresh();
+            
+            if($pegawai->login){
+                $user = $pegawai->login;
+                $user->username = $pegawai->email;
+                $user->save();
+            }
 
             Session::flash('success','Data '. $request->name .' berhasil diubah');
             return redirect()->route('pegawai.index');
@@ -672,23 +681,37 @@ class PegawaiController extends Controller
         $nonpegawai = LoginUser::select('user_id')->whereHas('role',function($q){
             $q->whereIn('code',['10','29']);
         })->pluck('user_id');
+        
+        $category = isset($request->category) ? $request->category : null;
+        
+        $checkCategory = null;
+        if($category){
+            $checkCategory = KategoriPegawai::where('name',ucwords($category))->first();
+            if(!$checkCategory) return redirect()->route('pegawai.index');
+        }
 
-        $pegawai = Pegawai::orderBy('name','asc')->where('nip','!=','0')->whereNotIn('id',$pejabat->concat($nonpegawai))->aktif()->get();
+        $pegawai = Pegawai::where('nip','!=','0')->whereNotIn('id',$pejabat->concat($nonpegawai))->aktif()->orderBy('name','asc');
+        if($category){
+            $pegawai = $pegawai->whereHas('statusPegawai.kategori',function($q)use($category){
+                $q->where('name',$category);
+            });
+        }
+        $pegawai = $pegawai->get();
 
         $spreadsheet = new Spreadsheet;
 
         $spreadsheet->getProperties()->setCreator('SIT Auliya')
         ->setLastModifiedBy($request->user()->pegawai->name)
-        ->setTitle("Data Induk Pegawai Auliya ".Date::now('Asia/Jakarta')->format('d.m.Y'))
-        ->setSubject("Pegawai Auliya ".Date::now('Asia/Jakarta')->format('d.m.Y'))
-        ->setDescription("Rekapitulasi Data Induk Pegawai Auliya ".Date::now('Asia/Jakarta')->format('d.m.Y'))
-        ->setKeywords("Data, Induk, Pegawai, Auliya");
+        ->setTitle("Data Induk ".($category ? ucwords($category) : 'Civitas')." Auliya ".Date::now('Asia/Jakarta')->format('d.m.Y'))
+        ->setSubject(($category ? ucwords($category) : 'Civitas')." Auliya ".Date::now('Asia/Jakarta')->format('d.m.Y'))
+        ->setDescription("Rekapitulasi Data Induk ".($category ? ucwords($category) : 'Civitas')." Auliya ".Date::now('Asia/Jakarta')->format('d.m.Y'))
+        ->setKeywords("Data, Induk, ".($category ? ucwords($category) : 'Civitas').", Auliya");
 
         $spreadsheet->setActiveSheetIndex(0)
         ->setCellValue('A1', 'No')
-        ->setCellValue('B1', 'Nama Pegawai')
+        ->setCellValue('B1', 'Nama '.($category && $category == 'mitra' ? ucwords($category) : 'Pegawai'))
         ->setCellValue('C1', 'Nama Panggilan')
-        ->setCellValue('D1', 'Nomor Induk Pegawai Yayasan')
+        ->setCellValue('D1', 'Nomor Induk '.($category && $category == 'mitra' ? ucwords($category) : 'Pegawai').' Yayasan')
         ->setCellValue('E1', 'Nomor Induk Kependudukan')
         ->setCellValue('F1', 'NPWP')
         ->setCellValue('G1', 'NUPTK')
@@ -749,7 +772,7 @@ class PegawaiController extends Controller
             $kolom++;
         }
 
-        $spreadsheet->getActiveSheet()->setTitle('Data Induk Pegawai');
+        $spreadsheet->getActiveSheet()->setTitle('Data Induk '.($category ? ucwords($category) : 'Civitas Auliya'));
 
         $spreadsheet->getActiveSheet()->getColumnDimension('A')->setWidth(4);
         $spreadsheet->getActiveSheet()->getColumnDimension('B')->setWidth(35);
@@ -860,7 +883,7 @@ class PegawaiController extends Controller
         $headers = [
             'Cache-Control' => 'max-age=0',
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment;filename="data-induk-pegawai-'.Date::now('Asia/Jakarta')->format('Y-m-d').'.xlsx"',
+            'Content-Disposition' => 'attachment;filename="data-induk-'.($category ? strtolower($category) : 'civitas-auliya').'-'.Date::now('Asia/Jakarta')->format('Y-m-d').'.xlsx"',
         ];
 
         return response()->stream(function()use($writer){

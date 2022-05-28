@@ -109,10 +109,6 @@ class ForgotPasswordController extends Controller
         //   ])->orderBy('created_at','DESC')->first();
           
           $lastToken = DB::table('password_resets')->where(['email' => $request->email])->orderBy('created_at','DESC')->first();
-          
-          //return $lastToken->token. ' '.$lastToken->created_at;
-          
-          //return strtotime(date("Y-m-d H:i:s")).' <= '.(strtotime($lastToken->created_at)).' = '.date("Y-m-d H:i:s").' <= '.$lastToken->created_at;
   
           if(!$lastToken || ($lastToken && (($lastToken->token != $request->token) || (strtotime(date("Y-m-d H:i:s")) <= (strtotime($lastToken->created_at)))))){
               return back()->withInput()->with('danger', 'Token tidak valid!');

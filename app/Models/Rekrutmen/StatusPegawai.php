@@ -36,6 +36,11 @@ class StatusPegawai extends Model
         return $this->hasMany('App\Models\Rekrutmen\EvaluasiPegawai','recommend_employee_status_id');
     }
 
+    public function sppDeduction()
+    {
+        return $this->hasMany('App\Models\Pembayaran\SppDeduction','employee_status_id');
+    }
+
     public function getAcronymAttribute()
     {
         $words = explode(" ", $this->status);

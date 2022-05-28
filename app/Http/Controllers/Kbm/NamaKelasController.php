@@ -13,9 +13,13 @@ class NamaKelasController extends Controller
     public function index()
     {
         //cek unit id
-        $unit = Auth::user()->pegawai->unit_id;
+        $unit = auth()->user()->pegawai->unit_id;
 
-        $lists = NamaKelas::where('unit_id',$unit)->get();
+        if($unit == 5){
+            $lists = NamaKelas::all();
+        }else{
+            $lists = NamaKelas::where('unit_id',$unit)->get();
+        }
         return view('kbm.namakelas.index',compact('lists'));
     }
 

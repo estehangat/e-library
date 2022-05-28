@@ -16,7 +16,7 @@ class CreateTrefPositionTable extends Migration
         Schema::create('tref_position', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
-			$table->text('desc')->nullable();
+			$table->string('desc')->nullable();
 			$table->tinyInteger('placement_id');
 			$table->integer('acc_position_id');
             $table->timestamps();

@@ -74,10 +74,9 @@ class PasController extends Controller
             $unit = $riwayatKelas ? $riwayatKelas->unit : null;
             if($unit) {
                 $rapor = $siswa->nilaiRapor()->where(['semester_id' => $semester->id, 'report_status_id' => 1])->first();
-                $pas_date = $semester->tanggalRapor()->where('unit_id', $unit->id)->pas()->first();
-                $pas_date = $pas_date ? $pas_date->report_date : null;
+
                 if($rapor){
-                    return view('penilaian.pas_cover', compact('pas_date', 'siswa', 'unit', 'semester','riwayatKelas'));
+                    return view('penilaian.pas_cover', compact('siswa', 'unit', 'semester','riwayatKelas'));
                 }
                 else{
                     Session::flash('danger', 'Nilai rapor Ananda '.$siswa->identitas->student_name.' belum divalidasi');

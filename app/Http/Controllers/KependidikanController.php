@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Services\Psb\CounterPsb;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
@@ -13,8 +14,10 @@ use App\Models\Unit;
 
 class KependidikanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+
+        $datas = CounterPsb::list($request);
         $unit = Auth::user()->pegawai->unit_id;
 
         // jml siswa
@@ -82,37 +85,37 @@ class KependidikanController extends Controller
         }
 
         // jml mapel
-        if ($unit == 5) {
-            $jmlmapel = MataPelajaran::count();
-            $jmlmapel1 = MataPelajaran::where('unit_id', 1)->count();
-            $jmlmapel2 = MataPelajaran::where('unit_id', 2)->count();
-            $jmlmapel3 = MataPelajaran::where('unit_id', 3)->count();
-            $jmlmapel4 = MataPelajaran::where('unit_id', 4)->count();
-        } else {
-            $jmlmapel = MataPelajaran::where('unit_id', $unit)->count();
-        }
+        // if ($unit == 5) {
+        //     $jmlmapel = MataPelajaran::count();
+        //     $jmlmapel1 = MataPelajaran::where('unit_id', 1)->count();
+        //     $jmlmapel2 = MataPelajaran::where('unit_id', 2)->count();
+        //     $jmlmapel3 = MataPelajaran::where('unit_id', 3)->count();
+        //     $jmlmapel4 = MataPelajaran::where('unit_id', 4)->count();
+        // } else {
+        //     $jmlmapel = MataPelajaran::where('unit_id', $unit)->count();
+        // }
 
         $tahun = TahunAjaran::where('is_active', 1)->first();
 
         // jml kelas
         if ($unit == 5) {
-            $jmlkelas = Kelas::where('academic_year_id', $tahun->id)->count();
-            $jmlkelas1 = Kelas::where('academic_year_id', $tahun->id)->where('unit_id', 1)->count();
-            $jmlkelas2 = Kelas::where('academic_year_id', $tahun->id)->where('unit_id', 2)->count();
-            $jmlkelas3 = Kelas::where('academic_year_id', $tahun->id)->where('unit_id', 3)->count();
-            $jmlkelas4 = Kelas::where('academic_year_id', $tahun->id)->where('unit_id', 4)->count();
+            // $jmlkelas = Kelas::where('academic_year_id', $tahun->id)->count();
+            // $jmlkelas1 = Kelas::where('academic_year_id', $tahun->id)->where('unit_id', 1)->count();
+            // $jmlkelas2 = Kelas::where('academic_year_id', $tahun->id)->where('unit_id', 2)->count();
+            // $jmlkelas3 = Kelas::where('academic_year_id', $tahun->id)->where('unit_id', 3)->count();
+            // $jmlkelas4 = Kelas::where('academic_year_id', $tahun->id)->where('unit_id', 4)->count();
             return view('kependidikan', compact(
                 'jmlsiswa',
-                'jmlmapel',
-                'jmlmapel1',
-                'jmlmapel2',
-                'jmlmapel3',
-                'jmlmapel4',
-                'jmlkelas',
-                'jmlkelas1',
-                'jmlkelas2',
-                'jmlkelas3',
-                'jmlkelas4',
+                // 'jmlmapel',
+                // 'jmlmapel1',
+                // 'jmlmapel2',
+                // 'jmlmapel3',
+                // 'jmlmapel4',
+                // 'jmlkelas',
+                // 'jmlkelas1',
+                // 'jmlkelas2',
+                // 'jmlkelas3',
+                // 'jmlkelas4',
                 'namaunit',
                 'tahun',
                 'jmlsiswalaki',
@@ -125,11 +128,13 @@ class KependidikanController extends Controller
                 'jmlsiswacewe3',
                 'jmlsiswalaki4',
                 'jmlsiswacewe4',
-                'unit'
+                'unit',
+                'datas',
+                'request',
             ));
         } else {
-            $jmlkelas = Kelas::where('unit_id', $unit)->where('academic_year_id', $tahun->id)->count();
-            return view('kependidikan', compact('jmlsiswa', 'jmlmapel', 'jmlkelas', 'namaunit', 'tahun', 'jmlsiswalaki', 'jmlsiswacewe', 'unit'));
+            // $jmlkelas = Kelas::where('unit_id', $unit)->where('academic_year_id', $tahun->id)->count();
+            return view('kependidikan', compact('jmlsiswa', 'namaunit', 'tahun', 'jmlsiswalaki', 'jmlsiswacewe', 'unit', 'datas', 'request'));
         }
     }
 

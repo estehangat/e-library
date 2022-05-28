@@ -43,8 +43,9 @@ class Skbm extends Model
 
     public function getShowAttribute()
     {
-        if ($this->status->status == 'aktif') return $this->detail;
-        else return $this->arsip;
+        //if ($this->status->status == 'aktif') return $this->detail;
+        //else return $this->arsip;
+        return $this->detail;
     }
 
     public function scopeAktif($query)

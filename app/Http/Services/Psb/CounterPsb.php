@@ -35,7 +35,7 @@ class CounterPsb {
             $year_id = '%';
         }
 
-        $datas = RegisterCounter::where('unit_id','like',$unit_id)->where('academic_year_id','like',$year_id)->orderBy('academic_year_id','desc')->orderBy('unit_id','asc')->get();
+        $datas = RegisterCounter::where('unit_id','like',$unit_id)->where('academic_year_id','like',$year_id)->orderBy('unit_id','asc')->orderBy('academic_year_id','desc')->get();
 
         return $datas;
     }

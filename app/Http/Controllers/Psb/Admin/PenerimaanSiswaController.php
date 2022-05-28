@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 
 use App\Http\Services\BsiService;
 use App\Http\Services\Psb\VirtualAccountGenerator;
+use App\Http\Services\Psb\RegisterCounterService;
 use App\Models\Kbm\Semester;
 use App\Models\Kbm\TahunAjaran;
 use App\Models\Pembayaran\BMS;
@@ -16,7 +17,6 @@ use App\Models\Pembayaran\BmsTermin;
 use App\Models\Pembayaran\BmsYearTotal;
 use App\Models\Pembayaran\VirtualAccountCalonSiswa;
 use App\Models\Pembayaran\VirtualAccountSiswa;
-use App\Models\Psb\RegisterCounter;
 use App\Models\Siswa\CalonSiswa;
 use App\Models\Siswa\Siswa;
 use App\Models\Wilayah;
@@ -257,43 +257,7 @@ class PenerimaanSiswaController extends Controller
 
         }
 
-        $counter = RegisterCounter::where('unit_id',$calons->unit_id)->where('academic_year_id',$calons->academic_year_id)->first();
-
-        if($counter){
-            if($calons->origin_school == 'SIT Auliya'){
-                if($calons->status_id == 6) $counter->reserved_intern = $counter->reserved_intern - 1;
-                $counter->interview_intern = $counter->interview_intern + 1;
-                $counter->save();
-            }else{
-                if($calons->status_id == 6) $counter->reserved_extern = $counter->reserved_extern - 1;
-                $counter->interview_extern = $counter->interview_extern + 1;
-                $counter->save();
-            }
-        }else{
-            if($calons->origin_school == 'SIT Auliya'){
-                $counter = RegisterCounter::create([
-                    'academic_year_id' => $calons->academic_year_id,
-                    'unit_id' => $calons->unit_id,
-                    'register_intern' => 1,
-                    'interview_extern' => 1,
-                ]);
-            }else{
-                $counter = RegisterCounter::create([
-                    'academic_year_id' => $calons->academic_year_id,
-                    'unit_id' => $calons->unit_id,
-                    'register_extern' => 1,
-                    'interview_extern' => 1,
-                ]);
-            }
-
-        }
-        // if($calons->asal_sekolah == 'SIT Auliya'){
-        //     $counter->interview_intern = $counter->interview_intern + 1;
-        //     $counter->save();
-        // }else{
-        //     $counter->interview_extern = $counter->interview_extern + 1;
-        //     $counter->save();
-        // }
+        RegisterCounterService::addCounter($calons->id,'interview');
         
         return redirect()->back()->with('success', 'Wawancara berhasil');
     }

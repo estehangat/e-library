@@ -15,11 +15,23 @@ class CreatePpaProposalDetailTable extends Migration
     {
         Schema::create('ppa_proposal_detail', function (Blueprint $table) {
             $table->id();
-			$table->bigInteger('ppa_id');
+			$table->bigInteger('proposal_id');
+			$table->string('desc');
+            $table->bigInteger('price')->default(0);
+			$table->integer('quantity')->default(0);
 			$table->bigInteger('ppa_detail_id')->nullable();
-			$table->bigInteger('ppa_proposal_id')->nullable();
-			$table->bigInteger('account_id');
+			$table->bigInteger('value')->default(0);
+            $table->bigInteger('price_ori')->default(0);
+			$table->integer('quantity_ori')->default(0);
+            $table->bigInteger('price_pa')->nullable();
+			$table->integer('quantity_pa')->nullable();
+            $table->bigInteger('price_fam')->nullable();
+			$table->integer('quantity_fam')->nullable();
+			$table->bigInteger('employee_id');
+			$table->bigInteger('edited_employee_id')->nullable();
+			$table->smallInteger('edited_status_id')->nullable();
             $table->timestamps();
+			$table->softDeletes();
         });
     }
 

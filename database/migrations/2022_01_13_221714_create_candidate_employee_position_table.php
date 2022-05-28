@@ -15,7 +15,7 @@ class CreateCandidateEmployeePositionTable extends Migration
     {
         Schema::create('candidate_employee_position', function (Blueprint $table) {
             $table->id();
-			$table->bigInteger('employee_unit_id');
+			$table->bigInteger('candidate_employee_id');
 			$table->integer('position_id');
             $table->timestamps();
         });

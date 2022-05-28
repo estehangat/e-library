@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Psb\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Services\Psb\CalonSiswa\ChangeYearPsb;
+use App\Http\Services\Psb\RegisterCounterService;
 use App\Models\Agama;
 use App\Models\JenisKelamin;
 use App\Models\Kbm\Semester;
@@ -12,6 +14,7 @@ use App\Models\Psb\RegisterCounter;
 use App\Models\Rekrutmen\Pegawai;
 use App\Models\Siswa\CalonSiswa;
 use App\Models\Siswa\OrangTua;
+use App\Models\Siswa\StatusSiswa;
 use App\Models\Unit;
 use App\Models\Wilayah;
 use Illuminate\Http\Request;
@@ -46,16 +49,188 @@ class CalonSiswaController extends Controller
      */
     public function store(Request $request)
     {
-        //
         $siswa = CalonSiswa::find($request->id);
-        $siswa->academic_year_id = $request->tahun_akademik;
 
+        $old_ay_id = $siswa->academic_year_id;
+        $new_ay_id = $request->tahun_akademik;
+        ChangeYearPsb::change($siswa->id, $old_ay_id, $new_ay_id);
+
+        $counter = RegisterCounter::where('academic_year_id',$old_ay_id)->where('unit_id',$siswa->unit_id)->where('student_status_id',$siswa->student_status_id)->first();
+        $counter_baru = RegisterCounterService::checkCounter($new_ay_id,$siswa->unit_id,$siswa->student_status_id);
+
+        // dd($counter, $counter_baru);
+        if($siswa->origin_school == 'SIT Auliya'){
+            switch ($siswa->status_id) {
+                case '1':
+                    // OK
+                    $counter->register_intern -= 1;
+                    $counter_baru->register_intern += 1;
+                    break;
+                    
+                case '2':
+                    // OK
+                    $counter->register_intern -= 1;
+                    $counter->saving_seat_intern -= 1;
+                    $counter_baru->register_intern += 1;
+                    $counter_baru->saving_seat_intern += 1;
+                    break;
+                    
+                case '3':
+                    // OK
+                    $counter->register_intern -= 1;
+                    $counter->saving_seat_intern -= 1;
+                    $counter->interview_intern -= 1;
+                    $counter_baru->register_intern += 1;
+                    $counter_baru->saving_seat_intern += 1;
+                    $counter_baru->interview_intern += 1;
+                    break;
+                    
+                case '4':
+                    // OK
+                    $counter->register_intern -= 1;
+                    $counter->saving_seat_intern -= 1;
+                    $counter->interview_intern -= 1;
+                    $counter->accepted_intern -= 1;
+                    $counter->before_reapply_intern -= 1;
+                    $counter_baru->register_intern += 1;
+                    $counter_baru->saving_seat_intern += 1;
+                    $counter_baru->interview_intern += 1;
+                    $counter_baru->accepted_intern += 1;
+                    $counter_baru->before_reapply_intern += 1;
+                    break;
+                    
+                case '5':
+                    // OK
+                    $counter->register_intern -= 1;
+                    $counter->saving_seat_intern -= 1;
+                    $counter->interview_intern -= 1;
+                    $counter->accepted_intern -= 1;
+                    $counter->reapply_intern -= 1;
+                    $counter_baru->register_intern += 1;
+                    $counter_baru->saving_seat_intern += 1;
+                    $counter_baru->interview_intern += 1;
+                    $counter_baru->accepted_intern += 1;
+                    $counter_baru->reapply_intern += 1;
+                    break;
+    
+                case '6':
+                    $counter->register_intern -= 1;
+                    $counter->saving_seat_intern -= 1;
+                    $counter->interview_intern -= 1;
+                    $counter->reserved_intern -= 1;
+                    $counter_baru->register_intern += 1;
+                    $counter_baru->saving_seat_intern += 1;
+                    $counter_baru->interview_intern += 1;
+                    $counter_baru->reserved_intern += 1;
+                    break;
+                
+                case '7':
+                    $counter->register_intern -= 1;
+                    $counter->saving_seat_intern -= 1;
+                    $counter->interview_intern -= 1;
+                    $counter->accepted_intern -= 1;
+                    $counter->canceled_intern -= 1;
+                    $counter_baru->register_intern += 1;
+                    $counter_baru->saving_seat_intern += 1;
+                    $counter_baru->interview_intern += 1;
+                    $counter_baru->accepted_intern += 1;
+                    $counter_baru->canceled_intern += 1;
+                    break;
+    
+                default:
+                    break;
+            }
+        }else{
+            switch ($siswa->status_id) {
+                case '1':
+                    // OK
+                    $counter->register_extern -= 1;
+                    $counter_baru->register_extern += 1;
+                    break;
+                    
+                case '2':
+                    // OK
+                    $counter->register_extern -= 1;
+                    $counter->saving_seat_extern -= 1;
+                    $counter_baru->register_extern += 1;
+                    $counter_baru->saving_seat_extern += 1;
+                    break;
+                    
+                case '3':
+                    // OK
+                    $counter->register_extern -= 1;
+                    $counter->saving_seat_extern -= 1;
+                    $counter->interview_extern -= 1;
+                    $counter_baru->register_extern += 1;
+                    $counter_baru->saving_seat_extern += 1;
+                    $counter_baru->interview_extern += 1;
+                    break;
+                    
+                case '4':
+                    // OK
+                    $counter->register_extern -= 1;
+                    $counter->saving_seat_extern -= 1;
+                    $counter->interview_extern -= 1;
+                    $counter->accepted_extern -= 1;
+                    $counter->before_reapply_exntern -= 1;
+                    $counter_baru->register_extern += 1;
+                    $counter_baru->saving_seat_extern += 1;
+                    $counter_baru->interview_extern += 1;
+                    $counter_baru->accepted_extern += 1;
+                    $counter_baru->before_reapply_extern += 1;
+                    break;
+                    
+                case '5':
+                    // OK
+                    $counter->register_extern -= 1;
+                    $counter->saving_seat_extern -= 1;
+                    $counter->interview_extern -= 1;
+                    $counter->accepted_extern -= 1;
+                    $counter->reapply_extern -= 1;
+                    $counter_baru->register_extern += 1;
+                    $counter_baru->saving_seat_extern += 1;
+                    $counter_baru->interview_extern += 1;
+                    $counter_baru->accepted_extern += 1;
+                    $counter_baru->reapply_extern += 1;
+                    break;
+    
+                case '6':
+                    $counter->register_extern -= 1;
+                    $counter->saving_seat_extern -= 1;
+                    $counter->interview_extern -= 1;
+                    $counter->reserved_extern -= 1;
+                    $counter_baru->register_extern += 1;
+                    $counter_baru->saving_seat_extern += 1;
+                    $counter_baru->interview_extern += 1;
+                    $counter_baru->reserved_extern += 1;
+                    break;
+                
+                case '7':
+                    $counter->register_extern -= 1;
+                    $counter->saving_seat_extern -= 1;
+                    $counter->interview_extern -= 1;
+                    $counter->accepted_extern -= 1;
+                    $counter->canceled_extern -= 1;
+                    $counter_baru->register_extern += 1;
+                    $counter_baru->saving_seat_extern += 1;
+                    $counter_baru->interview_extern += 1;
+                    $counter_baru->accepted_extern += 1;
+                    $counter_baru->canceled_extern += 1;
+                    break;
+    
+                default:
+                    break;
+            }
+        }
+        $counter->save();
+        $counter_baru->save();
+
+        $siswa->academic_year_id = $request->tahun_akademik;
         $semester = Semester::where('academic_year_id',$request->tahun_akademik)->where('semester',$request->semester)->first();
         $siswa->semester_id = $semester->id;
         $siswa->save();
         
         return redirect()->back();
-        // dd($request);
     }
 
     /**
@@ -155,6 +330,7 @@ class CalonSiswaController extends Controller
         }
 
         $agamas = Agama::where('name','Islam')->get();
+        $studentStatusses = StatusSiswa::all();
         $levels = Level::where('unit_id',$siswa->unit->id)->get();
         $units = Unit::all();
         $jeniskelamin = JenisKelamin::all();
@@ -164,7 +340,7 @@ class CalonSiswaController extends Controller
 
         $pegawais = Pegawai::aktif()->get()->sortBy('name');
 
-        return view('psb.admin.siswa.ubah',compact('siswa','provinsi','kabupaten','kecamatan','desa','agamas','levels','units','semesters','provinsis','tahunAjaran','jeniskelamin','listprovinsi','listkabupaten','listkecamatan','listdesa','pegawais'));
+        return view('psb.admin.siswa.ubah',compact('siswa','provinsi','kabupaten','kecamatan','desa','agamas','studentStatusses','levels','units','semesters','provinsis','tahunAjaran','jeniskelamin','listprovinsi','listkabupaten','listkecamatan','listdesa','pegawais'));
     }
 
     /**
@@ -180,6 +356,7 @@ class CalonSiswaController extends Controller
         // dd($request);
 
         $request->validate([
+            "siswa_baru" => "required",
             "nik" => "required",
             "nama" => "required",
             "tempat_lahir" => "required",
@@ -192,7 +369,7 @@ class CalonSiswaController extends Controller
             "kabupaten" => "required",
             "kecamatan" => "required",
             "desa" => "required",
-            "kelas" => "required",
+            "kelas" => "required_if:siswa_baru,2",
             "asal_sekolah" => "required",
         ]);
         
@@ -202,131 +379,246 @@ class CalonSiswaController extends Controller
 
         $siswa = CalonSiswa::find($id);
 
-        if($siswa->origin_school != $request->asal_sekolah){
+        if($request->siswa_baru == 1){
+            $kelases = Level::where('unit_id',$siswa->unit_id)->first();
+            $kelas = $kelases->id;
+        }else{
+            $kelas = $request->kelas;
+        }
 
-            $counter = RegisterCounter::where('unit_id',$siswa->unit_id)->where('academic_year_id',$siswa->academic_year_id)->first();
+        $counter = RegisterCounter::where('unit_id',$siswa->unit_id)->where('academic_year_id',$siswa->academic_year_id)->where('student_status_id',$siswa->student_status_id)->first();
+
+        $counterAlt = RegisterCounter::where('unit_id',$siswa->unit_id)->where('academic_year_id',$siswa->academic_year_id)->where('student_status_id',$request->siswa_baru)->first();
+
+        if($siswa->origin_school != $request->asal_sekolah){            
+
+            if($siswa->student_status_id != $request->siswa_baru){
+                $counterFrom = 'counter';
+                $counterTo = 'counterAlt';
+            }
+            else{
+                $counterFrom = $counterTo = 'counter';
+            }
 
             if($request->asal_sekolah == 'SIT Auliya'){
-
                 if($siswa->status_id == 1){
-                    $counter->register_intern += 1;
-                    $counter->register_extern -= 1;
+                    $$counterTo->register_intern += 1;
+                    $$counterFrom->register_extern -= 1;
                 }else if($request->status_id == 2){
-                    $counter->register_intern += 1;
-                    $counter->register_extern -= 1;
-                    $counter->saving_seat_intern += 1;
-                    $counter->saving_seat_extern -= 1;
+                    $$counterTo->register_intern += 1;
+                    $$counterFrom->register_extern -= 1;
+                    $$counterTo->saving_seat_intern += 1;
+                    $$counterFrom->saving_seat_extern -= 1;
                 }else if($request->status_id == 3){
-                    $counter->register_intern += 1;
-                    $counter->register_extern -= 1;
-                    $counter->saving_seat_intern += 1;
-                    $counter->saving_seat_extern -= 1;
-                    $counter->interview_intern += 1;
-                    $counter->interview_extern -= 1;
+                    $$counterTo->register_intern += 1;
+                    $$counterFrom->register_extern -= 1;
+                    $$counterTo->saving_seat_intern += 1;
+                    $$counterFrom->saving_seat_extern -= 1;
+                    $$counterTo->interview_intern += 1;
+                    $$counterFrom->interview_extern -= 1;
                 }else if($request->status_id == 4){
-                    $counter->register_intern += 1;
-                    $counter->register_extern -= 1;
-                    $counter->saving_seat_intern += 1;
-                    $counter->saving_seat_extern -= 1;
-                    $counter->interview_intern += 1;
-                    $counter->interview_extern -= 1;
-                    $counter->accepted_intern += 1;
-                    $counter->accepted_extern -= 1;
+                    $$counterTo->register_intern += 1;
+                    $$counterFrom->register_extern -= 1;
+                    $$counterTo->saving_seat_intern += 1;
+                    $$counterFrom->saving_seat_extern -= 1;
+                    $$counterTo->interview_intern += 1;
+                    $$counterFrom->interview_extern -= 1;
+                    $$counterTo->accepted_intern += 1;
+                    $$counterFrom->accepted_extern -= 1;
+                    $$counterTo->before_reapply_intern += 1;
+                    $$counterFrom->before_reapply_extern -= 1;
                 }else if($request->status_id == 4){
-                    $counter->register_intern += 1;
-                    $counter->register_extern -= 1;
-                    $counter->saving_seat_intern += 1;
-                    $counter->saving_seat_extern -= 1;
-                    $counter->interview_intern += 1;
-                    $counter->interview_extern -= 1;
-                    $counter->accepted_intern += 1;
-                    $counter->accepted_extern -= 1;
+                    $$counterTo->register_intern += 1;
+                    $$counterFrom->register_extern -= 1;
+                    $$counterTo->saving_seat_intern += 1;
+                    $$counterFrom->saving_seat_extern -= 1;
+                    $$counterTo->interview_intern += 1;
+                    $$counterFrom->interview_extern -= 1;
+                    $$counterTo->accepted_intern += 1;
+                    $$counterFrom->accepted_extern -= 1;
                 }else if($request->status_id == 5){
-                    $counter->register_intern += 1;
-                    $counter->register_extern -= 1;
-                    $counter->saving_seat_intern += 1;
-                    $counter->saving_seat_extern -= 1;
-                    $counter->interview_intern += 1;
-                    $counter->interview_extern -= 1;
-                    $counter->accepted_intern += 1;
-                    $counter->accepted_extern -= 1;
-                    $counter->reapply_intern += 1;
-                    $counter->reapply_extern -= 1;
+                    $$counterTo->register_intern += 1;
+                    $$counterFrom->register_extern -= 1;
+                    $$counterTo->saving_seat_intern += 1;
+                    $$counterFrom->saving_seat_extern -= 1;
+                    $$counterTo->interview_intern += 1;
+                    $$counterFrom->interview_extern -= 1;
+                    $$counterTo->accepted_intern += 1;
+                    $$counterFrom->accepted_extern -= 1;
+                    $$counterTo->reapply_intern += 1;
+                    $$counterFrom->reapply_extern -= 1;
                 }else if($request->status_id == 6){
-                    $counter->register_intern += 1;
-                    $counter->register_extern -= 1;
-                    $counter->saving_seat_intern += 1;
-                    $counter->saving_seat_extern -= 1;
-                    $counter->interview_intern += 1;
-                    $counter->interview_extern -= 1;
-                    $counter->reserved_intern += 1;
-                    $counter->reserved_extern -= 1;
+                    $$counterTo->register_intern += 1;
+                    $$counterFrom->register_extern -= 1;
+                    $$counterTo->saving_seat_intern += 1;
+                    $$counterFrom->saving_seat_extern -= 1;
+                    $$counterTo->interview_intern += 1;
+                    $$counterFrom->interview_extern -= 1;
+                    $$counterTo->reserved_intern += 1;
+                    $$counterFrom->reserved_extern -= 1;
                 }
 
             }else{
 
-                if($request->asal_sekolah == 'SIT Auliya'){
-
-                    if($siswa->status_id == 1){
-                        $counter->register_intern -= 1;
-                        $counter->register_extern += 1;
-                    }else if($request->status_id == 2){
-                        $counter->register_intern -= 1;
-                        $counter->register_extern += 1;
-                        $counter->saving_seat_intern -= 1;
-                        $counter->saving_seat_extern += 1;
-                    }else if($request->status_id == 3){
-                        $counter->register_intern -= 1;
-                        $counter->register_extern += 1;
-                        $counter->saving_seat_intern -= 1;
-                        $counter->saving_seat_extern += 1;
-                        $counter->interview_intern -= 1;
-                        $counter->interview_extern += 1;
-                    }else if($request->status_id == 4){
-                        $counter->register_intern -= 1;
-                        $counter->register_extern += 1;
-                        $counter->saving_seat_intern -= 1;
-                        $counter->saving_seat_extern += 1;
-                        $counter->interview_intern -= 1;
-                        $counter->interview_extern += 1;
-                        $counter->accepted_intern -= 1;
-                        $counter->accepted_extern += 1;
-                    }else if($request->status_id == 4){
-                        $counter->register_intern -= 1;
-                        $counter->register_extern += 1;
-                        $counter->saving_seat_intern -= 1;
-                        $counter->saving_seat_extern += 1;
-                        $counter->interview_intern -= 1;
-                        $counter->interview_extern += 1;
-                        $counter->accepted_intern -= 1;
-                        $counter->accepted_extern += 1;
-                    }else if($request->status_id == 5){
-                        $counter->register_intern -= 1;
-                        $counter->register_extern += 1;
-                        $counter->saving_seat_intern -= 1;
-                        $counter->saving_seat_extern += 1;
-                        $counter->interview_intern -= 1;
-                        $counter->interview_extern += 1;
-                        $counter->accepted_intern -= 1;
-                        $counter->accepted_extern += 1;
-                        $counter->reapply_intern -= 1;
-                        $counter->reapply_extern += 1;
-                    }else if($request->status_id == 6){
-                        $counter->register_intern -= 1;
-                        $counter->register_extern += 1;
-                        $counter->saving_seat_intern -= 1;
-                        $counter->saving_seat_extern += 1;
-                        $counter->interview_intern -= 1;
-                        $counter->interview_extern += 1;
-                        $counter->reserved_intern -= 1;
-                        $counter->reserved_extern += 1;
-                    }
-                    
+                if($siswa->status_id == 1){
+                    $$counterFrom->register_intern -= 1;
+                    $$counterTo->register_extern += 1;
+                }else if($request->status_id == 2){
+                    $$counterFrom->register_intern -= 1;
+                    $$counterTo->register_extern += 1;
+                    $$counterFrom->saving_seat_intern -= 1;
+                    $$counterTo->saving_seat_extern += 1;
+                }else if($request->status_id == 3){
+                    $$counterFrom->register_intern -= 1;
+                    $$counterTo->register_extern += 1;
+                    $$counterFrom->saving_seat_intern -= 1;
+                    $$counterTo->saving_seat_extern += 1;
+                    $$counterFrom->interview_intern -= 1;
+                    $$counterTo->interview_extern += 1;
+                }else if($request->status_id == 4){
+                    $$counterFrom->register_intern -= 1;
+                    $$counterTo->register_extern += 1;
+                    $$counterFrom->saving_seat_intern -= 1;
+                    $$counterTo->saving_seat_extern += 1;
+                    $$counterFrom->interview_intern -= 1;
+                    $$counterTo->interview_extern += 1;
+                    $$counterFrom->accepted_intern -= 1;
+                    $$counterTo->accepted_extern += 1;
+                    $$counterFrom->before_reapply_intern -= 1;
+                    $$counterTo->before_reapply_extern += 1;
+                }else if($request->status_id == 5){
+                    $$counterFrom->register_intern -= 1;
+                    $$counterTo->register_extern += 1;
+                    $$counterFrom->saving_seat_intern -= 1;
+                    $$counterTo->saving_seat_extern += 1;
+                    $$counterFrom->interview_intern -= 1;
+                    $$counterTo->interview_extern += 1;
+                    $$counterFrom->accepted_intern -= 1;
+                    $$counterTo->accepted_extern += 1;
+                    $$counterFrom->reapply_intern -= 1;
+                    $$counterTo->reapply_extern += 1;
+                }else if($request->status_id == 6){
+                    $$counterFrom->register_intern -= 1;
+                    $$counterTo->register_extern += 1;
+                    $$counterFrom->saving_seat_intern -= 1;
+                    $$counterTo->saving_seat_extern += 1;
+                    $$counterFrom->interview_intern -= 1;
+                    $$counterTo->interview_extern += 1;
+                    $$counterFrom->reserved_intern -= 1;
+                    $$counterTo->reserved_extern += 1;
                 }
 
             }
 
-            $counter->save();
+            $$counterFrom->save();
+            $$counterTo->save();
+        }
+        elseif($siswa->student_status_id != $request->siswa_baru){    
+            
+            $counterFrom = 'counter';
+            $counterTo = 'counterAlt';        
+
+            if($siswa->origin_school == 'SIT Auliya'){
+                if($siswa->status_id == 1){
+                    $$counterFrom->register_intern -= 1;
+                    $$counterTo->register_intern += 1;
+                }else if($request->status_id == 2){
+                    $$counterFrom->register_intern -= 1;
+                    $$counterTo->register_intern += 1;
+                    $$counterFrom->saving_seat_intern -= 1;
+                    $$counterTo->saving_seat_intern += 1;
+                }else if($request->status_id == 3){
+                    $$counterFrom->register_intern -= 1;
+                    $$counterTo->register_intern += 1;
+                    $$counterFrom->saving_seat_intern -= 1;
+                    $$counterTo->saving_seat_intern += 1;
+                    $$counterFrom->interview_intern -= 1;
+                    $$counterTo->interview_intern += 1;
+                }else if($request->status_id == 4){
+                    $$counterFrom->register_intern -= 1;
+                    $$counterTo->register_intern += 1;
+                    $$counterFrom->saving_seat_intern -= 1;
+                    $$counterTo->saving_seat_intern += 1;
+                    $$counterFrom->interview_intern -= 1;
+                    $$counterTo->interview_intern += 1;
+                    $$counterFrom->accepted_intern -= 1;
+                    $$counterTo->accepted_intern += 1;
+                    $$counterFrom->before_reapply_intern -= 1;
+                    $$counterTo->before_reapply_intern += 1;
+                }else if($request->status_id == 5){
+                    $$counterFrom->register_intern -= 1;
+                    $$counterTo->register_intern += 1;
+                    $$counterFrom->saving_seat_intern -= 1;
+                    $$counterTo->saving_seat_intern += 1;
+                    $$counterFrom->interview_intern -= 1;
+                    $$counterTo->interview_intern += 1;
+                    $$counterFrom->accepted_intern -= 1;
+                    $$counterTo->accepted_intern += 1;
+                    $$counterFrom->reapply_intern -= 1;
+                    $$counterTo->reapply_intern += 1;
+                }else if($request->status_id == 6){
+                    $$counterFrom->register_intern -= 1;
+                    $$counterTo->register_intern += 1;
+                    $$counterFrom->saving_seat_intern -= 1;
+                    $$counterTo->saving_seat_intern += 1;
+                    $$counterFrom->interview_intern -= 1;
+                    $$counterTo->interview_intern += 1;
+                    $$counterFrom->reserved_intern -= 1;
+                    $$counterTo->reserved_intern += 1;
+                }
+            }
+            else{
+                if($siswa->status_id == 1){
+                    $$counterFrom->register_extern -= 1;
+                    $$counterTo->register_extern += 1;
+                }else if($request->status_id == 2){
+                    $$counterFrom->register_extern -= 1;
+                    $$counterTo->register_extern += 1;
+                    $$counterFrom->saving_seat_extern -= 1;
+                    $$counterTo->saving_seat_extern += 1;
+                }else if($request->status_id == 3){
+                    $$counterFrom->register_extern -= 1;
+                    $$counterTo->register_extern += 1;
+                    $$counterFrom->saving_seat_extern -= 1;
+                    $$counterTo->saving_seat_extern += 1;
+                    $$counterFrom->interview_extern -= 1;
+                    $$counterTo->interview_extern += 1;
+                }else if($request->status_id == 4){
+                    $$counterFrom->register_extern -= 1;
+                    $$counterTo->register_extern += 1;
+                    $$counterFrom->saving_seat_extern -= 1;
+                    $$counterTo->saving_seat_extern += 1;
+                    $$counterFrom->interview_extern -= 1;
+                    $$counterTo->interview_extern += 1;
+                    $$counterFrom->accepted_extern -= 1;
+                    $$counterTo->accepted_extern += 1;
+                    $$counterFrom->before_reapply_extern -= 1;
+                    $$counterTo->before_reapply_extern += 1;
+                }else if($request->status_id == 5){
+                    $$counterFrom->register_extern -= 1;
+                    $$counterTo->register_extern += 1;
+                    $$counterFrom->saving_seat_extern -= 1;
+                    $$counterTo->saving_seat_extern += 1;
+                    $$counterFrom->interview_extern -= 1;
+                    $$counterTo->interview_extern += 1;
+                    $$counterFrom->accepted_extern -= 1;
+                    $$counterTo->accepted_extern += 1;
+                    $$counterFrom->reapply_extern -= 1;
+                    $$counterTo->reapply_extern += 1;
+                }else if($request->status_id == 6){
+                    $$counterFrom->register_extern -= 1;
+                    $$counterTo->register_extern += 1;
+                    $$counterFrom->saving_seat_extern -= 1;
+                    $$counterTo->saving_seat_extern += 1;
+                    $$counterFrom->interview_extern -= 1;
+                    $$counterTo->interview_extern += 1;
+                    $$counterFrom->reserved_extern -= 1;
+                    $$counterTo->reserved_extern += 1;
+                }
+            }
+
+            $$counterFrom->save();
+            $$counterTo->save();
         }
 
         $parentid = $siswa->parent_id;
@@ -335,6 +627,7 @@ class CalonSiswaController extends Controller
         $siswa->student_nickname = $request->nama_pendek;
         //$siswa->reg_number = $request->nomor_registrasi;
         $siswa->nik = $request->nik;
+        $siswa->student_status_id = $request->siswa_baru;
 
         $siswa->birth_place = $request->tempat_lahir;
         $siswa->birth_date = $request->tanggal_lahir;
@@ -344,7 +637,7 @@ class CalonSiswaController extends Controller
         $siswa->family_status = null;
         
         //$siswa->join_date = $request->tanggal_masuk;
-        $siswa->level_id = $request->kelas;
+        $siswa->level_id = $kelas;
         $siswa->address = $request->alamat;
         $siswa->address_number = $request->no_rumah;
         $siswa->rt = $request->rt;

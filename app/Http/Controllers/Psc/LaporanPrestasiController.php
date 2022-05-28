@@ -689,11 +689,11 @@ class LaporanPrestasiController extends Controller
                     $kolom++;
 
                     $spreadsheet->getActiveSheet()
-                    ->setCellValue('E'.$kolom, $nilai->validator->position_desc ? $nilai->validator->position_desc : 'SIT Auliya');
+                    ->setCellValue('E'.$kolom, 'Direktur SIT Auliya');
 
                     $kolom+=3;
 
-                    $spreadsheet->getActiveSheet()->setCellValue('E'.$kolom, $nilai->acc_status_id == 1 ? ($nilai->validator->validator_name ? $nilai->validator->validator_name : $nilai->accPegawai->name) : '...');
+                    $spreadsheet->getActiveSheet()->setCellValue('E'.$kolom, 'Dr. Kurniasih Mufidayati, M.Si.');
 
                     $styleArray = [
                         'font' => [

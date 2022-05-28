@@ -642,7 +642,7 @@ class IklasController extends Controller
     {
         $tahunajaran = str_replace("-","/",$request->tahunajaran);
         $aktif = TahunAjaran::where('academic_year',$tahunajaran)->first();
-		$tahunsekarang = TahunAjaran::where('is_active', 1)->latest()->first();
+        $tahunsekarang = TahunAjaran::where('is_active', 1)->latest()->first();
         $sertif = SertifIklas::where([['academic_year_id', $aktif->id],['unit_id', $request->unit_id]])->get();
 
         $view = view('penilaian.getsiswasertifiklas',compact('tahunsekarang','sertif'))->render();

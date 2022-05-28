@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Rekrutmen\Pegawai;
 use App\Models\Siswa\OrangTua;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -48,7 +49,7 @@ class LoginUser extends Authenticatable
 
     public function pegawai()
     {
-        return $this->belongsTo('App\Models\Rekrutmen\Pegawai','user_id');
+        return $this->belongsTo(Pegawai::class,'user_id');
     }
 
     public function role()

@@ -21,9 +21,15 @@ class JamPelajaranController extends Controller
     public function index()
     {
         // check unit_id user
-        $unit = Auth::user()->pegawai->unit_id;
+        $unit = auth()->user()->pegawai->unit_id;
 
-        $levels = Level::where('unit_id',$unit)->orderBy('level','asc')->get();
+
+        if($unit == 5){
+            $levels = Level::orderBy('id','asc')->get();
+        }else{
+            $levels = Level::where('unit_id',$unit)->orderBy('id','asc')->get();
+        }
+
         return view('kbm.jampelajaran.index',compact('levels'));
     }
 
@@ -52,7 +58,11 @@ class JamPelajaranController extends Controller
 
         $kelas = Level::find($tingkat);
 
-        $levels = Level::where('unit_id',$unit)->orderBy('level','asc')->get();
+        if($unit == 5){
+            $levels = Level::orderBy('id','asc')->get();
+        }else{
+            $levels = Level::where('unit_id',$unit)->orderBy('id','asc')->get();
+        }
 
         $jams = JamPelajaran::where('level_id',$tingkat)->where('day',$hari)->orderBy('hour_start','asc')->get();
 

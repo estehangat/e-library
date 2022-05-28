@@ -18,12 +18,15 @@ class KelasController extends Controller
     public function index()
     {
         // check unit_id user
-        $unit = Auth::user()->pegawai->unit_id;
+        $unit = auth()->user()->pegawai->unit_id;
 
         // check tahun akademik yg sedang aktif
         $tahunsekarang = TahunAjaran::where('is_active',1)->first();
-
-        $kelases = Kelas::where('unit_id',$unit)->where('academic_year_id',$tahunsekarang->id)->orderBy('major_id','asc')->orderBy('level_id','asc')->get();
+        if($unit == 5){
+            $kelases = Kelas::where('academic_year_id',$tahunsekarang->id)->orderBy('level_id','asc')->get();
+        }else{
+            $kelases = Kelas::where('unit_id',$unit)->where('academic_year_id',$tahunsekarang->id)->orderBy('level_id','asc')->orderBy('major_id','asc')->get();
+        }
         return view('kbm.kelas.index',compact('kelases'));
     }
 

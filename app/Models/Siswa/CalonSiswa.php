@@ -15,6 +15,7 @@ class CalonSiswa extends Model
     protected $fillable = [
         'id',
         'unit_id', // add unit
+        'student_status_id',
         'reg_number',
         'student_id',
         'student_nis',
@@ -57,6 +58,11 @@ class CalonSiswa extends Model
         'acc_status_id',
         'acc_time',
     ];
+
+    public function statusSiswa()
+    {
+        return $this->belongsTo('App\Models\Siswa\StatusSiswa','student_status_id');
+    }
 
     public function orangtua()
     {

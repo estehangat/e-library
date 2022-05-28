@@ -9,7 +9,7 @@ class TahunAjaran extends Model
 {
     use HasFactory;
     protected $table = "tref_academic_year";
-    protected $fillable = ['academic_year','academic_year_start','academic_year_end','is_active'];
+    protected $fillable = ['academic_year','academic_year_start','academic_year_end','is_active','is_finance_year'];
 
     public function status()
     {
@@ -86,6 +86,11 @@ class TahunAjaran extends Model
         return $this->hasMany('App\Models\Psb\RegisterCounter','academic_year_id');
     }
 
+    public function bmsTermin()
+    {
+        return $this->hasMany('App\Models\Pembayaran\BmsTermin','academic_year_id');
+    }
+
     public function getAcademicYearLinkAttribute()
     {
         return str_replace("/","-",$this->academic_year);
@@ -93,5 +98,9 @@ class TahunAjaran extends Model
 
     public function scopeAktif($query){
         return $query->where('is_active',1);
+    }
+
+    public function scopeFinanceYear($query){
+        return $query->where('is_finance_year',1);
     }
 }

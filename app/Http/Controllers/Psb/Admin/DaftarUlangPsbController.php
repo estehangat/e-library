@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Psb\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Services\Psb\ListingDaftarUlang;
+use App\Http\Services\Psb\RegisterCounterService;
 use App\Models\Level;
 use App\Models\Pembayaran\BmsCalonSiswa;
 use App\Models\Pembayaran\BmsPlan;
@@ -22,6 +23,13 @@ class DaftarUlangPsbController extends Controller
     {
         //
         $title = "Belum Lunas";
+        $route = 'kependidikan.psb.belum-lunas';
+
+        $bayar = 'sebagian';
+        if(isset($request->bayar) && $request->bayar != 'sebagian'){
+            if(in_array($request->bayar,['belum'])) $bayar = $request->bayar;
+        }
+
         // $unit_id = auth()->user()->pegawai->unit_id;
         // $unit = 'Semua';
         // if($unit_id == 5){
@@ -33,9 +41,11 @@ class DaftarUlangPsbController extends Controller
         // }
         // $level = 'semua';
 
-        $lists = ListingDaftarUlang::list($request->level, $request->year, 0);
 
-        return view('psb.admin.bayar', compact('lists','title','request'));
+
+        $lists = ListingDaftarUlang::list($request->level, $request->year, 0,$bayar);
+
+        return view('psb.admin.bayar', compact('lists','title','route','bayar','request'));
     }
 
     /**
@@ -79,13 +89,9 @@ class DaftarUlangPsbController extends Controller
         $calons->month_spp = $request->month_spp;
         $calons->status_id = 5;
         $calons->save();
-        // $counter = RegisterCounter::where('unit_id',$calons->unit_id)->where('academic_year_id',$calons->academic_year_id)->first();
+        
+        RegisterCounterService::addCounter($calons->id,'reapply');
 
-        // if($calons->origin_school == 'SIT Auliya'){
-        //     $counter->reapply_intern = $counter->reapply_intern + 1;
-        // }else{
-        //     $counter->reapply_extern = $counter->reapply_extern + 1;
-        // }
         return redirect()->back()->with('success', 'Calon siswa berhasil dikonfirmasi');
     }
 

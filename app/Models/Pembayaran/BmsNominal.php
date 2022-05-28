@@ -24,4 +24,14 @@ class BmsNominal extends Model
     {
         return $this->belongsTo('App\Models\Pembayaran\TipeBms','bms_type_id');
     }
+    
+    public function getBmsNominalWithSeparatorAttribute()
+    {
+        return number_format($this->bms_nominal, 0, ',', '.');
+    }
+
+    public function getNameAttribute()
+    {
+        return 'Nominal '.$this->tipe->bms_type.' '.$this->unit->name;
+    }
 }

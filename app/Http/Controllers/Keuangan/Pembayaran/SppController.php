@@ -3,22 +3,40 @@
 namespace App\Http\Controllers\Keuangan\Pembayaran;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Kbm\SiswaDatatableCollection;
+use App\Http\Resources\Kbm\SiswaListCollection;
+use App\Http\Resources\Keuangan\Spp\LaporanSppMasukanCollection;
+use App\Http\Resources\Keuangan\Spp\LaporanSppSiswaCollection;
+use App\Http\Resources\Keuangan\Spp\SppSiswaCollection;
+use App\Http\Resources\Siswa\SiswaCollection;
+use App\Http\Services\Keuangan\SppDeductionService;
 use Illuminate\Http\Request;
+
+use NumberHelper;
+use Mail;
+use Jenssegers\Date\Date;
+use Illuminate\Support\Facades\Storage;
 
 use App\Models\Level;
 use App\Models\Pembayaran\BMS;
 use App\Models\Pembayaran\BmsPlan;
 use App\Models\Pembayaran\BmsTermin;
 use App\Models\Pembayaran\BmsTransaction;
+use App\Models\Pembayaran\ExchangeTransaction;
+use App\Models\Pembayaran\ExchangeTransactionTarget;
 use App\Models\Pembayaran\Spp;
 use App\Models\Pembayaran\SppBill;
+use App\Models\Pembayaran\SppDeduction;
 use App\Models\Pembayaran\SppDeductionYear;
 use App\Models\Pembayaran\SppPlan;
 use App\Models\Pembayaran\SppTransaction;
 use App\Models\Pembayaran\SppYearTotal;
+use App\Models\Rekrutmen\Pegawai;
 use App\Models\Siswa\Siswa;
 use App\Models\Unit;
+// use Barryvdh\DomPDF\Facade as PDF;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Crypt;
 use stdClass;
 
 class SppController extends Controller
@@ -43,23 +61,18 @@ class SppController extends Controller
         $level = 'semua';
 
         $total = 0;
-        foreach($lists as $list){
-            if(!$list->spp){
-                Spp::create([
-                    'unit_id' => $list->unit_id,
-                    'student_id' => $list->id,
-                ]);
-            }
-        }
 
-        // dd($total);
-        return view('keuangan.pembayaran.spp.index', compact('levels','level','unit_id','lists'));
+        $datas = Spp::where('unit_id',$unit_id)->whereHas('siswa', function($q) use ($unit_id){
+            $q->where('unit_id',$unit_id)->where('is_lulus',0);
+        })->get();
+
+        return view('keuangan.pembayaran.spp.index', compact('levels','unit_id','datas','level'));
     }
 
     public function indexFilter(Request $request)
     {
         //
-        if($request->level == 'semua') return redirect()->route('spp-siswa');
+        if($request->level == 'semua') return redirect()->route('spp.spp-siswa');
         $level = $request->level;
         $unit_id = auth()->user()->pegawai->unit_id;
         if($unit_id == 5){
@@ -68,8 +81,33 @@ class SppController extends Controller
         }else{
             $levels = Level::where('unit_id',$unit_id)->get();
         }
-        $lists = Siswa::where('unit_id',$unit_id)->where('level_id',$level)->where('is_lulus',0)->get();
-        return view('keuangan.pembayaran.spp.index', compact('levels','level','unit_id','lists'));
+        // $lists = Siswa::where('unit_id',$unit_id)->where('level_id',$level)->where('is_lulus',0)->get();
+
+        $datas = Spp::where('unit_id',$unit_id)->whereHas('siswa', function($q) use ($unit_id, $level){
+            $q->where('unit_id',$unit_id)->where('level_id',$level)->where('is_lulus',0);
+        })->get();
+        return view('keuangan.pembayaran.spp.index', compact('levels','level','unit_id','datas'));
+    }
+
+    public function indexGet(Request $request)
+    {
+        
+        $unit_id = $request->unit_id;
+        $level_id = $request->level_id;
+
+        $datas = Spp::where('unit_id',$unit_id)
+            ->when($level_id, function($q, $level_id){
+                return $q->whereHas('siswa', function($q) use ($level_id){
+                    $q->where('level_id',$level_id);
+                });
+            })
+            ->whereHas('siswa', function($q){
+                $q->where('is_lulus',0);
+            })
+            ->get();
+        $data = new SppSiswaCollection($datas);
+
+        return response()->json([$data]);
     }
 
     public function bulanan()
@@ -188,18 +226,13 @@ class SppController extends Controller
         $unit_id = auth()->user()->pegawai->unit_id;
         $unit = 'Semua';
         if($unit_id == 5){
-            $levels = Level::all();
             $plan = SppPlan::where('year',$year)->where('month',$month)->where('unit_id',$unit_id)->first();
         }else{
-            $levels = Level::where('unit_id',$unit_id)->get();
             $plan = SppPlan::where('year',$year)->where('month',$month)->where('unit_id',$unit_id)->first();
         }
-        $level = 'semua';
-        
-        $datas = SppBill::where('year',$year)->where('month',$month)->where('unit_id',$unit_id)->get();
+        $deductions = SppDeduction::orderBy('name')->get();
 
-
-        return view('keuangan.pembayaran.spp.laporan.siswa', compact('datas','levels','level','year','month','plan','unit_id'));
+        return view('keuangan.pembayaran.spp.laporan.siswa', compact('plan','deductions'));
     }
 
     public function LaporanSiswaFilter(Request $request)
@@ -239,6 +272,37 @@ class SppController extends Controller
         }
         // dd($unit_id);
         return view('keuangan.pembayaran.spp.laporan.siswa', compact('levels','level','year','month','datas','plan','unit_id'));
+    }
+
+    public function laporanSiswaGet(Request $request)
+    {
+
+        $year = $request->year;
+        $month = $request->month;
+        $unit_id = $request->unit_id;
+        $level_id = $request->level_id;
+
+        $datas = SppBill::where('unit_id', $unit_id)
+        ->where('year', $year)
+        ->when($level_id, function($q, $level_id){
+            return $q->where('level_id', $level_id);
+        })
+        ->when($month, function($q, $month){
+            return $q->where('month', $month);
+        })
+        ->get();
+
+        // $datas = SppBill::whereHas('siswa.identitas.orangtua.pegawai',function($q){$q->where('name','Murtani');})
+        // ->where('year', $year)
+        // ->when($month, function($q, $month){
+        //     return $q->where('month', $month);
+        // })->with('siswa.identitas.orangtua')->
+        
+        // take(1)->get();
+
+        $resource = new LaporanSppSiswaCollection($datas);
+
+        return response()->json([$resource],200);
     }
 
     public function LaporanSiswaAtur(Request $request)
@@ -281,6 +345,13 @@ class SppController extends Controller
             }
 
             if($selected == true){
+                $sppDeduction = null;
+                $deduction = 0;
+                $employeeParent = Siswa::where('id',$student->id)->has('identitas.orangtua.pegawai.statusPegawai')->first();
+                if($employeeParent){
+                    $sppDeduction = SppDeduction::whereNotNull('percentage')->where('employee_status_id',$employeeParent->identitas->orangtua->pegawai->employee_status_id)->latest()->first();
+                    if($sppDeduction) $deduction = ($sppDeduction->percentage/100)*$nominal;
+                }
             
                 $spp_add_bill = SppBill::create([
                     'unit_id' => $student->unit_id,
@@ -289,6 +360,7 @@ class SppController extends Controller
                     'month' => $month,
                     'year' => $year,
                     'spp_nominal' => $nominal,
+                    'deduction_nominal' => $deduction,
                 ]);
 
                 $spp_student = Spp::where('student_id', $student->id)->first();
@@ -303,7 +375,8 @@ class SppController extends Controller
                         'paid' => 0,
                     ]);
                 }
-                $spp_student->total = $spp_student->total+$nominal;
+                $spp_student->total += $nominal;
+                $spp_student->deduction += $deduction;
                 $plan = SppPlan::where('unit_id',$student->unit_id)->where('month',$month)->where('year',$year)->first();
 
                 if(!$plan){
@@ -323,30 +396,33 @@ class SppController extends Controller
                 }
 
                 if($spp_student->saldo == 0){
-                    $spp_student->remain = $spp_student->remain+$nominal;
+                    $spp_student->remain = $spp_student->remain+$nominal-$deduction;
 
-                    $plan->remain = $plan->remain + $nominal;
-                }else if($spp_student->saldo < $nominal){
+                    $plan->remain = $plan->remain + $nominal - $deduction;
+                }else if($spp_student->saldo < ($nominal-$deduction)){
 
-                    $plan->remain = $plan->remain + ($nominal - $spp_student->saldo);
+                    $plan->remain = $plan->remain + ($nominal - $deduction - $spp_student->saldo);
                     $plan->total_get = $plan->total_get + $spp_student->saldo;
 
                     $spp_add_bill->spp_paid = $spp_student->saldo;
 
-                    $spp_student->remain = $nominal-$spp_student->saldo;
+                    $spp_student->remain = $nominal-$deduction-$spp_student->saldo;
                     $spp_student->paid = $spp_student->saldo;
                     $spp_student->saldo = 0;
                 }else{
-                    $spp_student->saldo = $spp_student->saldo-$nominal;
-                    $spp_student->paid += $nominal;
-                    $spp_add_bill->spp_paid = $nominal;
+                    $spp_student->saldo = $spp_student->saldo-$nominal+$deduction;
+                    $spp_student->paid += $nominal-$deduction;
+                    $spp_add_bill->spp_paid = $nominal-$deduction;
                     $spp_add_bill->status = 1;
 
-                    $plan->total_get = $plan->total_get + $nominal;
-                    $plan->remain = $plan->remain - ($spp_student->saldo-$nominal);
+                    $plan->total_get = $plan->total_get + $nominal - $deduction;
+                    $plan->remain = $plan->remain - ($spp_student->saldo-$nominal+$deduction);
                     $plan->student_remain -= 1;
                     $plan->percent = ($plan->student_remain / $plan->total_student) * 100;
                 }
+                $spp_add_bill->spp_id = $spp_student->id;
+                if($sppDeduction)
+                    $spp_add_bill->deduction_id = $sppDeduction->id;
                 $spp_add_bill->save();
                 $spp_student->save();
                 $plan->save(); 
@@ -365,93 +441,102 @@ class SppController extends Controller
             $datas = SppBill::where('year',$year)->where('month',$month)->where('level_id',$level)->get();
         }
 
-        return redirect()->route('laporan-spp-siswa');
+        return redirect()->route('spp.laporan-spp-siswa');
     }
 
-    public function LaporanSiswaAturPotongan(Request $request)
-    {
-        $nominal_potongan = str_replace('.','',$request->potongan);
-        $data = SppBill::find($request->id);
-        $plan = SppPlan::where('unit_id',$data->unit_id)->where('month',$data->month)->where('year',$data->year)->first();
-        $plan->total_plan = ($plan->total_plan + $data->deduction) - $nominal_potongan;
-        $plan->remain = $plan->total_plan - $plan->total_get;
-        $plan->percent = ($plan->total_get / $plan->total_plan) * 100;
-        $plan->save();
+    public function LaporanSiswaAturPotongan(Request $request){
+        SppDeductionService::create($request);
+        return redirect()->back()->with('sukses', 'Berhasil');
+    }
+
+    // public function LaporanSiswaAturPotongan(Request $request)
+    // {
+    //     $nominal_potongan = str_replace('.','',$request->potongan);
+    //     $data = SppBill::find($request->id);
+    //     $plan = SppPlan::where('unit_id',$data->unit_id)->where('month',$data->month)->where('year',$data->year)->first();
+    //     $plan->total_plan = ($plan->total_plan + $data->deduction) - $nominal_potongan;
+    //     $plan->remain = $plan->total_plan - $plan->total_get;
+    //     $plan->percent = ($plan->total_get / $plan->total_plan) * 100;
+    //     $plan->save();
         
 
-        if($data->spp_nominal <= ($nominal_potongan + $data->spp_paid)){
+    //     if($data->spp_nominal <= ($nominal_potongan + $data->spp_paid)){
             
-            $plan->total_get = ($plan->total_get - $data->spp_paid) + ($data->spp_nominal - $nominal_potongan);
-            $plan->remain = $plan->total_plan - $plan->total_get;
-            $plan->percent = ($plan->total_get / $plan->total_plan) * 100;
-            $plan->save();
+    //         $plan->total_get = ($plan->total_get - $data->spp_paid) + ($data->spp_nominal - $nominal_potongan);
+    //         $plan->remain = $plan->total_plan - $plan->total_get;
+    //         $plan->percent = ($plan->total_get / $plan->total_plan) * 100;
+    //         $plan->save();
             
-            $sisa = ($nominal_potongan + $data->spp_paid) - $data->spp_nominal;
-            $data->deduction_nominal = $nominal_potongan;
-            $data->spp_paid = $data->spp_nominal - $nominal_potongan;
-            $data->status = 1;
-            $data->save();
+    //         $sisa = ($nominal_potongan + $data->spp_paid) - $data->spp_nominal;
+    //         $data->deduction_nominal = $nominal_potongan;
+    //         $data->spp_paid = $data->spp_nominal - $nominal_potongan;
+    //         $data->status = 1;
+    //         $data->save();
 
 
-            if($sisa > 0){
+    //         if($sisa > 0){
 
-                $spp_bills = SppBill::where('student_id',$data->student_id)->where('status',0)->orderBy('month','asc')->orderBy('year','asc')->get();
-                foreach($spp_bills as $spp){
-                    if($sisa > 0){
-                        if($spp->spp_nominal <= ($spp->spp_paid + $spp->deduction_nominal + $sisa)){
-                            $sisa = ($spp->spp_paid + $spp->deduction_nominal + $sisa) - $spp->spp_nominal;
-                            $spp->spp_paid = $spp->spp_nominal - $spp->deduction_nominal;
-                            $spp->status = 1;
-                            $spp->save();
-                        }else{
-                            $spp->spp_paid = $spp->spp_paid + $sisa;
-                            $spp->save();
-                        }
-                    }
-                }
-            }
+    //             $spp_bills = SppBill::where('student_id',$data->student_id)->where('status',0)->orderBy('month','asc')->orderBy('year','asc')->get();
+    //             foreach($spp_bills as $spp){
+    //                 if($sisa > 0){
+    //                     if($spp->spp_nominal <= ($spp->spp_paid + $spp->deduction_nominal + $sisa)){
+    //                         $sisa = ($spp->spp_paid + $spp->deduction_nominal + $sisa) - $spp->spp_nominal;
+    //                         $spp->spp_paid = $spp->spp_nominal - $spp->deduction_nominal;
+    //                         $spp->status = 1;
+    //                         $spp->save();
+    //                     }else{
+    //                         $spp->spp_paid = $spp->spp_paid + $sisa;
+    //                         $spp->save();
+    //                     }
+    //                 }
+    //             }
+    //         }
 
-        }else {
-            $data->deduction_nominal = $nominal_potongan;
-            $data->status = 0;
-            $data->save();
-        }
-        $spp = Spp::where('student_id',$data->student_id)->first();
-        if($spp->remain < $nominal_potongan){
-            $spp->deduction = $spp->deduction + $nominal_potongan;
-            $sisa = $nominal_potongan - $spp->remain;
-            $spp->remain = 0;
-            $spp->paid = $spp->paid - $sisa;
-            $spp->saldo = $spp->saldo + $sisa;
-            $spp->save();
-        }else{
-            $spp->deduction = $spp->deduction + $nominal_potongan;
-            $spp->remain = $spp->remain - $nominal_potongan;
-            $spp->save();
-        }
+    //     }else {
+    //         $data->deduction_nominal = $nominal_potongan;
+    //         $data->status = 0;
+    //         $data->save();
+    //     }
+    //     $spp = Spp::where('student_id',$data->student_id)->first();
+    //     if($spp->remain < $nominal_potongan){
+    //         $spp->deduction = $spp->deduction + $nominal_potongan;
+    //         $sisa = $nominal_potongan - $spp->remain;
+    //         $spp->remain = 0;
+    //         $spp->paid = $spp->paid - $sisa;
+    //         $spp->saldo = $spp->saldo + $sisa;
+    //         $spp->save();
+    //     }else{
+    //         $spp->deduction = $spp->deduction + $nominal_potongan;
+    //         $spp->remain = $spp->remain - $nominal_potongan;
+    //         $spp->save();
+    //     }
 
-        $spp_deduction_year = SppDeductionYear::where('unit_id',$data->unit_id)->where('year',$data->year)->first();
-        if($spp_deduction_year){
-            $spp_deduction_year->total_deduction = $spp_deduction_year->total_deduction + $nominal_potongan;
-            $spp_deduction_year->save();
-        }else{
-            $spp_deduction_year = SppDeductionYear::create([
-                'unit_id' => $data->unit_id,
-                'year' => $data->year,
-                'total_deduction' => $nominal_potongan,
-            ]);
-        }
+    //     $spp_deduction_year = SppDeductionYear::where('unit_id',$data->unit_id)->where('year',$data->year)->first();
+    //     if($spp_deduction_year){
+    //         $spp_deduction_year->total_deduction = $spp_deduction_year->total_deduction + $nominal_potongan;
+    //         $spp_deduction_year->save();
+    //     }else{
+    //         $spp_deduction_year = SppDeductionYear::create([
+    //             'unit_id' => $data->unit_id,
+    //             'year' => $data->year,
+    //             'total_deduction' => $nominal_potongan,
+    //         ]);
+    //     }
 
-        return redirect()->route('laporan-spp-siswa-filter');
-        dd($request,$data,$spp);
-    }
+    //     return redirect()->route('spp.laporan-spp-siswa-filter');
+    //     dd($request,$data,$spp);
+    // }
 
     public function LaporanMasukan(Request $request)
     {
         //
         $levels = Level::all();
         $level = 'semua';
-        $unit_id = auth()->user()->pegawai->unit_id;
+        if($request->unit_id){
+            $unit_id = $request->unit_id;
+        }else{
+            $unit_id = auth()->user()->pegawai->unit_id;
+        }
 
         if($request->tahun){
             $year = $request->tahun;
@@ -465,14 +550,15 @@ class SppController extends Controller
         }else{
             $levels = Level::where('unit_id',$unit_id)->get();
         }
-
+        
+        // $month = $request->bulan;
         if($request->bulan){
             $month = $request->bulan;
+            $datas = SppTransaction::where('unit_id',$unit_id)->where('year',$year)->orderBy('created_at','desc')->where('month',$month)->get();
+            // dd($datas);
             if($unit_id == 5){
-                $datas = SppTransaction::where('year',$year)->orderBy('created_at','desc')->where('month',$month)->get();
                 $units = Unit::all();
             }else{
-                $datas = SppTransaction::where('unit_id',$unit_id)->orderBy('created_at','desc')->where('year',$year)->where('month',$month)->get();
                 $units = Unit::find(auth()->user()->pegawai->unit_id);
             }
         }else{
@@ -484,6 +570,7 @@ class SppController extends Controller
                 $datas = SppTransaction::where('unit_id',$unit_id)->orderBy('created_at','desc')->where('year',$year)->get();
                 $units = Unit::find(auth()->user()->pegawai->unit_id);
             }
+            // dd($datas);
         }
         $year_now = date("Y");
         $years = array();
@@ -494,7 +581,7 @@ class SppController extends Controller
             array_push($years,$year_obj);
             $year_increment+=1;
         }
-        return view('keuangan.pembayaran.spp.laporan.masukan', compact('datas','levels','level','year','month','years'));
+        return view('keuangan.pembayaran.spp.laporan.masukan', compact('datas','levels','level','year','month','years','unit_id'));
     }
 
     public function LaporanMasukanFilter(Request $request)
@@ -516,6 +603,29 @@ class SppController extends Controller
         $datas = SppTransaction::where('unit_id',$unit_id)->where('year',$year)->where('month',$month)->get();
 
         return view('keuangan.pembayaran.spp.laporan.masukan', compact('datas','levels','level','year','month','unit_id'));
+    }
+
+    public function laporanMasukanGet(Request $request)
+    {
+        $year = $request->year;
+        $month = $request->month;
+        $unit_id = $request->unit_id;
+        // $level_id = $request->level_id;
+
+        $datas = SppTransaction::where('unit_id', $unit_id)
+        ->where('year', $year)
+        // ->when($level_id, function($q, $level_id){
+        //     return $q->where('level_id', $level_id);
+        // })
+        ->when($month, function($q, $month){
+            return $q->where('month', $month);
+        })
+        ->whereIn('exchange_que',array(0,1))
+        ->get();
+
+        $resource = new LaporanSppMasukanCollection($datas);
+
+        return response()->json([$resource],200);
     }
 
     public function sppToBms(Request $request)
@@ -654,5 +764,40 @@ class SppController extends Controller
 
         return redirect()->back()->with('success','Pindah kategori berhasil');
 
+    }
+
+    public function siswaList($unit = null)
+    {
+        $list = $unit ? Siswa::where('unit_id',$unit)->whereIn('is_lulus',[0,1])->get() : [];
+        $collection = new SiswaListCollection($list);
+        return response()->json($collection,200);
+    }
+
+    /**
+     * Print the specified resource in storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function cetakTagihan($id)
+    {
+        try {
+            $spp_id = Crypt::decrypt($id);
+        } catch (\Exception $e){
+            return redirect()->back()->with('error','Terjadi Kesalahan');
+        }
+        
+        $spp_bill = SppBill::find($spp_id);
+        $calon = Siswa::find($spp_bill->student_id);
+        $bill_now = $spp_bill->spp_nominal - ($spp_bill->spp_paid + $spp_bill->deduction_nominal);
+        $bill_before = $calon->spp->remain - $bill_now;
+
+        // $pdf = PDF::loadView('keuangan.pembayaran.spp.surat',compact('calon', 'spp_bill', 'bill_before'));
+        
+        // $pdf->setPaper('A4', 'portrait');
+
+        // return $pdf->stream($calon->identitas->student_name.'.pdf');
+        
+        return view('keuangan.pembayaran.spp.surat',compact('calon', 'spp_bill', 'bill_before'));
     }
 }

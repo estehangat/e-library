@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Psb;
 
 use App\Http\Controllers\Controller;
 use App\Http\Services\Psb\ListingCandidateStudent;
+use App\Http\Services\Psb\RegisterCounterService;
 use App\Models\Kbm\TahunAjaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Level;
 use App\Models\Psb\RegisterCounter;
 use App\Models\Siswa\CalonSiswa;
+use App\Models\Pembayaran\BmsDeduction;
 
 use Jenssegers\Date\Date;
 
@@ -198,6 +200,8 @@ class AdminPsbController extends Controller
         $calons = CalonSiswa::find($request->id);
         if(!$calons) return redirect()->back()->with('error', 'Penerimaan gagal');
 
+        $existStatus = $calons->status_id;
+
         $calons->status_id = 4;
         $calons->acc_employee_id = $request->user()->pegawai->id;
         $calons->acc_time = Date::now('Asia/Jakarta');
@@ -205,14 +209,10 @@ class AdminPsbController extends Controller
         
         $calons->fresh();
 
-        $counter = RegisterCounter::where('unit_id',$calons->unit_id)->where('academic_year_id',$calons->academic_year_id)->first();
+        RegisterCounterService::addCounter($calons->id,'accepted');
 
-        if($calons->origin_school == 'SIT Auliya'){
-            $counter->accepted_intern = $counter->accepted_intern + 1;
-            $counter->save();
-        }else{
-            $counter->accepted_extern = $counter->accepted_extern + 1;
-            $counter->save();
+        if($existStatus == 6){
+            RegisterCounterService::diffCounter($calons->id,'reserved');
         }
 
         return redirect()->back()->with('success', 'Penerimaan berhasil');
@@ -254,32 +254,7 @@ class AdminPsbController extends Controller
         
         $calons->fresh();
         
-        $counter = RegisterCounter::where('unit_id',$calons->unit_id)->where('academic_year_id',$calons->academic_year_id)->first();
-        if($counter){
-            if($calons->origin_school == 'SIT Auliya'){
-                $counter->reserved_intern = $counter->reserved_intern + 1;
-                $counter->save();
-            }else{
-                $counter->reserved_extern = $counter->reserved_extern + 1;
-                $counter->save();
-            }
-        }else{
-            if($calons->origin_school == 'SIT Auliya'){
-                // dd($counter);
-                $counter = RegisterCounter::create([
-                    'academic_year_id' => $calons->academic_year_id,
-                    'unit_id' => $calons->unit_id,
-                    'reserved_intern' => 1,
-                ]);
-            }else{
-                $counter = RegisterCounter::create([
-                    'academic_year_id' => $calons->academic_year_id,
-                    'unit_id' => $calons->unit_id,
-                    'reserved_extern' => 1,
-                ]);
-            }
-
-        }
+        RegisterCounterService::addCounter($calons->id,'reserved');
 
         return redirect()->back()->with('success', 'Calon siswa berhasil dicadangkan');
 
@@ -302,16 +277,8 @@ class AdminPsbController extends Controller
         $calons->save();
         
         $calons->fresh();
-
-        $counter = RegisterCounter::where('unit_id',$calons->unit_id)->where('academic_year_id',$calons->academic_year_id)->first();
-
-        if($calons->origin_school == 'SIT Auliya'){
-            $counter->canceled_intern = $counter->canceled_intern + 1;
-            $counter->save();
-        }else{
-            $counter->canceled_extern = $counter->canceled_extern + 1;
-            $counter->save();
-        }
+        
+        RegisterCounterService::addCounter($calons->id,'canceled');
         
         return redirect()->back()->with('success', 'Bayar daftar ulang berhasil dibatalkan');
 
@@ -400,8 +367,9 @@ class AdminPsbController extends Controller
         $title = 'Diterima';
         $status_id = 4;
         $calons = ListingCandidateStudent::list($request->level, $request->year, $status_id);
+        $deductions = BmsDeduction::orderBy('name')->get();
 
-        return view('psb.admin.index',compact('title','calons','status_id','link','request'));
+        return view('psb.admin.index',compact('title','calons','status_id','link','request','deductions'));
     }
 
     public function linkDiterimaFind(Request $request)
@@ -432,8 +400,9 @@ class AdminPsbController extends Controller
                 $calons = CalonSiswa::where('status_id',$status_id)->where('unit_id',$unit_id)->where('level_id',$request->level)->get();
             }
         }
+        $deductions = BmsDeduction::orderBy('name')->get();
 
-        return view('psb.admin.index',compact('levels','level','title','calons','status_id','link'));
+        return view('psb.admin.index',compact('levels','level','title','calons','status_id','link','deductions'));
     }
     
     public function linkDicadangkan(Request $request)
@@ -442,9 +411,9 @@ class AdminPsbController extends Controller
         $title = 'Dicadangkan';
         $status_id = 6;
         $calons = ListingCandidateStudent::list($request->level, $request->year, $status_id);
+        $deductions = BmsDeduction::orderBy('name')->get();
 
-
-        return view('psb.admin.index',compact('title','calons','status_id','link','request'));
+        return view('psb.admin.index',compact('title','calons','status_id','link','request','deductions'));
     }
 
     public function linkDicadangkanFind(Request $request)
@@ -475,8 +444,9 @@ class AdminPsbController extends Controller
                 $calons = CalonSiswa::where('status_id',$status_id)->where('unit_id',$unit_id)->where('level_id',$request->level)->get();
             }
         }
+        $deductions = BmsDeduction::orderBy('name')->get();
 
-        return view('psb.admin.index',compact('levels','level','title','calons','status_id','link'));
+        return view('psb.admin.index',compact('levels','level','title','calons','status_id','link','deductions'));
     }
 
     public function linkBatalDaftarUlang(Request $request)
@@ -485,8 +455,9 @@ class AdminPsbController extends Controller
         $title = 'Batal Daftar Ulang';
         $status_id = 7;
         $calons = ListingCandidateStudent::list($request->level, $request->year, $status_id);
+        $deductions = BmsDeduction::orderBy('name')->get();
 
-        return view('psb.admin.index',compact('title','calons','status_id','link','request'));
+        return view('psb.admin.index',compact('title','calons','status_id','link','request','deductions'));
     }
 
     public function linkBatalDaftarUlangFind(Request $request)
@@ -517,8 +488,9 @@ class AdminPsbController extends Controller
                 $calons = CalonSiswa::where('status_id',$status_id)->where('unit_id',$unit_id)->where('level_id',$request->level)->get();
             }
         }
+        $deductions = BmsDeduction::orderBy('name')->get();
 
-        return view('psb.admin.index',compact('levels','level','title','calons','status_id','link'));
+        return view('psb.admin.index',compact('levels','level','title','calons','status_id','link','deductions'));
     }
 
     public function linkPeresmianSiswa(Request $request)
@@ -527,8 +499,9 @@ class AdminPsbController extends Controller
         $title = 'Peresmian Siswa';
         $status_id = 5;
         $calons = ListingCandidateStudent::list($request->level, $request->year, $status_id);
+        $deductions = BmsDeduction::orderBy('name')->get();
 
-        return view('psb.admin.index',compact('title','calons','status_id','link','request'));
+        return view('psb.admin.index',compact('title','calons','status_id','link','request','deductions'));
     }
 
     public function linkPeresmianSiswaFind(Request $request)
@@ -559,8 +532,9 @@ class AdminPsbController extends Controller
                 $calons = CalonSiswa::where('status_id',$status_id)->where('unit_id',$unit_id)->where('level_id',$request->level)->get();
             }
         }
+        $deductions = BmsDeduction::orderBy('name')->get();
 
-        return view('psb.admin.index',compact('levels','level','title','calons','status_id','link'));
+        return view('psb.admin.index',compact('levels','level','title','calons','status_id','link','deductions'));
     }
 
     public function chart(Request $request)

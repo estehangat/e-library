@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Psb\Ortu;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+
 use App\Http\Services\Psb\CodeGeneratorPsb;
+use App\Http\Services\Psb\RegisterCounterService;
 use App\Models\Agama;
 use App\Models\JenisKelamin;
 use App\Models\Kbm\Kelas;
@@ -16,10 +19,11 @@ use App\Models\Siswa\CalonSiswa;
 use App\Models\Siswa\IdentitasSiswa;
 use App\Models\Unit;
 use App\Models\Wilayah;
-use Illuminate\Http\Request;
 
 use App\Models\Siswa\OrangTua;
 use App\Models\Siswa\Siswa;
+
+use DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
@@ -43,7 +47,8 @@ class RegisterController extends Controller
     public function create()
     {
         //
-        return view('psb.pendaftaran');
+        $lock = DB::table('tm_settings')->where('name','psb_lock_status')->first();
+        return view('psb.pendaftaran',compact('lock'));
     }
 
     public function createSiswa(Request $request)
@@ -56,6 +61,8 @@ class RegisterController extends Controller
             ){
             return redirect()->route('psb.profil.edit')->with('success','Lengkapi profil terlebih dahulu sebelum melakukan pendaftaran baru');
         }
+
+        $units = Unit::sekolah()->get();
 
         if($request->unit == 'TK'){
             $unit_id = 1;
@@ -70,13 +77,12 @@ class RegisterController extends Controller
             $unit_name = 'SMA';
             $unit_id = 4;
         }else{
-            return view('psb.ortu.unit');
+            return view('psb.ortu.unit',compact('units'));
         }
 
         $agamas = Agama::where('name','Islam')->get();
         $kelases = Level::all();
         $levels = Level::where('unit_id',$unit_id)->get();
-        $units = Unit::all();
         $jeniskelamin = JenisKelamin::all();
         $listprovinsi = Wilayah::whereRaw('LENGTH(code) = 2')->orderBy('name', 'ASC')->get();
         // $tahun_active = TahunAjaran::where('is_active',1)->first();
@@ -101,8 +107,13 @@ class RegisterController extends Controller
 
     public function storeSiswa(Request $request)
     {
+        $request->validate([
+            "siswa_baru" => "required",
+            "existing" => "required",
+        ]);
+
         $unit_id = $request->unit_id;
-        $unit = Unit::find($request->unit_id);
+        $unit = Unit::find($unit_id);
         if($request->siswa_baru == 1){
             $kelases = Level::where('unit_id',$unit_id)->first();
             $kelas = $kelases->id;
@@ -110,20 +121,21 @@ class RegisterController extends Controller
             $kelas = $request->kelas;
         }
         $semester = Semester::find($request->tahun_ajaran);
-        $registerCounter = $semester->tahunAjaran->psbRegisterCounter()->select('register_intern','register_extern')->where('unit_id',$unit_id)->first();
+        $registerCounter = $semester->tahunAjaran->psbRegisterCounter()->select('register_intern','register_extern')->where('unit_id',$unit_id)->where('student_status_id',$request->siswa_baru)->first();
         
         // bikin number register
         $register_number = CodeGeneratorPsb::RegisterNumber($unit_id,$semester->academic_year_id);
 
-        if($request->asal_sekolah == "SIT Auliya"){
-
-            $level = Level::find($request->kelas_exist);
-            
+        // Sudah pernah di Auliya
+        if($request->existing == "2"){
             $siswa = IdentitasSiswa::find($request->siswa_id);
 
-            if(!$siswa || $siswa->parent_id != auth()->user()->user_id){
+            $isCandidateExist = auth()->user()->orangtua->calonSiswa()->count() > 0 && in_array($siswa->id,auth()->user()->orangtua->calonSiswa()->select('student_id')->get()->pluck('student_id')->toArray()) ? true : false;
 
+            if(!$siswa || $siswa->parent_id != auth()->user()->user_id || $isCandidateExist){
+                return redirect()->route('psb.index')->with('danger','Pendaftaran calon siswa gagal. Mohon periksa kembali data putra/i Anda.');
             }
+
             $calon = CalonSiswa::create([
                 'unit_id' => $unit_id,
                 'student_id' => $siswa->id,
@@ -132,6 +144,7 @@ class RegisterController extends Controller
                 'student_name' => $siswa->student_name,
                 'student_nickname' => $siswa->student_nickname,
                 'nik' => $siswa->nik,
+                'student_status_id' => $request->siswa_baru,
                 'reg_number' => $register_number,
                 // 'reg_number' => $unit->name.$semester->tahunAjaran->academic_year_start.sprintf('%04d',($registerCounter ? ($registerCounter->register_intern+$registerCounter->register_extern)+1 : '1')),
                 'academic_year_id' => $semester->academic_year_id,
@@ -165,7 +178,6 @@ class RegisterController extends Controller
     
                 'parent_id' => auth()->user()->user_id,
             ]);
-
         }else{
             $agama = Agama::where('name','Islam')->first();
             $desa = Wilayah::where('code',$request->desa)->first();
@@ -190,6 +202,7 @@ class RegisterController extends Controller
                 'student_name' => $request->nama,
                 'student_nickname' => $request->nama_pendek,
                 'nik' => $request->nik,
+                'student_status_id' => $request->siswa_baru,
                 'reg_number' => $register_number,
                 // 'reg_number' => $unit->name.$semester->tahunAjaran->academic_year_start.sprintf('%04d',($registerCounter ? ($registerCounter->register_intern+$registerCounter->register_extern)+1 : '1')),
                 'academic_year_id' => $semester->academic_year_id,
@@ -225,31 +238,7 @@ class RegisterController extends Controller
             ]);
         }
 
-        $counter = RegisterCounter::where('unit_id',$calon->unit_id)->where('academic_year_id',$calon->academic_year_id)->first();
-
-        if($counter){
-            if($calon->origin_school == 'SIT Auliya'){
-                $counter->register_intern = $counter->register_intern + 1;
-            }else{
-                $counter->register_extern = $counter->register_extern + 1;
-            }
-            $counter->save();
-        }else{
-            if($calon->origin_school == 'SIT Auliya'){
-                $counter = RegisterCounter::create([
-                    'academic_year_id' => $calon->academic_year_id,
-                    'unit_id' => $calon->unit_id,
-                    'register_intern' => 1,
-                ]);
-            }else{
-                $counter = RegisterCounter::create([
-                    'academic_year_id' => $calon->academic_year_id,
-                    'unit_id' => $calon->unit_id,
-                    'register_extern' => 1,
-                ]);
-            }
-
-        }
+        RegisterCounterService::addCounter($calon->id,'register');
 
         return redirect()->route('psb.index')->with('success','Pendaftaran calon siswa berhasil. Selanjutnya, silakan klik fitur nama calon siswa.');
     }
@@ -273,26 +262,26 @@ class RegisterController extends Controller
 
         if($request->siswa == 0){
             $messages = [
-            'father_name.required' => 'Mohon masukkan nama ayah',
-            'father_phone.required' => 'Mohon masukkan nomor telepon ayah yang valid',
-            'father_phone.max' => 'Mohon periksa kembali nomor telepon ayah',
-            'father_email.required' => 'Mohon masukkan alamat email ayah',
-            'father_email.email' => 'Mohon periksa kembali alamat email ayah',
-            'mother_name.required' => 'Mohon masukkan nama ibu',
-            'mother_phone.required' => 'Mohon masukkan nomor telepon ibu yang valid',
-            'mother_phone.max' => 'Mohon periksa kembali nomor telepon ibu',
-            'mother_email.required' => 'Mohon masukkan alamat email ibu',
-            'mother_email.email' => 'Mohon periksa kembali alamat email ibu',
-          ];
+                'father_name.required' => 'Mohon masukkan nama ayah',
+                'father_phone.required' => 'Mohon masukkan nomor telepon ayah yang valid',
+                'father_phone.max' => 'Mohon periksa kembali nomor telepon ayah',
+                'father_email.required' => 'Mohon masukkan alamat email ayah',
+                'father_email.email' => 'Mohon periksa kembali alamat email ayah',
+                'mother_name.required' => 'Mohon masukkan nama ibu',
+                'mother_phone.required' => 'Mohon masukkan nomor telepon ibu yang valid',
+                'mother_phone.max' => 'Mohon periksa kembali nomor telepon ibu',
+                'mother_email.required' => 'Mohon masukkan alamat email ibu',
+                'mother_email.email' => 'Mohon periksa kembali alamat email ibu',
+            ];
 
-          $this->validate($request, [
-              'father_name' => 'required',
-              'father_phone' => 'required|max:15',
-              'father_email' => 'required|email',
-              'mother_name' => 'required',
-              'mother_phone' => 'required|max:15',
-              'mother_email' => 'required|email',
-          ], $messages);
+            $this->validate($request, [
+                'father_name' => 'required',
+                'father_phone' => 'required|max:15',
+                'father_email' => 'required|email',
+                'mother_name' => 'required',
+                'mother_phone' => 'required|max:15',
+                'mother_email' => 'required|email',
+            ], $messages);
           
             if(OrangTua::where('father_email',$request->father_email)->count() < 1){
                 $ortu = OrangTua::create([
@@ -329,6 +318,8 @@ class RegisterController extends Controller
             
             $check_account = LoginUser::where('user_id',$ortu_id)->where('role_id',36)->first();
             if($check_account) return redirect()->back()->with('danger', 'Akun Orang Tua Telah Terdaftar');
+
+            if(!$ortu->father_email || !$ortu->father_phone) return redirect()->back()->with('danger', 'Data orang tua terdaftar belum lengkap, mohon hubungi staf administrasi Auliya untuk informasi lebih lanjut');
             
             $user = LoginUser::create([
                 'username' => $ortu->father_email,

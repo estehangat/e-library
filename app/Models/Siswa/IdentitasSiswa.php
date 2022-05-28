@@ -12,9 +12,9 @@ class IdentitasSiswa extends Model
     use HasFactory;
     protected $table = "tm_students";
     protected $fillable = [
-        'id',
+        'nik',
         'student_name',
-        'student_nickname', // add nama panggilan
+        'student_nickname',
         'birth_place',
         'birth_date',
         'gender_id',

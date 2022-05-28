@@ -61,7 +61,7 @@ class ApbyController extends Controller
         
         $jenisAktif = $apby = $years = $academicYears = $latest = $tahunPelajaran = $isYear = $checkApby = null;
         $yearsCount = $academicYearsCount = 0;
-        $perubahan = false;
+        $perubahan = $changeYear = $nextYear = false;
 
         if($jenis){
             $explodeJenis = explode('-',$jenis);
@@ -98,12 +98,12 @@ class ApbyController extends Controller
                 $isYear = $jenisAktif->is_academic_year == 1 ? false : true;
             }
 
-            $tahunPelajaran = TahunAjaran::where('is_active',1)->latest()->take(1)->get();
+            $tahunPelajaran = TahunAjaran::where('is_finance_year',1)->latest()->take(1)->get();
 
             if($academicYearsCount > 0){
                 $tahunPelajaran = TahunAjaran::where(function($q)use($academicYears){
                     $q->where(function($q){
-                        $q->where('is_active',1);
+                        $q->where('is_finance_year',1);
                     })->orWhere(function($q)use($academicYears){
                         $q->whereIn('id',$academicYears);
                     });
@@ -117,7 +117,7 @@ class ApbyController extends Controller
                 }
                 else{
                     // Default Value
-                    $tahun = TahunAjaran::where('is_active',1)->latest()->first();
+                    $tahun = TahunAjaran::where('is_finance_year',1)->latest()->first();
                 }
                 if(!$tahun) return redirect()->route('apby.index');
             }
@@ -189,9 +189,17 @@ class ApbyController extends Controller
                 $checkLppaAcc = $checkLppaAcc->where('finance_acc_status_id',1);
                 
                 if($checkApby->count() > 0){
-                //if($checkApby->count() > 0 && $checkPpaAcc->count() >= $checkPpa->count() && $checkBbkAcc->count() >= $checkBbk->count() && $checkLppaAcc->count() >= $checkLppa->count()){
-                    if(($latest->year && $isYear && $tahun == date('Y')) || (!$latest->year && !$isYear && $tahun->is_active == 1))
-                    $perubahan = true;
+                    if(($latest->year && $isYear && $tahun == date('Y')) || (!$latest->year && !$isYear && $tahun->is_finance_year == 1))
+                        $perubahan = true;
+                }
+
+                if(!$latest->year && !$isYear && $tahun->is_finance_year == 1){
+                    $nextYearCheck = TahunAjaran::where('academic_year_start','>',$tahun->academic_year_start)->min('academic_year_start');
+                    $nextYear = $nextYearCheck ? true : false;
+                    if($checkApby->count() > 0 && $checkPpaAcc->count() >= $checkPpa->count() && $checkBbkAcc->count() >= $checkBbk->count() && $checkLppaAcc->count() >= $checkLppa->count() && (!$latest->year && !$isYear && $tahun->is_finance_year == 1)){
+                    //if($checkApby->count() > 0){
+                        $changeYear = true;
+                    }
                 }
 
                 if($anggaran){
@@ -200,7 +208,7 @@ class ApbyController extends Controller
                         $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
                         $apbyAktif = !$isYear ? $anggaranAktif->apby()->where('academic_year_id',$tahun->id)->latest()->aktif()->first() : $anggaranAktif->apby()->where('year',$tahun)->latest()->aktif()->first();
 
-                        //if($apbyAktif || (!$apbyAktif && (!$isYear && $tahun->is_active == 1) || ($isYear && $tahun == date('Y')))){
+                        //if($apbyAktif || (!$apbyAktif && (!$isYear && $tahun->is_finance_year == 1) || ($isYear && $tahun == date('Y')))){
                         if($apbyAktif){
                             // Inti controller
 
@@ -266,9 +274,9 @@ class ApbyController extends Controller
         }
 
         if($jenis && $isKso)
-            return view('keuangan.read-only.apb_kso_index', compact('jenisAnggaran','jenisAktif','tahun','tahunPelajaran','isYear','checkApby','apby','years','academicYears','perubahan'));
+            return view('keuangan.read-only.apb_kso_index', compact('jenisAnggaran','jenisAktif','tahun','tahunPelajaran','isYear','checkApby','apby','years','academicYears','perubahan','changeYear','nextYear'));
         else
-            return view('keuangan.read-only.apby_index', compact('jenisAnggaran','jenisAktif','tahun','tahunPelajaran','isYear','checkApby','apby','years','academicYears','perubahan'));
+            return view('keuangan.read-only.apby_index', compact('jenisAnggaran','jenisAktif','tahun','tahunPelajaran','isYear','checkApby','apby','years','academicYears','perubahan','changeYear','nextYear'));
     }
 
     /**
@@ -1097,7 +1105,7 @@ class ApbyController extends Controller
             $checkLppaAcc = clone $checkLppa;
             $checkLppaAcc = $checkLppaAcc->where('finance_acc_status_id',1);
 
-            if($checkApby->count() > 0 && (($isYear && $tahun == date('Y')) || (!$isYear && $tahun->is_active == 1))){
+            if($checkApby->count() > 0 && (($isYear && $tahun == date('Y')) || (!$isYear && $tahun->is_finance_year == 1))){
             //if($checkApby->count() > 0 && $checkPpaAcc->count() >= $checkPpa->count() && $checkBbkAcc->count() >= $checkBbk->count() && $checkLppaAcc->count() >= $checkLppa->count()){
                 $checkRkat->update(['is_active' => 0]);
                 $checkApby->update(['is_active' => 0]);
@@ -1108,6 +1116,100 @@ class ApbyController extends Controller
             }
             else{
                 Session::flash('danger', $jenisAktif->name.' perubahan gagal dilakukan');
+
+                return redirect()->route('apby.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
+            }
+        }
+
+        return redirect()->route('apby.index');
+    }
+
+    /**
+     * Lock the resources from storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function lock(Request $request, $jenis, $tahun)
+    {
+        $role = $request->user()->role->name;
+        
+        $jenisAktif = JenisAnggaran::where('link',$jenis)->first();
+
+        if($jenisAktif){
+            $explodeJenis = explode('-',$jenis);
+            $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
+            $isYear = strlen($tahun) == 4 ? true : false;
+            if(!$isYear){
+                $tahun = str_replace("-","/",$tahun);
+                $tahun = TahunAjaran::where('academic_year',$tahun)->first();
+                if(!$tahun) return redirect()->route('apby.index', ['jenis' => $jenisAktif->link]);
+            }
+
+            // Inti Controller
+            $checkRkat = Rkat::whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
+                $query->where('budgeting_type_id',$jenisAktif->id);
+            });
+            $checkApby = Apby::whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
+                $query->where('budgeting_type_id',$jenisAktif->id);
+            });
+            $checkPpa = Ppa::whereIn('budgeting_budgeting_type_id',$jenisAktif->anggaran()->pluck('id'));
+            $checkBbk = Bbk::where('budgeting_type_id',$jenisAktif->id);
+
+            $yearAttr = $isYear ? 'year' : 'academic_year_id';
+
+            if($isKso){
+                $checkRkat = $checkRkat->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                $checkApby = $checkApby->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                $checkPpa = $checkPpa->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                $checkBbk = $checkBbk->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                $checkBbkAcc = clone $checkBbk;
+                $checkBbkAcc = $checkBbkAcc->where('director_acc_status_id',1);
+                $checkLppa = Lppa::whereHas('ppa',function($query)use($jenisAktif,$yearAttr,$tahun){
+                    $query->where([
+                        $yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id),
+                        'director_acc_status_id' => 1
+                    ])->whereIn('budgeting_budgeting_type_id',$jenisAktif->anggaran()->pluck('id'));
+                });
+            }
+            else{
+                $checkRkat = $checkRkat->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                $checkApby = $checkApby->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                $checkPpa = $checkPpa->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                $checkBbk = $checkBbk->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                $checkBbkAcc = clone $checkBbk;
+                $checkBbkAcc = $checkBbkAcc->where('president_acc_status_id',1);
+                $checkLppa = Lppa::whereHas('ppa',function($query)use($jenisAktif,$yearAttr,$tahun){
+                    $query->where([
+                        $yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id),
+                        'director_acc_status_id' => 1
+                    ])->whereIn('budgeting_budgeting_type_id',$jenisAktif->anggaran()->pluck('id'));
+                });
+            }
+            $checkRkat = $checkRkat->aktif();
+            $checkApby = $checkApby->aktif();
+            $checkPpaAcc = clone $checkPpa;
+            $checkPpaAcc = $checkPpaAcc->where('director_acc_status_id',1);
+            $checkLppaAcc = clone $checkLppa;
+            $checkLppaAcc = $checkLppaAcc->where('finance_acc_status_id',1);
+
+            if($checkApby->count() > 0 && $checkPpaAcc->count() >= $checkPpa->count() && $checkBbkAcc->count() >= $checkBbk->count() && $checkLppaAcc->count() >= $checkLppa->count() && (!$isYear && $tahun->is_finance_year == 1)){
+            //if($checkApby->count() > 0 && (!$isYear && $tahun->is_finance_year == 1)){
+                $nextYear = TahunAjaran::where('academic_year_start','>',$tahun->academic_year_start)->min('academic_year_start');
+                if($nextYear){
+                    $checkRkat->update(['is_final' => 1]);
+                    $checkApby->update(['is_final' => 1]);
+
+                    $tahun->update(['is_finance_year' => 0]);
+                    TahunAjaran::where('academic_year_start',$nextYear)->update(['is_finance_year' => 1]);
+
+                    Session::flash('success', 'Tutup tahun '.$jenisAktif->name.' berhasil dilakukan');
+
+                    return redirect()->route('rkat.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
+                }
+            }
+            else{
+                Session::flash('danger', 'Tutup tahun '.$jenisAktif->name.' gagal dilakukan, pastikan tidak ada PPA, PPB, maupun RPPA yang belum selesai prosesnya');
 
                 return redirect()->route('apby.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
             }

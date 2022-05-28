@@ -19,7 +19,7 @@ class CreateTmNotificationTable extends Migration
 			$table->string('desc');
 			$table->string('link');
 			$table->boolean('is_active');
-			$table->integer('notification_category_id')->nullable();
+			$table->integer('notification_category_id')->default(1);
             $table->timestamps();
         });
     }

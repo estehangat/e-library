@@ -483,7 +483,7 @@ class SkbmController extends Controller
                         $headers = [
                             'Cache-Control' => 'max-age=0',
                             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                            'Content-Disposition' => 'attachment;filename="penempatan-'.$kategori->placement.'-'.strtolower($unit->name)."-tahun-".$aktif->academicYearLink.'.xlsx"',
+                            'Content-Disposition' => 'attachment;filename="skbm-'.strtolower($unit->name)."-tahun-".$aktif->academicYearLink.'.xlsx"',
                         ];
 
                         return response()->stream(function()use($writer){

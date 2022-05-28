@@ -15,7 +15,7 @@ class JadwalPelajaran extends Model
     {
         return $this->belongsTo('App\Models\Level','level_id');
     }
-    
+
     public function kelas()
     {
         return $this->belongsTo('App\Models\Kbm\Kelas','class_id');

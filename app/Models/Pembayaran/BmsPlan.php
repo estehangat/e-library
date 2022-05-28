@@ -2,6 +2,7 @@
 
 namespace App\Models\Pembayaran;
 
+use App\Models\Kbm\TahunAjaran;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -19,4 +20,9 @@ class BmsPlan extends Model
         'remain',
         'percent',
     ];
+
+    public function academicYear()
+    {
+        return $this->belongsTo(TahunAjaran::class,'academic_year_id');
+    }
 }

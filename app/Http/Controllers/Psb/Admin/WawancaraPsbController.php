@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Level;
 use App\Models\Siswa\CalonSiswa;
+use App\Models\Pembayaran\BmsDeduction;
 
 class WawancaraPsbController extends Controller
 {
@@ -25,7 +26,9 @@ class WawancaraPsbController extends Controller
         $unit = Auth::user()->pegawai->unit_id;
         $calons = ListingCandidateStudent::list($request->level, $request->year, $status_id);
 
-        return view('psb.admin.index',compact('title','calons','status_id','link','request'));
+        $deductions = BmsDeduction::orderBy('name')->get();
+
+        return view('psb.admin.index',compact('title','calons','status_id','link','request','deductions'));
     }
 
     /**

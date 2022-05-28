@@ -24,7 +24,7 @@ class BsiService
         $date = now()->format('Y-m-d');
 
         $object = new stdClass();
-        //$object->description = 'SISTA '.$desc;
+        $object->description = 'SISTA '.$desc;
         $object->unitPrice = 0;
         $object->qty = 1;
         $object->amount = 0;
@@ -38,7 +38,7 @@ class BsiService
             "address" => $address,
             "va" => $va,
             "attribute1" => $desc." SIT AULIYA",
-            "attribute2" => "",
+            "attribute2" => "Sistem Informasi Sekolah Islam Terpadu Auliya",
             "items" => [
                 $object
             ],

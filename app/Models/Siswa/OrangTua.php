@@ -46,9 +46,9 @@ class OrangTua extends Model
         'guardian_address',
     ];
 
-    public function siswa()
+    public function pegawai()
     {
-        return $this->hasMany(Siswa::class,'parent_id','id');
+        return $this->belongsTo('App\Models\Rekrutmen\Pegawai','employee_id');
     }
 
     public function siswas()
@@ -64,5 +64,38 @@ class OrangTua extends Model
     public function user()
     {
         return $this->hasOne('App\Models\LoginUser','user_id');
+    }
+
+    public function users()
+    {
+        return $this->hasMany('App\Models\LoginUser','user_id');
+    }
+
+    public function getNameAttribute()
+    {
+        return ($this->father_name ? $this->father_name.($this->mother_name ? '/' : null) : null).($this->mother_name ? $this->mother_name.($this->guardian_name ? '/' : null) : null).($this->guardian_name ? $this->guardian_name : null);
+    }
+
+    public function getLoginUserAttribute()
+    {
+        return $this->pegawai && $this->users()->where('role_id','!=',36)->count() > 0 ? $this->user()->where('role_id','!=',36)->first() : $this->user()->where('role_id',36)->first();
+    }
+
+    public function getChildrensAttribute()
+    {
+        $datas = null;
+        $calons = $this->calonSiswa()->count() > 0 ? $this->calonSiswa()->select('student_name')->get(): null;
+        $siswas = $this->siswas()->count() > 0 ? $this->siswas()->select('student_name')->get() : null;
+        if($calons && $siswas){
+            $datas = $siswas->concat($calons);
+        }
+        elseif($siswas){
+            $datas = $siswas;
+        }
+        else{
+            $datas = $calons;
+        }
+
+        return $datas ? implode('; ',$datas->sortBy('student_name')->pluck('student_name')->unique()->toArray()) : null;
     }
 }

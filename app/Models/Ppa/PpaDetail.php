@@ -113,7 +113,19 @@ class PpaDetail extends Model
     }
 
     public function getNoteAttribute(){
-        return $this->ppa->type_id == 2 ? ($this->proposals()->count() > 0 ? implode(', ',$this->proposals->pluck('desc')->toArray()) : '-') : $this->attributes['note'];
+        if($this->ppa->type_id == 2){
+            if($this->proposals()->count() > 0){
+                $note = '';
+                $lastId = $this->proposals()->select('id')->orderBy('id','DESC')->first()->id;
+                foreach($this->proposals as $p){
+                    $note .= implode(', ',$p->details->pluck('desc')->toArray());
+                    if($lastId != $p->id) $note .= ', ';
+                }
+                return $note;
+            }
+            else return '-';
+        }
+        else return $this->attributes['note'];
     }
 
     public function getValueWithSeparatorAttribute()

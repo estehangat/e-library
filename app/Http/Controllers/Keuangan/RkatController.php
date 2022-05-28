@@ -92,12 +92,12 @@ class RkatController extends Controller
                 $isYear = $jenisAktif->is_academic_year == 1 ? false : true;
             }
 
-            $tahunPelajaran = TahunAjaran::where('is_active',1)->latest()->take(1)->get();
+            $tahunPelajaran = TahunAjaran::where('is_finance_year',1)->latest()->take(1)->get();
 
             if($academicYearsCount > 0){
                 $tahunPelajaran = TahunAjaran::where(function($q)use($academicYears){
                     $q->where(function($q){
-                        $q->where('is_active',1);
+                        $q->where('is_finance_year',1);
                     })->orWhere(function($q)use($academicYears){
                         $q->whereIn('id',$academicYears);
                     });
@@ -110,7 +110,7 @@ class RkatController extends Controller
                     $tahun = TahunAjaran::where('academic_year',$tahun)->first();
                 }
                 else{
-                    $tahun = TahunAjaran::where('is_active',1)->latest()->first();
+                    $tahun = TahunAjaran::where('is_finance_year',1)->latest()->first();
                 }
                 if(!$tahun) return redirect()->route('rkat.index');
             }
@@ -149,7 +149,7 @@ class RkatController extends Controller
                         $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
                         $rkatAktif = !$isYear ? $anggaranAktif->rkat()->where('academic_year_id', $tahun->id)->aktif()->latest()->first() : $anggaranAktif->rkat()->where('year', $tahun)->aktif()->latest()->first();
 
-                        if($rkatAktif || (!$rkatAktif && (!$isYear && $tahun->is_active == 1) || ($isYear && $tahun == date('Y')))){
+                        if($rkatAktif || (!$rkatAktif && (!$isYear && $tahun->is_finance_year == 1) || ($isYear && $tahun == date('Y')))){
                             // Inti controller
 
                             $kategori = KategoriAkun::all();
@@ -228,7 +228,7 @@ class RkatController extends Controller
                         $rkatAktif = !$isYear ? $anggaranAktif->rkat()->where('academic_year_id',$tahun->id)->first() : $anggaranAktif->rkat()->where('year',$tahun)->first();
 
                         if(!$rkatAktif){
-                            $tahun = !$isYear ? TahunAjaran::where('is_active',1)->latest()->first() : Date::now('Asia/Jakarta')->format('Y');
+                            $tahun = !$isYear ? TahunAjaran::where('is_finance_year',1)->latest()->first() : Date::now('Asia/Jakarta')->format('Y');
                         }
                         return redirect()->route('rkat.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link]);
                     }
@@ -285,7 +285,7 @@ class RkatController extends Controller
                 
                 $rkatAktif = $anggaranAktif->rkat()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->latest()->aktif()->first();
                 
-                if(($rkatAktif && $rkatAktif->detail()->count() < 1) || (!$rkatAktif && ((!$isYear && $tahun->is_active == 1) || ($isYear && $tahun == date('Y'))))){
+                if(($rkatAktif && $rkatAktif->detail()->count() < 1) || (!$rkatAktif && ((!$isYear && $tahun->is_finance_year == 1) || ($isYear && $tahun == date('Y'))))){
                     if(($role == 'faspv' || ($role != 'faspv' && $request->user()->pegawai->position_id == $anggaranAktif->anggaran->acc_position_id)) && $anggaranAktif->akun()->count() > 0){
                         // Inti function
                         if(!$rkatAktif){
@@ -300,7 +300,7 @@ class RkatController extends Controller
                             //Get last revision
                             $latestRkat = Rkat::where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->orderBy('revision','desc')->first();
 
-                            if($latestRkat) $rkat->revision = $latestRkat->is_active == 1 ? $latestRkat->revision : ($latestRkat->revision + 1);
+                            if($latestRkat) $rkat->revision = $latestRkat->is_finance_year == 1 ? $latestRkat->revision : ($latestRkat->revision + 1);
 
                             $rkat->save();
 
@@ -739,7 +739,7 @@ class RkatController extends Controller
         if($apby->revision > 1 && $anggaranAktif->jenis->isKso){
             $apbyLastRevision = $anggaranAktif->apby()->where([
                 'revision' => ($apby->revision-1),
-                'is_active' => 0,
+                'is_finance_year' => 0,
                 $yearAttr => ($yearAttr == 'year' ? $rkatAktif->year : $rkatAktif->academic_year_id)
             ])->latest()->first();
         }

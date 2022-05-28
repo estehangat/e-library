@@ -268,11 +268,9 @@ class RaporKepsekController extends Controller
                             $rapor = $siswa->nilaiRapor()->where(['semester_id' => $semester->id, 'report_status_id' => 1])->first();
 
                             $riwayatKelas = $history->kelas;
-                            $pas_date = $semester->tanggalRapor()->where('unit_id', $unit->id)->pas()->first();
-                            $pas_date = $pas_date ? $pas_date->report_date : null;
 
                             if($rapor){
-                                return view('penilaian.pas_cover', compact('pas_date', 'siswa', 'unit', 'semester','riwayatKelas'));
+                                return view('penilaian.pas_cover', compact('siswa', 'unit', 'semester','riwayatKelas'));
                             }
                             else{
                                 Session::flash('danger', 'Nilai rapor Ananda '.$siswa->student_name.' belum divalidasi');
@@ -293,9 +291,7 @@ class RaporKepsekController extends Controller
                     if($role == 'guru'){
                         $kelas = $semester->tahunAjaran->kelas()->where(['unit_id' => $request->user()->pegawai->unit_id, 'teacher_id' => $request->user()->pegawai->id])->first();
                         if($kelas){
-                            $pas_date = $semester->tanggalRapor()->where('unit_id', $unit->id)->pas()->first();
-                            $pas_date = $pas_date ? $pas_date->report_date : null;
-                            return redirect()->route('paskepsek.cover',['pas_date', 'tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber, 'kelas' => $kelas->id]);
+                            return redirect()->route('paskepsek.cover',['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber, 'kelas' => $kelas->id]);
                         }
                         else return redirect()->route('paskepsek');
                     }
@@ -305,13 +301,10 @@ class RaporKepsekController extends Controller
         else{
             $semester = Semester::aktif()->first();
             $kelasList = $semester->tahunAjaran->kelas()->where('unit_id',$request->user()->pegawai->unit_id)->get();
-            
             if($role == 'guru'){
                 $kelas = $semester->tahunAjaran->kelas()->where(['unit_id' => $request->user()->pegawai->unit_id, 'teacher_id' => $request->user()->pegawai->id])->first();
-                $pas_date = $semester->tanggalRapor()->where('unit_id', $unit->id)->pas()->first();
-                $pas_date = $pas_date ? $pas_date->report_date : null;
                 if($kelas){
-                    return redirect()->route('paskepsek.cover',['pas_date', 'tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber, 'kelas' => $kelas->id]);
+                    return redirect()->route('paskepsek.cover',['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber, 'kelas' => $kelas->id]);
                 }
                 else return redirect()->route('kependidikan.kelas');
             }

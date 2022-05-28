@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Psb\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Services\Psb\RegisterCounterService;
 use App\Models\Kbm\Semester;
 use App\Models\Kbm\TahunAjaran;
 use App\Models\Pembayaran\BMS;
@@ -102,11 +103,11 @@ class StatusPsbController extends Controller
                 'unit_id' => $calons->unit_id,
                 'student_nis' => $nipd,
                 'student_nisn' => $calons->student_nisn,
+                'nik' => $calons->nik,
                 'student_name' => $calons->student_name,
                 'student_nickname' => $calons->student_nickname,
-                'nik' => $calons->nik,
                 'reg_number' => $calons->reg_number,
-                
+    
                 'birth_place' => $calons->birth_place,
                 'birth_date' => $calons->birth_date,
                 'gender_id' => $calons->gender_id,
@@ -187,7 +188,7 @@ class StatusPsbController extends Controller
             'bms_type_id' => $bms_calon->bms_type_id,
         ]);
 
-        $bms_termin = BmsTermin::where('bms_id',$bms_calon->id)->get();
+        $bms_termin = BmsTermin::where('bms_id',$bms_calon->id)->where('is_student',0)->get();
         foreach($bms_termin as $bms_term){
             $bms_term->is_student = 1;
             $bms_term->bms_id = $bms_student->id;
@@ -217,16 +218,8 @@ class StatusPsbController extends Controller
             'unit_id' => $siswa->unit_id,
             'student_id' => $siswa->id,
         ]);
-
-        $counter = RegisterCounter::where('unit_id',$calons->unit_id)->where('academic_year_id',$calons->academic_year_id)->first();
-
-        if($calons->origin_school == 'SIT Auliya'){
-            $counter->stored_intern = $counter->stored_intern + 1;
-            $counter->save();
-        }else{
-            $counter->stored_extern = $counter->stored_extern + 1;
-            $counter->save();
-        }
+        
+        RegisterCounterService::addCounter($calons->id,'stored');
 
         $calons->delete();
 
@@ -277,5 +270,23 @@ class StatusPsbController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    /**
+     * Update an existing resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function updateStartOfSpp(Request $request)
+    {
+        $calons = CalonSiswa::find($request->id);
+        if(!$calons) return redirect()->back()->with('error', 'Ubah awal mula SPP calon siswa gagal');
+        if($calons->status_id != 5) return redirect()->back()->with('error', 'Ubah awal mula SPP calon siswa gagal');
+        $calons->year_spp = $request->year_spp;
+        $calons->month_spp = $request->month_spp;
+        $calons->save();
+
+        return redirect()->back()->with('success', 'Awal mula SPP calon siswa berhasil diubah');
     }
 }

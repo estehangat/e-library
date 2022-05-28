@@ -99,12 +99,12 @@ class LppaController extends Controller
                 $isYear = $jenisAktif->is_academic_year == 1 ? false : true;
             }
 
-            $tahunPelajaran = TahunAjaran::where('is_active',1)->latest()->take(1)->get();
+            $tahunPelajaran = TahunAjaran::where('is_finance_year',1)->latest()->take(1)->get();
 
             if($academicYearsCount > 0){
                 $tahunPelajaran = TahunAjaran::where(function($q)use($academicYears){
                     $q->where(function($q){
-                        $q->where('is_active',1);
+                        $q->where('is_finance_year',1);
                     })->orWhere(function($q)use($academicYears){
                         $q->whereIn('id',$academicYears);
                     });
@@ -118,7 +118,7 @@ class LppaController extends Controller
                 }
                 else{
                     // Default Value
-                    $tahun = TahunAjaran::where('is_active',1)->latest()->first();
+                    $tahun = TahunAjaran::where('is_finance_year',1)->latest()->first();
                 }
                 if(!$tahun) return redirect()->route('lppa.index');
             }
@@ -201,7 +201,7 @@ class LppaController extends Controller
                         $ppaAcc = !$isYear ? $anggaranAktif->ppa()->where('academic_year_id',$tahun->id)->whereNotNull('finance_acc_status_id') : $anggaranAktif->ppa()->where('year',$tahun)->whereNotNull('finance_acc_status_id');
 
                         if($ppaAcc->count() < 1){
-                            $tahun = !$isYear ? TahunAjaran::where('is_active',1)->latest()->first() : Date::now('Asia/Jakarta')->format('Y');
+                            $tahun = !$isYear ? TahunAjaran::where('is_finance_year',1)->latest()->first() : Date::now('Asia/Jakarta')->format('Y');
                         }
                         return redirect()->route('lppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link]);
                     }
@@ -428,7 +428,7 @@ class LppaController extends Controller
                                                 $successCount++;
                                             }
 
-                                            $apbyAktif = $anggaranAktif->apby()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->latest()->aktif();
+                                            $apbyAktif = $anggaranAktif->apby()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->latest()->aktif()->unfinal();
 
                                             $apbyAktif = $isKso ? $apbyAktif->where('director_acc_status_id',1)->first() : $apbyAktif->where('president_acc_status_id',1)->first();
 
@@ -633,7 +633,7 @@ class LppaController extends Controller
                     $isAnggotaPa = $this->checkRole($anggaranAktif->anggaran,$role);
                     if(in_array($role,$exceptionRoles) || (!in_array($role,$exceptionRoles) && $isAnggotaPa)){
                         // Inti function
-                        $apbyAktif = $anggaranAktif->apby()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->latest()->aktif();
+                        $apbyAktif = $anggaranAktif->apby()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->latest()->aktif()->unfinal();
 
                         $apbyAktif = $isKso ? $apbyAktif->where('director_acc_status_id',1)->first() : $apbyAktif->where('president_acc_status_id',1)->first();
 
@@ -1073,7 +1073,7 @@ class LppaController extends Controller
         $yearAttr = $isYear ? 'year' : 'academic_year_id';
 
         $isKso = $ppa->jenisAnggaranAnggaran->jenis->isKso;
-        $apby = $ppa->jenisAnggaranAnggaran->apby()->where($yearAttr, ($yearAttr == 'year' ? $ppa->year : $ppa->academic_year_id))->aktif()->latest();
+        $apby = $ppa->jenisAnggaranAnggaran->apby()->where($yearAttr, ($yearAttr == 'year' ? $ppa->year : $ppa->academic_year_id))->aktif()->unfinal()->latest();
         $apby = $isKso ? $apby->where('director_acc_status_id', 1)->first() : $apby->where('president_acc_status_id', 1)->first();
 
         if($apby){

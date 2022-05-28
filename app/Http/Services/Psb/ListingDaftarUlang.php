@@ -9,10 +9,10 @@ use App\Models\Siswa\CalonSiswa;
 
 class ListingDaftarUlang {
 
-    public static function list($level, $year, $status_id)
+    public static function list($level, $year, $status_id, $bayar = null)
     {
 
-        $unit_id = auth()->user()->pegawai->unit_id;
+        $unit_id = auth()->user()->pegawai->unit_id==5?'%':auth()->user()->pegawai->unit_id;
 
         // Check Level
         if($level){
@@ -37,28 +37,26 @@ class ListingDaftarUlang {
         }else{
             $year_id = '%';
         }
-        
-        if($unit_id == 5){
-            if($status_id == 0){
-                $lists = BmsCalonSiswa::where('register_remain','>',0)->whereHas('siswa',function ($q) use ($year_id,$level_id){
-                    $q->where('level_id','like',$level_id)->where('academic_year_id','like',$year_id);
-                })->orderBy('candidate_student_id','asc')->get();
-            }else{
-                $lists = BmsCalonSiswa::where('register_remain',0)->whereHas('siswa',function ($q) use ($year_id,$level_id){
-                    $q->where('level_id','like',$level_id)->where('academic_year_id','like',$year_id);
-                })->orderBy('candidate_student_id','asc')->get();
+
+        if($status_id == 0){
+            $lists = BmsCalonSiswa::where('unit_id', 'like', $unit_id)->where('register_remain','>',0)->whereHas('siswa',function ($q) use ($year_id,$level_id){
+                $q->where('level_id','like',$level_id)->where('academic_year_id','like',$year_id);
+            })->orderBy('candidate_student_id','asc');
+            if($bayar){
+                if($bayar == 'sebagian'){
+                    $lists = $lists->where('register_paid','>',0);
+                }
+                elseif($bayar == 'belum'){
+                    $lists = $lists->where('register_paid',0);
+                }
             }
-        } else{
-            if($status_id == 0){
-                $lists = BmsCalonSiswa::where('unit_id',$unit_id)->where('register_remain','>',0)->whereHas('siswa',function ($q) use ($year_id,$level_id){
-                    $q->where('level_id','like',$level_id)->where('academic_year_id','like',$year_id);
-                })->orderBy('candidate_student_id','asc')->get();
-            }else{
-                $lists = BmsCalonSiswa::where('unit_id',$unit_id)->where('register_remain',0)->whereHas('siswa',function ($q) use ($year_id,$level_id){
-                    $q->where('level_id','like',$level_id)->where('academic_year_id','like',$year_id);
-                })->orderBy('candidate_student_id','asc')->get();
-            }
+            $lists = $lists->get();
+        }else{
+            $lists = BmsCalonSiswa::where('unit_id', 'like', $unit_id)->where('register_remain',0)->whereHas('siswa',function ($q) use ($year_id,$level_id){
+                $q->where('level_id','like',$level_id)->where('academic_year_id','like',$year_id);
+            })->orderBy('candidate_student_id','asc')->get();
         }
+        
         return $lists;
     }
 

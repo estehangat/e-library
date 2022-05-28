@@ -20,6 +20,7 @@ class CreateTmAccountsTable extends Migration
 			$table->boolean('is_fillable')->default(0);
 			$table->boolean('is_static')->default(0);
 			$table->boolean('is_autodebit')->default(0);
+			$table->boolean('is_exclusive')->default(0);
 			$table->tinyInteger('account_category_id')->default(2);
             $table->timestamps();
 			$table->softDeletes();

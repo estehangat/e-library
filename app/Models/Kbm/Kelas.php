@@ -2,6 +2,8 @@
 
 namespace App\Models\Kbm;
 
+use App\Models\Jurusan;
+use App\Models\Unit;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -16,12 +18,12 @@ class Kelas extends Model
 
     public function namakelases()
     {
-        return $this->belongsTo('App\Models\Kbm\NamaKelas','class_name_id');
+        return $this->belongsTo(NamaKelas::class,'class_name_id');
     }
 
     public function jurusan()
     {
-        return $this->belongsTo('App\Models\Jurusan','major_id');
+        return $this->belongsTo(Jurusan::class,'major_id');
     }
 
     public function tahunajaran()
@@ -41,7 +43,7 @@ class Kelas extends Model
 
     public function unit()
     {
-        return $this->belongsTo('App\Models\Unit','unit_id');
+        return $this->belongsTo(Unit::class,'unit_id');
     }
 
     public function siswa()

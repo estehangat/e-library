@@ -4,10 +4,11 @@ namespace App\Http\Controllers\Psb\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Services\Psb\ListingCandidateStudent;
+use App\Http\Services\Psb\RegisterCounterService;
 use App\Models\Kbm\TahunAjaran;
 use App\Models\Level;
 use App\Models\Pembayaran\BmsNominal;
-use App\Models\Psb\RegisterCounter;
+use App\Models\Pembayaran\BmsDeduction;
 use App\Models\Siswa\CalonSiswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,7 +29,9 @@ class SavingSeatController extends Controller
         $status_id = 2;
         $calons = ListingCandidateStudent::list($request->level, $request->year, $status_id);
 
-        return view('psb.admin.index',compact('title','calons','status_id','link','request'));
+        $deductions = BmsDeduction::orderBy('name')->get();
+
+        return view('psb.admin.index',compact('title','calons','status_id','link','request','deductions'));
     }
     
     public function savingSeatFind(Request $request)
@@ -89,33 +92,8 @@ class SavingSeatController extends Controller
 
         $calons->status_id = 2;
         $calons->save();
-        
-        $counter = RegisterCounter::where('unit_id',$calons->unit_id)->where('academic_year_id',$calons->academic_year_id)->first();
-        if($counter){
-            if($calons->origin_school == 'SIT Auliya'){
-                $counter->saving_seat_intern = $counter->saving_seat_intern + 1;
-                $counter->save();
-            }else{
-                $counter->saving_seat_extern = $counter->saving_seat_extern + 1;
-                $counter->save();
-            }
-        }else{
-            if($calons->origin_school == 'SIT Auliya'){
-                // dd($counter);
-                $counter = RegisterCounter::create([
-                    'academic_year_id' => $calons->academic_year_id,
-                    'unit_id' => $calons->unit_id,
-                    'saving_seat_intern' => 1,
-                ]);
-            }else{
-                $counter = RegisterCounter::create([
-                    'academic_year_id' => $calons->academic_year_id,
-                    'unit_id' => $calons->unit_id,
-                    'saving_seat_extern' => 1,
-                ]);
-            }
 
-        }
+        RegisterCounterService::addCounter($calons->id,'saving_seat');
 
         return redirect()->back()->with('success', 'Calon siswa berhasil dimasukan ke biaya observasi');
     }
@@ -132,7 +110,7 @@ class SavingSeatController extends Controller
         $data = BmsNominal::where('bms_type_id',$request->type_pembayaran)->where('unit_id',$request->unit_bms)->first();
         // dd($data->bms_nominal);
 
-        return $data->bms_nominal;
+        return $data ? $data->bms_nominal : 0;
 
     }
 

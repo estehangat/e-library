@@ -31,6 +31,7 @@ class Apby extends Model
     	'kso_director_acc_time',
         'revision',
         'is_active',
+        'is_final',
     ];
 
     public function tahunPelajaran()
@@ -116,5 +117,15 @@ class Apby extends Model
     public function scopeAktif($query)
     {
         return $query->where('is_active',1);
+    }
+    
+    public function scopeFinal($query)
+    {
+        return $query->where('is_final',1);
+    }
+    
+    public function scopeUnfinal($query)
+    {
+        return $query->where('is_final',0);
     }
 }

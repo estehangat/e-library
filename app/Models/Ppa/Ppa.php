@@ -101,6 +101,11 @@ class Ppa extends Model
         return $this->belongsTo('App\Models\StatusAcc','letris_acc_status_id');
     }
 
+    public function eksklusi()
+    {
+        return $this->hasOne('App\Models\Ppa\PpaExclude','ppa_id');
+    }
+
     public function detail()
     {
         return $this->hasMany('App\Models\Ppa\PpaDetail','ppa_id');
@@ -109,11 +114,6 @@ class Ppa extends Model
     public function proposals()
     {
         return $this->hasMany('App\Models\Ppa\PpaProposal','ppa_id');
-    }
-
-    public function proposalDetails()
-    {
-        return $this->hasMany('App\Models\Ppa\PpaProposalDetail','ppa_id');
     }
 
     public function bbk()

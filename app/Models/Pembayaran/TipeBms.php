@@ -21,8 +21,18 @@ class TipeBms extends Model
         return $this->hasMany('App\Models\Pembayaran\BmsCalonSiswa','bms_type_id');
     }
     
+    public function bmsNominal()
+    {
+        return $this->hasMany('App\Models\Pembayaran\BmsNominal','bms_type_id');
+    }   
+
     public function nominal()
     {
         return $this->hasMany('App\Models\Pembayaran\BmsNominal','bms_type_id');
+    }
+
+    public function getBmsTypeWoNumberAttribute()
+    {
+        return preg_replace('/[0-9]+/', '', str_replace(' ', '', $this->bms_type));
     }
 }

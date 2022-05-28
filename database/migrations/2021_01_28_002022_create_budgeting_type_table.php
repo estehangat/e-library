@@ -18,6 +18,7 @@ class CreateBudgetingTypeTable extends Migration
 			$table->string('name',12);
 			$table->string('fullname')->nullable();
 			$table->string('link',12)->nullable();
+			$table->string('ref_number',3);
             $table->timestamps();
         });
     }

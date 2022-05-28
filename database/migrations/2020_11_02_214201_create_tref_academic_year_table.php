@@ -18,7 +18,7 @@ class CreateTrefAcademicYearTable extends Migration
             $table->string('academic_year');
             $table->year('academic_year_start');
             $table->year('academic_year_end');
-            $table->integer('is_active')->nullable();
+            $table->boolean('is_active')->nullable();
             $table->timestamps();
         });
     }

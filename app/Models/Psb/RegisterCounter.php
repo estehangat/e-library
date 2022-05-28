@@ -14,6 +14,7 @@ class RegisterCounter extends Model
     protected $fillable = [
         'unit_id',
         'academic_year_id',
+        'student_status_id',
         'register_intern',
         'register_extern',
         'saving_seat_extern',
@@ -22,6 +23,8 @@ class RegisterCounter extends Model
         'interview_extern',
         'accepted_intern',
         'accepted_extern',
+        'before_reapply_intern',
+        'before_reapply_extern',
         'reapply_intern',
         'reapply_extern',
         'stored_intern',
@@ -42,4 +45,8 @@ class RegisterCounter extends Model
         return $this->belongsTo(Unit::class,'unit_id');
     }
 
+    public function statusSiswa()
+    {
+        return $this->belongsTo('App\Models\Siswa\StatusSiswa','student_status_id');
+    }
 }
