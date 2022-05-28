@@ -24,22 +24,22 @@ $role = Auth::user()->role->name;
 </div>
 
 <div class="row">
-  <div class="col-xl-4 col-md-6 mb-4">
+  <div class="col-xl-{{ !$viewYayasan ? 6 : 4 }} col-md-{{ !$viewYayasan ? 12 : 6 }} mb-4">
     <div class="card h-100">
       <div class="card-body">
         <div class="row align-items-center">
           <div class="col mr-2">
-            <div class="text-xs font-weight-bold mb-1">Jumlah Muda</div>
+            <div class="text-xs font-weight-bold mb-1">Jumlah Auliya</div>
             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $count['total'] }}</div>
           </div>
           <div class="col-auto">
-            <i class="fas fa-users fa-2x text-brand-blue-dark"></i>
+            <i class="fas fa-users fa-2x text-brand-purple"></i>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <div class="col-xl-4 col-md-6 mb-4">
+  <div class="col-xl-{{ !$viewYayasan ? 6 : 4 }} col-md-6 mb-4">
     <div class="card h-100">
       <div class="card-body">
         <div class="row no-gutters align-items-center">
@@ -48,12 +48,13 @@ $role = Auth::user()->role->name;
             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $count['mitra'] }}</div>
           </div>
           <div class="col-auto">
-            <i class="fas fa-hands-helping fa-2x text-secondary"></i>
+            <i class="fas fa-hands-helping fa-2x text-warning"></i>
           </div>
         </div>
       </div>
     </div>
   </div>
+  @if($viewYayasan)
   <div class="col-xl-4 col-md-6 mb-4">
     <div class="card h-100">
       <div class="card-body">
@@ -69,6 +70,7 @@ $role = Auth::user()->role->name;
       </div>
     </div>
   </div>
+  @endif
   <div class="col-xl-4 col-md-6 mb-4">
     <div class="card h-100">
       <div class="card-body">
@@ -78,7 +80,7 @@ $role = Auth::user()->role->name;
             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $count['pt'] }}</div>
           </div>
           <div class="col-auto">
-            <i class="fas fa-user fa-2x text-brand-blue"></i>
+            <i class="fas fa-user fa-2x text-brand-green"></i>
           </div>
         </div>
       </div>
@@ -93,7 +95,7 @@ $role = Auth::user()->role->name;
             <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">{{ $count['ptth'] }}</div>
           </div>
           <div class="col-auto">
-            <i class="fas fa-user fa-2x text-brand-green"></i>
+            <i class="fas fa-user fa-2x text-primary"></i>
           </div>
         </div>
       </div>
@@ -105,10 +107,10 @@ $role = Auth::user()->role->name;
         <div class="row no-gutters align-items-center">
           <div class="col mr-2">
             <div class="text-xs font-weight-bold mb-1">Pegawai Tidak Tetap Kontrak</div>
-            <div class="h5 mb-0 font-weight-bold">{{ $count['pttk'] }}</div>
+            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $count['pttk'] }}</div>
           </div>
           <div class="col-auto">
-            <i class="fas fa-user fa-2x text-warning"></i>
+            <i class="fas fa-user fa-2x text-info"></i>
           </div>
         </div>
       </div>
@@ -120,7 +122,7 @@ $role = Auth::user()->role->name;
   <div class="col-lg-8">
     <div class="card shadow mb-4">
       <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-brand-blue">Pegawai Tiap Unit</h6>
+        <h6 class="m-0 font-weight-bold text-brand-purple">Pegawai Tiap Unit</h6>
       </div>
       <div class="card-body">
         <div class="chart-bar">
@@ -134,7 +136,7 @@ $role = Auth::user()->role->name;
   <div class="col-lg-4">
     <div class="card shadow mb-4">
       <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-brand-blue">Jenis Kelamin</h6>
+        <h6 class="m-0 font-weight-bold text-brand-purple">Jenis Kelamin</h6>
       </div>
       <div class="card-body">
         <div class="chart-pie">
@@ -148,7 +150,7 @@ $role = Auth::user()->role->name;
   <div class="col-12">
     <div class="card shadow mb-4">
       <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-brand-blue">Guru Tiap Unit</h6>
+        <h6 class="m-0 font-weight-bold text-brand-purple">Guru Tiap Unit</h6>
       </div>
       <div class="card-body pt-0">
         <div class="row pt-2">
@@ -182,7 +184,7 @@ $role = Auth::user()->role->name;
   <div class="col-md-6 col-12">
     <div class="card">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-blue">10 Pegawai Terlama</h6>
+        <h6 class="m-0 font-weight-bold text-brand-purple">10 Pegawai Terlama</h6>
       </div>
       <div class="card-body pt-1 pb-3 px-3">
         @foreach($senior as $p)
@@ -209,7 +211,7 @@ $role = Auth::user()->role->name;
   <div class="col-md-6 col-12">
     <div class="card">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-blue">Pegawai Senja</h6>
+        <h6 class="m-0 font-weight-bold text-brand-purple">Pegawai Senja</h6>
       </div>
       <div class="card-body pt-0 pb-3 px-3">
         @if(count($tua) > 0)

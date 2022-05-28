@@ -45,7 +45,32 @@ Ubah Data Calon Siswa
                     <div class="col-md-8">
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Program Siswa</h6>
+                            <h6 class="font-weight-bold text-brand-purple">Siswa</h6>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="kelas" class="col-sm-4 control-label">Siswa Baru?</label>
+                            <div class="col-sm-6">
+                                <select name="siswa_baru" class="form-control" id="siswa_baru">
+                                    @foreach( $studentStatusses as $s)
+                                    <option value="{{ $s->id }}" {{ $siswa->student_status_id == $s->id ? 'selected="selected"' : null }}>{{ $s->status }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row kelas" style="{!! $siswa->student_status_id == 2 ? null : 'display: none' !!}">
+                            <label for="kelas" class="col-sm-4 control-label">Kelas<span class="text-danger">*</span></label>
+                            <div class="col-sm-6">
+                                <select name="kelas" class="form-control" id="kelas" style="width:100%;" tabindex="-1" aria-hidden="true">
+                                    <option value="">== Pilih Kelas ==</option>
+                                    @foreach( $levels as $level)
+                                        @if($siswa->level_id==$level->id)
+                                            <option value="{{ $level->id }}" selected>{{ $level->level }}</option>
+                                        @else
+                                            <option value="{{ $level->id }}">{{ $level->level }}</option>
+                                        @endif
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
                         <div class="row mb-4">
@@ -54,9 +79,9 @@ Ubah Data Calon Siswa
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="nama" class="col-sm-4 control-label">NIK<span class="text-danger">*</span></label>
+                            <label for="nik" class="col-sm-4 control-label">NIK<span class="text-danger">*</span></label>
                             <div class="col-sm-6">
-                                <input type="text" class="form-control" name="nik"  placeholder="Nomor Induk Kependudukan" maxlength="16" value="{{ $siswa->nik }}">
+                                <input type="text" class="form-control" name="nik"  placeholder="Nomor Induk Kependudukan" maxlength="16" value="{{ $siswa->nik }}" required="required">
                             </div>
                         </div>
                         <div class="form-group row">
@@ -121,21 +146,6 @@ Ubah Data Calon Siswa
                                 @foreach( $agamas as $agama )
                                     <option value="{{ $agama->id }}" selected>{{ $agama->name }}</option>
                                 @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        <div class="form-group row">
-                            <label for="kelas" class="col-sm-4 control-label">Kelas<span class="text-danger">*</span></label>
-                            <div class="col-sm-6">
-                                <select name="kelas" class="form-control" id="kelas" style="width:100%;" tabindex="-1" aria-hidden="true">
-                                        <option value="">== Pilih Kelas ==</option>
-                                    @foreach( $levels as $level)
-                                    @if($siswa->level_id==$level->id)
-                                        <option value="{{ $level->id }}" selected>{{ $level->level }}</option>
-                                    @else
-                                        <option value="{{ $level->id }}">{{ $level->level }}</option>
-                                    @endif
-                                    @endforeach
                                 </select>
                             </div>
                         </div>
@@ -757,6 +767,15 @@ Ubah Data Calon Siswa
                 $('div[id="asal_sekolah_lain"]').hide();
             }else{
                 $('div[id="asal_sekolah_lain"]').show();
+            }
+        });
+        $('select[name="siswa_baru"]').on('change', function() {
+            var siswa_baru = this.value;
+            if(siswa_baru == 1){
+                $('.kelas').hide();
+                
+            }else{
+                $('.kelas').show();
             }
         });
     });

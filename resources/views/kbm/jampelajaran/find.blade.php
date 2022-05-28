@@ -129,9 +129,11 @@ Jam Pelajaran
                         </table>
                     </div>
                 </div>
+                @if( in_array((auth()->user()->role_id), array(1,2,3)))
                 <div class="text-center mt-4">
                     <button type="submit" class="btn btn-brand-purple-dark" data-toggle="modal" data-target="#TambahModal">Tambah</button>
                 </div>
+                @endif
             </div>
         </div>
     </div>
@@ -266,4 +268,5 @@ Jam Pelajaran
 <!-- Plugins and scripts required by this view-->
 <script src="{{asset('vendor/chart.js/Chart.min.js')}}"></script>
 <script src="{{asset('js/demo/chart-area-demo.js')}}"></script>
+@include('template.footjs.kbm.datatables')
 @endsection

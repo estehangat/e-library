@@ -40,7 +40,7 @@
 @endsection
 
 @section('buttons')
-@if((($isYear && $tahun == date('Y')) || (!$isYear && $tahun->is_active == 1)) && $isAnggotaPa && $apbyAktif && $apbyAktif->is_active == 1)
+@if((($isYear && $tahun == date('Y')) || (!$isYear && $tahun->is_finance_year == 1)) && $isAnggotaPa && $apbyAktif && $apbyAktif->is_active == 1)
 <div class="m-0 float-right btn-group">
     <a class="btn btn-brand-purple-dark btn-sm" href="{{ route('ppa.buat', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link]) }}">Buat Pengajuan <i class="fas fa-plus-circle ml-1"></i></a>
     <button type="button" class="btn btn-brand-purple-dark btn-sm dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

@@ -75,7 +75,7 @@
                 <a class="collapse-item {{ (Request::path()=='kependidikan/penilaianmapel/indikator/mapel') ? 'active' : '' }}" href="/kependidikan/penilaianmapel/indikator/mapel"><i class="mdi mdi-cog" aria-hidden="true"></i> Indikator Pengetahuan</a>
                 <a class="collapse-item {{ (Request::path()=='kependidikan/penilaianmapel/targettahfidz') ? 'active' : '' }}" href="/kependidikan/penilaianmapel/targettahfidz"><i class="mdi mdi-cog" aria-hidden="true"></i> Target Tahfidz</a>
                 <a class="collapse-item {{ (Request::path()=='kependidikan/penilaianmapel/deschafal') ? 'active' : '' }}" href="/kependidikan/penilaianmapel/deschafal"><i class="mdi mdi-cog" aria-hidden="true"></i> Deskripsi Hafalan</a>
-            <?php 
+            <?php
             }
             if ($mapelnotquran == 0 && $mapelquran > 0) {
             ?>

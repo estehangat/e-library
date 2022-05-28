@@ -1,6 +1,7 @@
 <script type="text/javascript">
     $(document).ready(function() {
-        var max_fields = 12;
+        //var max_fields = 12;
+        var max_fields = 999;
         var wrapper = $("table tbody");
         var add_button = $("#tambahhafalan");
 

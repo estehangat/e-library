@@ -311,4 +311,5 @@ Jadwal Pelajaran
 <script src="{{asset('vendor/chart.js/Chart.min.js')}}"></script>
 <script src="{{asset('js/demo/chart-area-demo.js')}}"></script>
 <script src="{{asset('js/jadwal.js')}}"></script>
+@include('template.footjs.kbm.datatables')
 @endsection

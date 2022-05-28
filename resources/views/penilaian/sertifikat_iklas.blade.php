@@ -1,4 +1,4 @@
-@extends('template.print.master')
+@extends('template.print.A4.master')
 
 @section('title')
 {{ $sertif->siswa->student_nisn}} - {{ $sertif->siswa->identitas->student_name}} - Sertifikat IKLaS

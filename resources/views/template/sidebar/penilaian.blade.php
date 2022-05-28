@@ -32,7 +32,7 @@ $semester = App\Models\Kbm\Semester::where('id', session('semester_aktif'))->fir
                 <a class="collapse-item {{ (Request::path()=='kependidikan/penilaian/deskripsiekstra') ? 'active' : '' }}" href="/kependidikan/penilaian/deskripsiekstra"><i class="mdi mdi-cog" aria-hidden="true"></i> Deskripsi Ekstra</a>
             <?php } else { ?>
                 <a class="collapse-item {{ (Request::path()=='kependidikan/penilaian/nilaisikap') ? 'active' : '' }}" href="/kependidikan/penilaian/nilaisikap"><i class="mdi mdi-plus-circle" aria-hidden="true"></i> Nilai Sikap</a>
-                <!-- <a class="collapse-item {{ (Request::path()=='kependidikan/penilaian/iklas') ? 'active' : '' }}" href="/kependidikan/penilaian/iklas"><i class="mdi mdi-plus-circle" aria-hidden="true"></i> Nilai IKLaS</a> -->
+                <a class="collapse-item {{ (Request::path()=='kependidikan/penilaian/iklas') ? 'active' : '' }}" href="/kependidikan/penilaian/iklas"><i class="mdi mdi-plus-circle" aria-hidden="true"></i> Nilai IKLaS</a>
                 <a class="collapse-item {{ (Request::path()=='kependidikan/penilaian/kehadiran') ? 'active' : '' }}" href="/kependidikan/penilaian/kehadiran"><i class="mdi mdi-plus-circle" aria-hidden="true"></i> Kehadiran</a>
                 <a class="collapse-item {{ (Request::path()=='kependidikan/penilaian/ekstra') ? 'active' : '' }}" href="/kependidikan/penilaian/ekstra"><i class="mdi mdi-plus-circle"></i> Ekstrakurikuler</a>
                 <a class="collapse-item {{ (Request::path()=='kependidikan/penilaian/prestasi') ? 'active' : '' }}" href="/kependidikan/penilaian/prestasi"><i class="mdi mdi-plus-circle"></i> Prestasi</a>
@@ -48,10 +48,10 @@ $semester = App\Models\Kbm\Semester::where('id', session('semester_aktif'))->fir
                 <a class="collapse-item {{ (Request::path()=='kependidikan/penilaian/cetakpas') ? 'active' : '' }}" href="/kependidikan/penilaian/cetakpas"><i class="mdi mdi-printer"></i> Rapor</a>
                 <hr class="sidebar-divider">
                 <a class="collapse-item {{ (Request::path()=='kependidikan/penilaian/predikatsikap') ? 'active' : '' }}" href="/kependidikan/penilaian/predikatsikap"><i class="mdi mdi-cog" aria-hidden="true"></i> Predikat Nilai Sikap</a>
-                <!-- <a class="collapse-item {{ request()->routeIs('predikat.iklas*') ? 'active' : '' }}" href="{{ route('predikat.iklas.index') }}"><i class="mdi mdi-cog" aria-hidden="true"></i> Predikat Nilai IKLaS</a> -->
+                <a class="collapse-item {{ request()->routeIs('predikat.iklas*') ? 'active' : '' }}" href="{{ route('predikat.iklas.index') }}"><i class="mdi mdi-cog" aria-hidden="true"></i> Predikat Nilai IKLaS</a>
                 <a class="collapse-item {{ (Request::path()=='kependidikan/penilaian/deskripsiekstra') ? 'active' : '' }}" href="/kependidikan/penilaian/deskripsiekstra"><i class="mdi mdi-cog" aria-hidden="true"></i> Deskripsi Ekstra</a>
                 <a class="collapse-item {{ (Request::path()=='kependidikan/penilaian/descpts') ? 'active' : '' }}" href="/kependidikan/penilaian/descpts"><i class="mdi mdi-cog" aria-hidden="true"></i> Deskripsi Laporan TS</a>
-                <!-- <a class="collapse-item {{ (Request::path()=='kependidikan/penilaian/indikatoriklas') ? 'active' : '' }}" href="/kependidikan/penilaian/indikatoriklas"><i class="mdi mdi-cog" aria-hidden="true"></i> Indikator IKLaS</a> -->
+                <a class="collapse-item {{ (Request::path()=='kependidikan/penilaian/indikatoriklas') ? 'active' : '' }}" href="/kependidikan/penilaian/indikatoriklas"><i class="mdi mdi-cog" aria-hidden="true"></i> Indikator IKLaS</a>
             <?php } ?>
         </div>
     </div>
@@ -75,13 +75,13 @@ if ($iswali->level_id == 8 || $iswali->level_id == 11 || $iswali->level_id == 14
             </div>
         </div>
     </li>
-    <!-- <li class="nav-item {{ (Request::path()=='kependidikan/sertifiklas/cetak') ? 'active' : '' }}">
+    <li class="nav-item {{ (Request::path()=='kependidikan/sertifiklas/cetak') ? 'active' : '' }}">
         <a class="nav-link" href="/kependidikan/sertifiklas/cetak">
           <i class="mdi mdi-file-certificate-outline"></i>
           <span>Sertifikat IKLaS</span>
         </a>
     </li>
-    <li class="nav-item {{ (request()->is('kependidikan/sertifiklas*')) ? 'active' : '' }}">
+    <!-- <li class="nav-item {{ (request()->is('kependidikan/sertifiklas*')) ? 'active' : '' }}">
         <a class="nav-link {{ (request()->is('kependidikan/sertifiklas*')) ? '' : 'collapsed' }}" href="#" data-toggle="collapse" data-target="#collapseSertif" aria-expanded="true" aria-controls="collapseBootstrap">
             <i class="mdi mdi-file-certificate-outline"></i>
             <span>Sertifikat IKLaS</span>

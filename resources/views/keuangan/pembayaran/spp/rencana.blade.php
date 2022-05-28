@@ -8,7 +8,7 @@ Rencana & Realisasi SPP
 @php
 $role = Auth::user()->role->name;
 @endphp
-@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','pembinayys','ketuayys','wakasek']))
+@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','keu','pembinayys','ketuayys','wakasek']))
 @include('template.sidebar.keuangan.'.$role)
 @else
 @include('template.sidebar.keuangan.employee')

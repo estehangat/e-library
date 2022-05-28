@@ -1,7 +1,7 @@
 @extends('template.main.master')
 
 @section('title')
-RKAT
+RKAB
 @endsection
 
 @section('headmeta')
@@ -14,10 +14,10 @@ RKAT
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-2">
-  <h1 class="h3 mb-0 text-gray-800">RKAT</h1>
+  <h1 class="h3 mb-0 text-gray-800">RKAB</h1>
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="./">Beranda</a></li>
-    <li class="breadcrumb-item active" aria-current="page">RKAT</li>
+    <li class="breadcrumb-item active" aria-current="page">RKAB</li>
   </ol>
 </div>
 
@@ -25,7 +25,7 @@ RKAT
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">RKAT</h6>
+                <h6 class="m-0 font-weight-bold text-brand-purple">RKAB</h6>
                 <button type="button" class="m-0 float-right btn btn-brand-purple-dark btn-sm" data-toggle="modal" data-target="#add-form">Sinkronisasi Ulang <i class="fas fa-redo ml-1"></i></button>
             </div>
             @if(Session::has('success'))

@@ -39,25 +39,34 @@ $i = 1;
         @endif
     </td>
     <td class="detail-value" style="min-width: 200px">
+        @if($ppaAktif->type_id == 2)
+        {{ $p->valueWithSeparator }}
+        @else
         @if((!$isAnggotaPa && $ppaAktif->pa_acc_status_id != 1) || $ppaAktif->finance_acc_status_id == 1 || !$apbyAktif || ($apbyAktif && $apbyAktif->is_active == 0))
         <input type="text" class="form-control form-control-sm" value="{{ $p->valueWithSeparator }}" disabled>
         @else
         <input name="value-{{ $p->id }}" type="text" class="form-control form-control-sm number-separator" value="{{ $p->valueWithSeparator }}">
         @endif
+        @endif
     </td>
-    @if(($apbyAktif && $apbyAktif->is_active == 1) && $isAnggotaPa && ((in_array(Auth::user()->role->name, ['fam','faspv']) && $ppaAktif->finance_acc_status_id != 1) || $ppaAktif->pa_acc_status_id != 1))
+    @if(($apbyAktif && $apbyAktif->is_active == 1) && ($isAnggotaPa || (!$isAnggotaPa && in_array(Auth::user()->role->name, ['fam','faspv']) && $ppaAktif->type_id == 2)) && ((in_array(Auth::user()->role->name, ['fam','faspv']) && $ppaAktif->finance_acc_status_id != 1) || $ppaAktif->pa_acc_status_id != 1))
     <td>
         @if(($apbyAktif && $apbyAktif->is_active == 1) && $p->finance_acc_status_id != 1)
         @if($ppaAktif->type_id == 2)
+        <a href="{{ route('ppa.ubah.proposal', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber, 'id' => $p->id]) }}" class="btn btn-sm btn-brand-purple-dark"><i class="fas fa-list-ul"></i></a>
+        @if($isAnggotaPa)
         <a href="#" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#edit-form" onclick="editModal('{{ route('ppa.ubah.detail', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]) }}','{{ $p->id }}')"><i class="fas fa-pen"></i></a>
+        @endif
         @else
         <button type="button" class="btn btn-sm btn-warning btn-edit" data-toggle="modal" data-target="#edit-form">
             <i class="fa fa-pen"></i>
         </button>
         @endif
+        @if($isAnggotaPa)
         <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#delete-confirm" onclick="deleteModal('Pengajuan', '{{ addslashes(htmlspecialchars($p->note)) }}', '{{ route('ppa.hapus', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber, 'id' => $p->id]) }}')">
             <i class="fas fa-trash"></i>
         </a>
+        @endif
         @endif
     </td>
     @endif
@@ -71,9 +80,15 @@ $i = 1;
 <div class="row">
     <div class="col-12">
         <div class="text-center">
+            @if($ppaAktif->type_id != 2)
             <button class="btn btn-brand-purple-dark" type="submit">Simpan</button>
+            @endif
             @if($ppaAktif->finance_acc_status_id != 1 || $ppaAktif->detail()->where(function($q){$q->where('finance_acc_status_id','!=',1)->orWhereNull('finance_acc_status_id');})->count() > 0)
+            @if($ppaAktif->type_id == 2)
+            <button class="btn btn-warning" type="button" data-toggle="modal" data-target="#saveAccept">Setujui</button>
+            @else
             <button class="btn btn-warning" type="button" data-toggle="modal" data-target="#saveAccept">Simpan & Setujui</button>
+            @endif
             @endif
         </div>
     </div>
@@ -95,12 +110,12 @@ $i = 1;
       </div>
       
       <div class="modal-body p-1">
-        Apakah Anda yakin ingin menyimpan dan menyetujui semua alokasi dana yang ada?
+        Apakah Anda yakin ingin {{ $ppaAktif->type_id == 2 ? 'menyetujui' : 'menyimpan dan menyetujui' }} semua alokasi dana yang ada?
       </div>
 
       <div class="modal-footer justify-content-center">
         <button type="button" class="btn mr-1" data-dismiss="modal">Tidak</button>
-        <button type="submit" id="saveAcceptBtn" class="btn btn-warning" data-form="ppa-form">Ya, Simpan & Setujui</button>
+        <button type="submit" id="saveAcceptBtn" class="btn btn-warning" data-form="ppa-form">Ya, {{ $ppaAktif->type_id == 2 ? 'Setujui' : 'Simpan & Setujui' }}</button>
       </div>
     </div>
   </div>

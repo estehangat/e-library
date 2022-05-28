@@ -12,7 +12,7 @@
 		}
 	</style>
 	<center>
-		<h5>SMP ISLAM TERPADU AULIYA</h4>
+		<h5>{{$kelas->unit->name}} ISLAM TERPADU AULIYA</h4>
 	</center>
 
 

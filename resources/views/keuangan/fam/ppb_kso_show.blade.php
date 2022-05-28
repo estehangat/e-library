@@ -197,6 +197,9 @@ PPB
                                 <th>Jumlah Perintah Bayar</th>
                                 <th>Nomor Rekening Tujuan</th>
                                 <th>Status</th>
+                                @if($bbkAktif->detail()->where('ppa_value','<=',0)->count() > 0)
+                                <th style="width: 120px">Aksi</th>
+                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -239,6 +242,15 @@ PPB
                                     -
                                     @endif
                                 </td>
+                                @if($bbkAktif->detail()->where('ppa_value','<=',0)->count() > 0)
+                                <td>
+                                    @if($b->ppa_value <= 0)
+                                    <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#delete-confirm" onclick="deleteModal('PPA', '{{ addslashes(htmlspecialchars('PPA No. '.$b->ppa->number)) }}', '{{ route('ppb.hapus', ['jenis' => $jenisAktif->link, 'tahun' => $tahun->academicYearLink, 'nomor' => $bbkAktif->firstNumber, 'ppa' => $b->ppa->id]) }}')">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                    @endif
+                                </td>
+                                @endif
                             </tr>
                             @endforeach
                         </tbody>
@@ -257,10 +269,17 @@ PPB
 @endif
 <!--Row-->
 
+@if($bbkAktif && $bbkAktif->detail()->where('ppa_value','<=',0)->count() > 0)
+@include('template.modal.konfirmasi_hapus')
+@endif
+
 @endsection
 
 @section('footjs')
 <!-- Plugins and scripts required by this view-->
 @include('template.footjs.kepegawaian.tooltip')
 @include('template.footjs.keuangan.change-year')
+@if($bbkAktif && $bbkAktif->detail()->where('ppa_value','<=',0)->count() > 0)
+@include('template.footjs.modal.get_delete')
+@endif
 @endsection

@@ -11,4 +11,15 @@ Keuangan @endsection
         </a>
       </li>
       <hr class="sidebar-divider">
+      <div class="sidebar-heading">
+        Pengelolaan Keuangan
+      </div>
+	  <li class="nav-item {{ request()->routeIs('proposal-ppa.index') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('proposal-ppa.index') }}">
+          <i class="mdi mdi-chat-plus"></i>
+          <span>Proposal PPA</span>
+        </a>
+      </li>
+      <hr class="sidebar-divider">
+      @include('template.sidebar.keuangan.pembayaran')
 @endsection

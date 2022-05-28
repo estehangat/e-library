@@ -8,7 +8,7 @@ Sumbangan Pembinaan Pendidikan
 @php
 $role = Auth::user()->role->name;
 @endphp
-@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','pembinayys','ketuayys','wakasek']))
+@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','keu','pembinayys','ketuayys','wakasek']))
 @include('template.sidebar.keuangan.'.$role)
 @else
 @include('template.sidebar.keuangan.employee')
@@ -30,34 +30,27 @@ $role = Auth::user()->role->name;
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-8">
-                        <form action="{{route('spp-siswa-filter')}}" method="POST">
+                        <form action="{{route('spp.spp-siswa-filter')}}" method="POST">
                         @csrf
-                            @if($unit_id==5)
-                            <div class="form-group row">
-                                <label for="kelas" class="col-sm-3 control-label">Unit</label>
-                                <div class="col-sm-5">
-                                    <select name="level" class="select2 form-control select2-hidden-accessible auto_width" id="kelas" style="width:100%;" tabindex="-1" aria-hidden="true">
-                                        <option value="semua">Semua</option>
-                                        <option value="1" selected>TK</option>
-                                        <option value="2" selected>SD</option>
-                                        <option value="3" selected>SMP</option>
-                                        <option value="4" selected>SMA</option>
-                                    </select>
-                                </div>
+                        <div class="form-group row">
+                            <label for="kelas" class="col-sm-3 control-label">Unit</label>
+                            <div class="col-sm-5">
+                                <select name="unit_id" class="select2 form-control select2-hidden-accessible auto_width" id="unit_id" style="width:100%;" tabindex="-1" aria-hidden="true">
+                                    @foreach (getUnits() as $index => $units)
+                                        <option value="{{$units->id}}" {{$index==0?'selected':''}}>{{$units->name}}</option>
+                                    @endforeach
+                                </select>
                             </div>
-                            @endif
-                            <div class="form-group row">
-                                <label for="kelas" class="col-sm-3 control-label">Tingkat Kelas</label>
-                                <div class="col-sm-5">
-                                    <select name="level" class="select2 form-control select2-hidden-accessible auto_width" id="kelas" style="width:100%;" tabindex="-1" aria-hidden="true">
-                                        <option value="semua">Semua</option>
-                                        @foreach( $levels as $tingkat)
-                                            <option value="{{$tingkat->id}}" {{$tingkat->id==$level?'selected':''}}>{{$tingkat->level}}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <button class="btn btn-brand-purple-dark btn-sm" type="submit">Saring</button>
+                        </div>
+                        <div class="form-group row">
+                            <label for="kelas" class="col-sm-3 control-label">Tingkat Kelas</label>
+                            <div class="col-sm-5">
+                                <select name="level" class="select2 form-control select2-hidden-accessible auto_width" id="level" style="width:100%;" tabindex="-1" aria-hidden="true">
+                                    <option value="">Semua</option>
+                                </select>
                             </div>
+                            <button id="filter_submit" class="btn btn-brand-purple-dark btn-sm" type="button">Saring</button>
+                        </div>
                         </form>
                     </div>
                     <div class="table-responsive">
@@ -74,38 +67,61 @@ $role = Auth::user()->role->name;
                             </button>
                         </div>
                         @endif
+                        @error('email')
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <strong>Gagal!</strong> {{ $message }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        @enderror
+                        @error('whatsapp')
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <strong>Gagal!</strong> {{ $message }}
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        @enderror
                         <table id="dataTable" class="table align-items-center table-flush">
                             <thead class="thead-light">
                                 <tr>
                                     <th>NIPD</th>
                                     <th>Nama</th>
-                                    <th>SPP Keseluruhan</th>
-                                    <th>Potongan Keseluruhan</th>
+                                    <th>Tanggungan SPP Per Bulan Lalu</th>
+                                    <th>Deposit SPP Per Bulan Lalu</th>
+                                    <th>Nominal SPP Bulan Ini</th>
+                                    <th>Potongan SPP (di Awal Tapel)</th>
+                                    <th>Total Tanggungan SPP Bulan Ini</th>
                                     <th>SPP Terbayar</th>
-                                    <th>Tanggungan Keseluruhan Setelah Potongan</th>
-                                    <th>Deposit SPP</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @foreach ($lists as $list)
+                            <tbody id="tbody">
+                                {{-- @foreach ($lists as $list)
+                                @if($list->spp)
                                 <tr>
                                     <td>{{$list->student_nis}}</td>
-                                    <td>{{$list->student_name}}</td>
-                                    @if($list->spp)
+                                    <td>{{$list->identitas->student_name}}</td>
                                     <td>Rp {{number_format($list->spp->total)}}</td>
                                     <td>Rp {{number_format($list->spp->deduction)}}</td>
                                     <td>Rp {{number_format($list->spp->paid)}}</td>
                                     <td>Rp {{number_format($list->spp->total-($list->spp->paid+$list->spp->deduction))}}</td>
-                                    {{-- <td>Rp {{number_format($list->spp->remain)}}</td> --}}
                                     <td>Rp {{number_format($list->spp->saldo)}}</td>
-                                    @else
-                                    <td>gada</td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    @endif
                                 </tr>
-                                @endforeach
+                                @endif
+                                @endforeach --}}
+                                {{-- @foreach ($datas as $list)
+                                <tr>
+                                    <td>{{$list->siswa->student_nis}}</td>
+                                    <td>{{$list->siswa->identitas->student_name}}</td>
+                                    <td>Rp {{number_format($list->total)}}</td>
+                                    <td>Rp {{number_format($list->deduction)}}</td>
+                                    <td>Rp {{number_format($list->paid)}}</td>
+                                    <td>Rp {{number_format($list->total-($list->paid+$list->deduction))}}</td>
+                                    <td>Rp {{number_format($list->saldo)}}</td>
+                                </tr>
+                                @endforeach --}}
                             </tbody>
                         </table>
                     </div>
@@ -113,6 +129,32 @@ $role = Auth::user()->role->name;
             </div>
         </div>
     </div>
+</div>
+
+<div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: none;">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-brand-purple border-0">
+        <h5 class="modal-title text-white">Kirim Email Pengingat Tagihan SPP</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">x</span>
+        </button>
+      </div>
+
+      <div class="modal-load p-4">
+        <div class="row">
+          <div class="col-12">
+            <div class="text-center my-5">
+              <i class="fa fa-spin fa-circle-notch fa-lg text-brand-green"></i>
+              <h5 class="font-weight-light mb-3">Memuat...</h5>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-body p-4" style="display: none;">
+      </div>
+    </div>
+  </div>
 </div>
 
 <!--Row-->
@@ -128,5 +170,70 @@ $role = Auth::user()->role->name;
 <script src="{{ asset('vendor/datatablestambahan/vfs_fonts.js') }}"></script>
 <script src="{{ asset('vendor/datatablestambahan/buttons.html5.min.js') }}"></script>
 <!-- Page level custom scripts -->
+<script src="{{ asset('js/level.js') }}"></script>
+
+<!-- Page level custom scripts -->
+@include('template.footjs.global.custom-file-input')
 @include('template.footjs.kbm.datatables')
+@include('template.footjs.modal.post_edit')
+
+<script>
+$(document).ready(function()
+{
+
+    $('#unit_id').on('change',function(){
+        const unit_id = $(this).val();
+        changeUnit(unit_id);
+    });
+    changeUnit($('#unit_id').val());
+    $('#filter_submit').click(function(){
+        getData();
+    });
+    getData();
+});
+
+function getData(){
+
+    var unit_id = $('#unit_id').val();
+    var level_id = $('#level').val();
+
+
+    $.ajax({
+        url         : window.location.href,
+        type        : 'POST',
+        dataType    : 'JSON',
+        headers     : {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+        data        : {
+            unit_id : unit_id,
+            level_id : level_id,
+        },
+        beforeSend  : function() {
+        },
+        complete    : function() {
+        }, 
+        success: function async(response){
+            console.log(response);
+            $('#dataTable').DataTable().destroy();
+            $('#tbody').empty();
+            response[0].map((item, index) => {
+                let row = '<tr>+'+
+                        '<td>'+item[0]+'</td>'+
+                        '<td>'+item[1]+'</td>'+
+                        '<td>'+item[2]+'</td>'+
+                        '<td>'+item[3]+'</td>'+
+                        '<td>'+item[4]+'</td>'+
+                        '<td>'+item[5]+'</td>'+
+                        '<td>'+item[6]+'</td>'+
+                        '<td>'+item[7]+'</td>'
+                    '</tr>';
+                $('#tbody').append(row);
+            });
+            $('#dataTable').DataTable();
+        },
+        error: function(xhr, textStatus, errorThrown){
+            alert(xhr.responseText);
+        },
+    });
+}
+</script>
 @endsection

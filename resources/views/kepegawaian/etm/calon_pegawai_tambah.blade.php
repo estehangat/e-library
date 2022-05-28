@@ -1,7 +1,7 @@
 @extends('template.main.master')
 
 @section('title')
-Tambah Calon Pegawai
+Tambah Calon Civitas Auliya
 @endsection
 
 @section('headmeta')
@@ -23,11 +23,11 @@ Tambah Calon Pegawai
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-2">
-  <h1 class="h3 mb-0 text-gray-800">Tambah Calon Pegawai</h1>
+  <h1 class="h3 mb-0 text-gray-800">Tambah Calon Civitas Auliya</h1>
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="./">Beranda</a></li>
     <li class="breadcrumb-item"><a href="{{ route('rekrutmen.index') }}">Rekrutmen</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('calon.index') }}">Calon Pegawai</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('calon.index') }}">Calon Civitas Auliya</a></li>
     <li class="breadcrumb-item active" aria-current="page">Tambah</li>
   </ol>
 </div>
@@ -36,7 +36,7 @@ Tambah Calon Pegawai
   <div class="col-12">
     <div class="card">
       <div class="card-header py-3 bg-brand-purple-dark d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-white">Form Calon Pegawai Lulus Seleksi</h6>
+        <h6 class="m-0 font-weight-bold text-white">Form Calon Civitas Auliya Lulus Seleksi</h6>
       </div>
       <div class="card-body p-4">
         <form action="{{ route('calon.simpan') }}" id="add-form" method="post" enctype="multipart/form-data" accept-charset="utf-8" onsubmit="return validateDate('inputBirthDate','birthDateError');">

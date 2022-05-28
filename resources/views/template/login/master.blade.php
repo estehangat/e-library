@@ -10,7 +10,7 @@
 
 <body>
   <!-- Container Fluid-->
-  <div class="container-login100" style="background-image: url('{{ request()->routeIs('reset.password*') || request()->routeIs('psb.pendaftaran*') ? '../' : '' }}img/login/pawel-czerwinski-YWIOwHvRBvU-unsplash.jpg')">
+  <div class="container-login100" style="background-image: url('{{ request()->routeIs('reset.password*') || request()->routeIs('psb.pendaftaran*') ? '../' : '' }}img/login/sdit-auliya.jpg')">
   @yield('content')
   </div>
   <!-- Container Fluid-->

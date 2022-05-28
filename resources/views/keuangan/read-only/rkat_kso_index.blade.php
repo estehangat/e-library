@@ -1,7 +1,7 @@
 @extends('template.main.master')
 
 @section('title')
-RKAT
+RKAB
 @endsection
 
 @section('headmeta')
@@ -14,10 +14,10 @@ RKAT
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-2">
-  <h1 class="h3 mb-0 text-gray-800">RKAT</h1>
+  <h1 class="h3 mb-0 text-gray-800">RKAB</h1>
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{{ route('keuangan.index')}}">Beranda</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('rkat.index')}}">RKAT</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('rkat.index')}}">RKAB</a></li>
     @if($jenisAktif)
     <li class="breadcrumb-item"><a href="{{ route('rkat.index', ['jenis' => $jenisAktif->link])}}">{{ $jenisAktif->name }}</a></li>
     <li class="breadcrumb-item active" aria-current="page">{{ $tahun->academic_year }}</li>
@@ -118,7 +118,7 @@ RKAT
                     <div class="input-group">
                     <select aria-label="Tahun" name="tahun" class="form-control" id="yearOpt">
                       @foreach($tahunPelajaran as $t)
-                      @if($t->is_active == 1 || $t->whereHas('rkat',function($q)use($jenisAktif){$q->whereHas('jenisAnggaranAnggaran',function($q)use($jenisAktif){$q->where('budgeting_type_id',$jenisAktif->id);});})->count() > 0)
+                      @if($t->is_finance_year == 1 || $t->whereHas('rkat',function($q)use($jenisAktif){$q->whereHas('jenisAnggaranAnggaran',function($q)use($jenisAktif){$q->where('budgeting_type_id',$jenisAktif->id);});})->count() > 0)
                       <option value="{{ $t->academicYearLink }}" {{ $tahun->id == $t->id ? 'selected' : '' }}>{{ $t->academic_year }}</option>
                       @endif
                       @endforeach
@@ -174,7 +174,7 @@ RKAT
                     $rkatCount = $a->rkat()->where('academic_year_id',$tahun->id)->count();
                     $anggaranAktif += $rkatCount;
                     @endphp
-                    @if(($tahun->is_active != 1 && $rkatCount > 0) || $tahun->is_active == 1)
+                    @if(($tahun->is_finance_year != 1 && $rkatCount > 0) || $tahun->is_finance_year == 1)
                     <div class="col-md-6 col-12 mb-3">
                         <div class="row py-2 rounded border border-light mr-2">
                             <div class="col-8 d-flex align-items-center">
@@ -194,7 +194,7 @@ RKAT
                     </div>
                     @endif
                     @endforeach
-                    @if($tahun->is_active != 1 && $anggaranAktif == 0)
+                    @if($tahun->is_finance_year != 1 && $anggaranAktif == 0)
                     <div class="col-12 pl-0 pr-3">
                         <div class="text-center mx-3 mt-4 mb-5">
                             <h3>Mohon Maaf,</h3>

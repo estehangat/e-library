@@ -1,7 +1,7 @@
 @extends('template.main.master')
 
 @section('title')
-Calon Pegawai
+Calon Civitas Auliya
 @endsection
 
 @section('headmeta')
@@ -26,10 +26,10 @@ Calon Pegawai
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-2">
-  <h1 class="h3 mb-0 text-gray-800">Calon Pegawai</h1>
+  <h1 class="h3 mb-0 text-gray-800">Calon Civitas Auliya</h1>
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="./">Beranda</a></li>
-    <li class="breadcrumb-item active" aria-current="page">Calon Pegawai</li>
+    <li class="breadcrumb-item active" aria-current="page">Calon Civitas Auliya</li>
   </ol>
 </div>
 
@@ -37,7 +37,7 @@ Calon Pegawai
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Calon Pegawai Lulus Seleksi</h6>
+                <h6 class="m-0 font-weight-bold text-brand-purple">Calon Civitas Auliya Lulus Seleksi</h6>
             </div>
             <div class="card-body p-3">
               @if(Session::has('success'))
@@ -133,7 +133,7 @@ Calon Pegawai
               @else
               <div class="text-center mx-3 mt-4 mb-5">
                 <h3 >Mohon Maaf,</h3>
-                <h6 class="font-weight-light mb-3">Tidak ada data calon pegawai yang ditemukan</h6>
+                <h6 class="font-weight-light mb-3">Tidak ada data calon civitas Auliya yang ditemukan</h6>
               </div>
               @endif
             </div>
@@ -148,7 +148,7 @@ Calon Pegawai
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header bg-brand-purple border-0">
-        <h5 class="modal-title text-white">Ubah Calon Pegawai</h5>
+        <h5 class="modal-title text-white">Ubah Calon Civitas Auliya</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>
         </button>

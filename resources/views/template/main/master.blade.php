@@ -42,8 +42,8 @@
                   <p>Apa Anda yakin ingin keluar?</p>
                 </div>
                 <div class="modal-footer">
-                  <button type="button" class="btn btn-outline-brand-blue" data-dismiss="modal">Kembali</button>
-                  <a href="/logout" class="btn btn-brand-blue">Keluar</a>
+                  <button type="button" class="btn btn-outline-brand-purple" data-dismiss="modal">Kembali</button>
+                  <a href="/logout" class="btn btn-brand-purple">Keluar</a>
                 </div>
               </div>
             </div>
@@ -56,7 +56,7 @@
       <footer class="sticky-footer bg-white">
         <div class="container my-auto">
           <div class="copyright text-center my-auto">
-            <span>Copyright &copy; <script> document.write(new Date().getFullYear()); </script> MUDA INCOMSO. All Rights Reserved.</b>
+            <span>Copyright &copy; <script> document.write(new Date().getFullYear()); </script> SIT Auliya. All Rights Reserved.</b>
             </span>
           </div>
         </div>

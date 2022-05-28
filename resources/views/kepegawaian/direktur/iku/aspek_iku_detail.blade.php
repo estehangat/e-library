@@ -88,7 +88,7 @@ $role = Auth::user()->role->name;
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Aspek IKU Edukasi</h6>
+                <h6 class="m-0 font-weight-bold text-brand-purple">Aspek IKU {{ $iku->name }}</h6>
                 @php
                 $indicatorCount = $aspectUnits->filter(function($value, $key){
                   return $value->indikator()->where(function($query){

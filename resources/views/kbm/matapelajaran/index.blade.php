@@ -37,7 +37,7 @@ Mata Pelajaran
                             </button>
                         </div>
                         @endif
-                        <table class="table align-items-center table-flush">
+                        <table id="dataTable" class="table align-items-center table-flush">
                             <thead class="thead-light">
                                 <tr>
                                     <th>No</th>
@@ -56,18 +56,16 @@ Mata Pelajaran
                                 <tr>
                                     <td>{{ $index+1 }}</td>
 
-                                    @if( in_array((auth()->user()->role_id), array(1,2)))
+                                    @if( in_array((auth()->user()->role_id), array(5)))
+                                    <td>{{ $mapel->mataPelajaran->subject_name }} @if($unit !==1)({{ $mapel->mataPelajaran->subject_number }})@endif {{ $mapel->is_mulok==1?'(Mulok)':'' }}</td>
+                                    <td>{{ $mapel->mataPelajaran->kmps->group_subject_name }}</td>
+                                    <td>{{ $kkm[$index] }}</td>
+                                    @else
                                     <td>{{ $mapel->subject_name }} @if($unit !==1)({{ $mapel->subject_number }})@endif {{ $mapel->is_mulok==1?'(Mulok)':'' }}</td>
                                     <td>{{ $mapel->kmps->group_subject_name }}</td>
                                     @if($unit !==1)
                                         <td>{{ $kkm[$index] }}</td>
                                     @endif
-                                    @endif
-
-                                    @if( in_array((auth()->user()->role_id), array(5)))
-                                    <td>{{ $mapel->mataPelajaran->subject_name }} @if($unit !==1)({{ $mapel->mataPelajaran->subject_number }})@endif {{ $mapel->is_mulok==1?'(Mulok)':'' }}</td>
-                                    <td>{{ $mapel->mataPelajaran->kmps->group_subject_name }}</td>
-                                    <td>{{ $kkm[$index] }}</td>
                                     @endif
 
                                     @if( in_array((auth()->user()->role_id), array(1,2,5)))
@@ -133,4 +131,5 @@ Mata Pelajaran
 <!-- Plugins and scripts required by this view-->
 <script src="{{asset('vendor/chart.js/Chart.min.js')}}"></script>
 <script src="{{asset('js/demo/chart-area-demo.js')}}"></script>
+@include('template.footjs.kbm.datatables')
 @endsection

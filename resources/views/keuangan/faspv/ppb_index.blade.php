@@ -134,7 +134,7 @@ PPB
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-brand-purple">PPB</h6>
-                @if((!$isYear && $tahun->is_active == 1) || ($isYear && $tahun == date('Y')))
+                @if((!$isYear && $tahun->is_finance_year == 1) || ($isYear && $tahun == date('Y')))
                 @if(count($ppaAcc) > 0)
                 <a class="m-0 float-right btn btn-brand-purple-dark btn-sm" href="{{ route('ppb.buat', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun])}}">Buat Baru <i class="fas fa-plus-circle ml-1"></i></a>
                 @else

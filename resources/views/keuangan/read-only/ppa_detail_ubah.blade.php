@@ -26,7 +26,7 @@
           <div class="col-lg-9 col-md-8 col-12">
             <select class="select2-multiple form-control form-control-sm @error('editProposals') is-invalid @enderror" name="editProposals[]" multiple="multiple" id="select2EditProposal" required="required">
       				@foreach($proposals as $p)
-      				<option value="{{ $p->id }}" {{ $ppaDetail->proposals()->count() > 0 && $ppaDetail->proposals->pluck('id')->contains($p->id) ? 'selected' : '' }} data-amount="{{ $p->amount }}">{{ $p->desc.' - '.$p->amountWithSeparator.' ['.$p->pegawai->nickname.', '.$p->jabatan->name.']' }}</option>
+      				<option value="{{ $p->id }}" {{ $ppaDetail->proposals()->count() > 0 && $ppaDetail->proposals->pluck('id')->contains($p->id) ? 'selected' : '' }} data-amount="{{ $p->total_value }}">{{ $p->title.' - '.$p->totalValueWithSeparator.' ['.$p->pegawai->nickname.', '.$p->jabatan->name.']' }}</option>
       				@endforeach
             </select>
           </div>
@@ -46,7 +46,7 @@
             <label for="normal-input" class="form-control-label">Jumlah</label>
           </div>
           <div class="col-lg-6 col-md-8 col-12">
-            <input type="text" id="editValue" class="form-control form-control-sm" name="editTotal" value="{{ $ppaDetail->proposals()->count() > 0 ? number_format($ppaDetail->proposals()->sum('amount'), 0, ',', '.') : 0 }}" disabled="disabled">
+            <input type="text" id="editValue" class="form-control form-control-sm" name="editTotal" value="{{ $ppaDetail->proposals()->count() > 0 ? number_format($ppaDetail->proposals()->sum('total_value'), 0, ',', '.') : 0 }}" disabled="disabled">
           </div>
         </div>
       </div>

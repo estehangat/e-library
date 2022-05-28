@@ -191,10 +191,10 @@
                 </td>
             </tr>
             <tr>
-                <td>2.2. Jujur</td>
+                <td>2.2. Santun</td>
                 <td>
                     @php
-                    $iklas = $scoreiklas ? $scoreiklas->where('iklas_ref_id',6)->first() : NULL;
+                    $iklas = $scoreiklas ? $scoreiklas->where('iklas_ref_id',16)->first() : NULL;
                     @endphp
                     <div class="rating">
                         <input type="radio" name="rating[2][2]" value="5" id="522" <?php if ($scoreiklas != FALSE) {
@@ -226,10 +226,10 @@
                 </td>
             </tr>
             <tr>
-                <td>2.3. Tanggung Jawab</td>
+                <td>2.3. Jujur</td>
                 <td>
                     @php
-                    $iklas = $scoreiklas ? $scoreiklas->where('iklas_ref_id',7)->first() : NULL;
+                    $iklas = $scoreiklas ? $scoreiklas->where('iklas_ref_id',6)->first() : NULL;
                     @endphp
                     <div class="rating">
                         <input type="radio" name="rating[2][3]" value="5" id="523" <?php if ($scoreiklas != FALSE) {
@@ -261,10 +261,10 @@
                 </td>
             </tr>
             <tr>
-                <td>2.4. Peduli</td>
+                <td>2.4. Tanggung Jawab</td>
                 <td>
                     @php
-                    $iklas = $scoreiklas ? $scoreiklas->where('iklas_ref_id',8)->first() : NULL;
+                    $iklas = $scoreiklas ? $scoreiklas->where('iklas_ref_id',7)->first() : NULL;
                     @endphp
                     <div class="rating">
                         <input type="radio" name="rating[2][4]" value="5" id="524" <?php if ($scoreiklas != FALSE) {
@@ -296,10 +296,10 @@
                 </td>
             </tr>
             <tr>
-                <td>2.5. Bermental Juara</td>
+                <td>2.5. Peduli</td>
                 <td>
                     @php
-                    $iklas = $scoreiklas ? $scoreiklas->where('iklas_ref_id',9)->first() : NULL;
+                    $iklas = $scoreiklas ? $scoreiklas->where('iklas_ref_id',8)->first() : NULL;
                     @endphp
                     <div class="rating">
                         <input type="radio" name="rating[2][5]" value="5" id="525" <?php if ($scoreiklas != FALSE) {
@@ -327,6 +327,41 @@
                                 echo "checked";
                             }
                         } ?>><label for="125">☆</label>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>2.6. Bermental Juara</td>
+                <td>
+                    @php
+                    $iklas = $scoreiklas ? $scoreiklas->where('iklas_ref_id',9)->first() : NULL;
+                    @endphp
+                    <div class="rating">
+                        <input type="radio" name="rating[2][6]" value="5" id="526" <?php if ($scoreiklas != FALSE) {
+                            if ($iklas && $iklas->predicate == 5) {
+                                echo "checked";
+                            }
+                        } ?>><label for="526">☆</label>
+                        <input type="radio" name="rating[2][6]" value="4" id="426" <?php if ($scoreiklas != FALSE) {
+                            if ($iklas && $iklas->predicate == 4) {
+                                echo "checked";
+                            }
+                        } ?>><label for="426">☆</label>
+                        <input type="radio" name="rating[2][6]" value="3" id="326" <?php if ($scoreiklas != FALSE) {
+                            if ($iklas && $iklas->predicate == 3) {
+                                echo "checked";
+                            }
+                        } ?>><label for="326">☆</label>
+                        <input type="radio" name="rating[2][6]" value="2" id="226" <?php if ($scoreiklas != FALSE) {
+                            if ($iklas && $iklas->predicate == 2) {
+                                echo "checked";
+                            }
+                        } ?>><label for="226">☆</label>
+                        <input type="radio" name="rating[2][6]" value="1" id="126" <?php if ($scoreiklas != FALSE) {
+                            if ($iklas && $iklas->predicate == 1) {
+                                echo "checked";
+                            }
+                        } ?>><label for="126">☆</label>
                     </div>
                 </td>
             </tr>

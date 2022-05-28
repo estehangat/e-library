@@ -1,7 +1,7 @@
 @extends('template.main.master')
 
 @section('title')
-Evaluasi Pegawai
+Evaluasi Civitas Auliya
 @endsection
 
 @section('headmeta')
@@ -16,11 +16,11 @@ Evaluasi Pegawai
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-2">
-    <h1 class="h3 mb-0 text-gray-800">Evaluasi Pegawai</h1>
+    <h1 class="h3 mb-0 text-gray-800">Evaluasi Civitas Auliya</h1>
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="./">Beranda</a></li>
         <li class="breadcrumb-item"><a href="{{ route('calon.index') }}">Rekrutmen</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Evaluasi Pegawai</li>
+        <li class="breadcrumb-item active" aria-current="page">Evaluasi Civitas Auliya</li>
     </ol>
 </div>
 
@@ -60,7 +60,7 @@ Evaluasi Pegawai
                       <th>PSC Terakhir</th>
                       <th>PSC Sementara</th>
                       <th>Kelanjutan</th>
-                      <th>Status Pegawai</th>
+                      <th>Status Civitas Auliya</th>
                       <th>Status</th>
                       <th>Aksi</th>
                     </tr>
@@ -125,7 +125,7 @@ Evaluasi Pegawai
               @else
               <div class="text-center mx-3 mt-4 mb-5">
                 <h3>Mohon Maaf,</h3>
-                <h6 class="font-weight-light mb-3">Tidak ada data evaluasi pegawai yang ditemukan</h6>
+                <h6 class="font-weight-light mb-3">Tidak ada data evaluasi Civitas Auliya yang ditemukan</h6>
               </div>
               @endif
             </div>

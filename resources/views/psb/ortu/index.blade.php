@@ -34,6 +34,14 @@ Pendaftaran Siswa Baru
                             </button>
                         </div>
                         @endif
+                        @if(Session::has('danger'))
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                          <strong>Gagal!</strong> {{ Session::get('danger') }}
+                          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                        </div>
+                        @endif
                         <img src="{{asset('img/psb/welcome.jpeg')}}"  class="img-fluid" alt="Responsive image">
                     </div>
                 </div>

@@ -4,13 +4,13 @@
   <input id="id" type="hidden" name="id" required="required" value="{{ $rpd->predicate }}">
   <div class="row mb-2">
     <div class="col-12 mb-1">
-	     Predikat
+       Predikat
     </div>
     <div class="col-12">
-  	  <h5>
-  		@for($j=0;$j<$rpd->predicate;$j++)&#9733;
-  		@endfor
-  	  </h5>
+      <h5>
+      @for($j=0;$j<$rpd->predicate;$j++)&#9733;
+      @endfor
+      </h5>
     </div>
   </div>
   <div class="row">
@@ -21,12 +21,12 @@
             <label for="reasonOpt" class="form-control-label">Deskripsi</label>
           </div>
           <div class="col-12">
-            <textarea type="text" name="deskripsi" class="form-control" maxlength="80">{{ $rpd ? $rpd->description : '' }}</textarea>
+            <textarea type="text" name="deskripsi" class="form-control" maxlength="73">{{ $rpd ? $rpd->description : '' }}</textarea>
           </div>
         </div>
       </div>
     </div>
-  </div>				
+  </div>        
   <div class="row mt-3">
     <div class="col-6 text-left">
       <button type="button" class="btn btn-light" data-dismiss="modal">Kembali</button>

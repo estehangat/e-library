@@ -130,4 +130,6 @@ Nama Kelas
 <!-- Plugins and scripts required by this view-->
 <script src="{{asset('vendor/chart.js/Chart.min.js')}}"></script>
 <script src="{{asset('js/demo/chart-area-demo.js')}}"></script>
+
+@include('template.footjs.kbm.datatables')
 @endsection

@@ -150,6 +150,66 @@ Realisasi
 </div>
 @endif
 
+<div class="row">
+    <div class="col-lg-4 col-12 mb-4">
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center">
+                    <div class="mr-3">
+                        <div class="icon-circle {{ $total && $total->get('pendapatanPembiayaan') > 0 ? 'bg-brand-green' : 'bg-secondary' }}">
+                          <i class="fas fa-coins text-white"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="small text-gray-500">Total Pendapatan & Pembiayaan</div>
+                        <h6 id="summary" class="mb-0">
+                            {{ number_format($total->get('pendapatanPembiayaan'), 0, ',', '.') }}
+                        </h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-12 mb-4">
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center">
+                    <div class="mr-3">
+                        <div class="icon-circle {{ $total && $total->get('belanja') > 0 ? 'bg-brand-green' : 'bg-secondary' }}">
+                          <i class="fas fa-shopping-cart text-white"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="small text-gray-500">Total Belanja</div>
+                        <h6 id="summary" class="mb-0">
+                            {{ number_format($total->get('belanja'), 0, ',', '.') }}
+                        </h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-12 mb-4">
+        <div class="card">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center">
+                    <div class="mr-3">
+                        <div class="icon-circle {{ $total && $total->get('operasionalPembiayaan') > 0 ? 'bg-brand-green' : 'bg-secondary' }}">
+                          <i class="fas fa-wallet text-white"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="small text-gray-500">Sisa Saldo</div>
+                        <h6 class="mb-0">
+                            {{ number_format($total->get('operasionalPembiayaan'), 0, ',', '.') }}
+                        </h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="row mb-4">
     <div class="col-12">
         <div class="card">

@@ -24,6 +24,32 @@
     </ol>
 </div>
 
+@if($title == 'Belum Lunas')
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <ul class="nav nav-pills p-3">
+              @if(!isset($bayar) || $bayar != 'belum')
+              <li class="nav-item">
+                <a class="nav-link active" href="{{ route($route, ['bayar' => 'sebagian']) }}">Membayar Sebagian</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-brand-purple" href="{{ route($route, ['bayar' => 'belum']) }}">Belum Membayar</a>
+              </li>
+              @else
+              <li class="nav-item">
+                <a class="nav-link text-brand-purple" href="{{ route($route, ['bayar' => 'sebagian']) }}">Membayar Sebagian</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="{{ route($route, ['bayar' => 'belum']) }}">Belum Membayar</a>
+              </li>
+              @endif
+            </ul>
+        </div>
+    </div>
+</div>
+@endif
+
 <div class="row mb-3">
     <div class="col-md-12">
         <div class="card h-100">
@@ -59,6 +85,9 @@
                     <div class="col-md-8">
                         <form action="/{{Request::path()}}" method="GET">
                         @csrf
+                        @if($title == 'Belum Lunas')
+                        <input type="hidden" name="bayar" value="{{ $bayar }}">
+                        @endif
                             <div class="form-group row">
                                 <label for="kelas" class="col-sm-3 control-label">Tingkat Kelas</label>
                                 <div class="col-sm-5">
@@ -122,13 +151,12 @@
                                         @if( in_array((auth()->user()->role_id), array(8)))
                                         <a href="#" class="btn btn-sm btn-success"   data-toggle="modal" data-target="#DiterimaModal" data-id="{{$list->candidate_student_id}}"><i class="fas fa-check"></i></a>
                                         @endif
-                                        @elseif(($title == "Belum Lunas") && (in_array(Auth::user()->role->name,['fam','faspv'])))
+                                        @elseif($title == "Belum Lunas")
                                         <a href="#" class="btn btn-sm btn-success"   data-toggle="modal" data-target="#UbahDaftarUlang" data-du="{{($list->register_nominal)}}" data-id="{{$list->candidate_student_id}}"><i class="fa fa-info-circle"></i></a>
-                                        @endif
                                         @php
                                         $whatsAppText = rawurlencode("Assalamu’alaikum Ayah Bunda Ananda ".$list->siswa->student_name.". Terima kasih telah menunggu hasil Wawancara dan Observasi. Ayah Bunda dapat melihat pengumuman hasilnya pada SISTA melalui link: ".route('psb.index')." Link ini juga menginformasikan mengenai pembayaran uang sekolah sesuai dengan kesepakatan Wawancara Keuangan.");
                                         @endphp
-                                        @if($list->siswa->orangtua->mother_phone && (substr($list->siswa->orangtua->mother_phone, 0, 2) == "62" || substr($list->siswa->orangtua->mother_phone, 0, 1) == "0"))<a href="https://api.whatsapp.com/send?phone={{ substr($list->siswa->orangtua->mother_phone, 0, 2) == "62" ? $list->siswa->orangtua->mother_phone : ('62'.substr($list->siswa->orangtua->mother_phone, 1)) }}&text={{ $whatsAppText }}" class="btn btn-sm btn-warning" target="_blank"><i class="fas fa-bell"></i></a>
+                                        @if($list->siswa->orangtua->mother_phone && (substr($list->siswa->orangtua->mother_phone, 0, 2) == "62" || substr($list->siswa->orangtua->mother_phone, 0, 1) == "0"))<a href="https://api.whatsapp.com/send?phone={{ substr($list->siswa->orangtua->mother_phone, 0, 2) == "62" ? $list->siswa->orangtua->mother_phone : ('62'.substr($list->siswa->orangtua->mother_phone, 1)) }}&text={{ $whatsAppText }}" class="btn btn-sm btn-warning" target="_blank"><i class="fas fa-bell"></i></a>@endif
                                         @endif
                                         <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#BatalBayarModal" data-id="{{$list->siswa->id}}"><i class="fas fa-trash"></i></a>
                                     </td>
@@ -162,11 +190,11 @@
             <div class="modal-body">
                 <div class="modal-body" id="form_penerimaan" style="display:block">
                     <div class="form-group">
-                      <label for="year_spp" class="col-form-label">SPP dimulai Tahun</label>
+                      <label for="year_spp" class="col-form-label">Tahun Mulai SPP</label>
                       <input type="number" name="year_spp" class="form-control" id="year_spp" value="2021" required>
                     </div>
                     <div class="form-group">
-                        <label for="month_spp" class="col-form-label">SPP dimulai Bulan</label>
+                        <label for="month_spp" class="col-form-label">Bulan Mulai SPP</label>
                         <select name="month_spp" class="select2 form-control select2-hidden-accessible auto_width" id="month_spp" style="width:100%;" tabindex="-1" aria-hidden="true" required>
                             <option value="1" selected>Januari</option>
                             <option value="2">Februari</option>

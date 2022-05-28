@@ -11,7 +11,7 @@ Kepegawaian @endsection
       </li>
       <hr class="sidebar-divider">
       <div class="sidebar-heading">
-        Manajemen Pegawai
+        Manajemen Civitas Auliya
       </div>
 	    <li class="nav-item {{ request()->routeIs('pelatihan.saya*') || request()->routeIs('pelatihan.sertifikat*') ? 'active' : '' }}">
         <a class="nav-link {{ request()->routeIs('pelatihan.saya*') || request()->routeIs('pelatihan.sertifikat*') ? '' : 'collapsed' }}" href="#" data-toggle="collapse" data-target="#collapsePelatihan" aria-expanded="{{ request()->routeIs('pelatihan.saya*') || request()->routeIs('pelatihan.sertifikat*') ? 'true' : 'false' }}" aria-controls="collapsePelatihan">

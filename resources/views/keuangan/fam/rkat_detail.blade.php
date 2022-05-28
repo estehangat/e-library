@@ -1,7 +1,7 @@
 @extends('template.main.master')
 
 @section('title')
-RKAT
+RKAB
 @endsection
 
 @section('headmeta')
@@ -14,10 +14,10 @@ RKAT
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-2">
-  <h1 class="h3 mb-0 text-gray-800">RKAT</h1>
+  <h1 class="h3 mb-0 text-gray-800">RKAB</h1>
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{{ route('keuangan.index')}}">Beranda</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('rkat.index')}}">RKAT</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('rkat.index')}}">RKAB</a></li>
     <li class="breadcrumb-item"><a href="{{ route('rkat.index', ['jenis' => $jenisAktif->link])}}">{{ $jenisAktif->name }}</a></li>
     <li class="breadcrumb-item"><a href="{{ route('rkat.index', ['jenis' => $jenisAktif->link,'tahun' => !$isYear ? $tahun->academicYearLink : $tahun])}}">{{ !$isYear ? $tahun->academic_year : $tahun }}</a></li>
     <li class="breadcrumb-item active" aria-current="page">{{ $anggaranAktif->anggaran->name }}</li>

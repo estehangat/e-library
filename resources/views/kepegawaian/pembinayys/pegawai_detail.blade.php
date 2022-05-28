@@ -91,7 +91,7 @@ Detail Civitas Auliya
               <div class="col-lg-10 col-md-12">
                 <div class="row mb-3">
                   <div class="col-lg-3 col-md-4 col-12">
-                    NIPY
+                    {{ $pegawai->statusPegawai->kategori->name == 'Mitra' ? 'NIMY' : 'NIPY' }}
                   </div>
                   <div class="col-lg-6 col-md-5 col-12">
                     {{ $pegawai->nip }}

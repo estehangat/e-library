@@ -118,7 +118,7 @@ RPPA
             <div class="form-group mb-0">
               <div class="row">
                 <div class="col-lg-3 col-md-4 col-12">
-                  <label class="form-control-label">Nomor LPPA</label>
+                  <label class="form-control-label">Nomor RPPA</label>
                 </div>
                 <div class="col-lg-9 col-md-8 col-12">
                   {{ $lppaAktif && $lppaAktif->number ? $lppaAktif->number : '-' }}

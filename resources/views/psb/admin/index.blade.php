@@ -95,6 +95,7 @@
                                     <th>Tanggal Lahir</th>
                                     <th>Jenis Kelamin</th>
                                     <th>Info Asal Sekolah</th>
+                                    <th>Asal Informasi</th>
                                     @if ($title == 'Formulir Terisi')
                                     <th>Wawancara dan Observasi</th>
                                     @endif
@@ -112,6 +113,7 @@
                                     <td>{{ date('d-m-Y', strtotime($calon->birth_date)) }}</td>
                                     <td>{{ucwords($calon->jeniskelamin->name)}}</td>
                                     <td>{{ucwords($calon->origin_school)}}</td>
+                                    <td>{{ucwords($calon->info_from)}}</td>
                                     @if ($title == 'Formulir Terisi')
                                     <td>
                                         {{$calon->interview_type==2?'Offline':$calon->link}} <br>{{$calon->interview_date}}  {{$calon->interview_time}}
@@ -168,14 +170,24 @@
                                         @if( in_array((auth()->user()->role_id), array(20)))
                                             <a href="#" class="btn btn-sm btn-success"   data-name="{{$calon->student_name}}" data-toggle="modal" data-target="#ResmikanModal" data-id="{{$calon->id}}"><i class="fas fa-check"></i></a>
                                         @endif
+                                        @if(in_array((auth()->user()->role->name), ['fam','faspv']))
+                                        <a href="#" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#awalSppModal" data-id="{{$calon->id}}" data-name="{{$calon->student_name}}" data-year="{{$calon->year_spp}}" data-month="{{$calon->month_spp}}"><i class="fas fa-calendar-alt"></i></a>
+                                        @endif
                                         @elseif($status_id == 6)
                                         @if(in_array(Auth::user()->role->name,['sek']))
-                                        <a href="#" class="btn btn-sm btn-success"   data-name="{{$calon->student_name}}" data-toggle="modal" data-target="#DiterimaModal" data-id="{{$calon->id}}"><i class="fas fa-check"></i></a>
+                                        <a href="#" class="btn btn-sm btn-success" data-name="{{$calon->student_name}}" data-toggle="modal" data-target="#DiterimaModal" data-id="{{$calon->id}}"><i class="fas fa-check"></i></a>
                                         @endif
                                         @elseif($status_id == 7)
                                         @endif
                                         @if (in_array($status_id,[1,2]))
                                             <a href="#" class="btn btn-sm btn-danger"  data-name="{{$calon->student_name}}" data-toggle="modal" data-target="#HapusModal" data-id="{{$calon->id}}"><i class="fas fa-trash"></i></a>
+                                        @endif
+                                        @if($status_id >= 3)
+                                            @if(in_array(auth()->user()->role->name,['fam']))
+                                                <a href="#" class="btn btn-sm btn-success" data-du="{{number_format($calon->bms->register_nominal,0,',','.')}}" data-name="{{$calon->student_name}}" data-toggle="modal" data-target="#ubahBms" data-id="{{$calon->id}}" data-unit="{{$calon->unit_id}}">
+                                                    <i class="far fa-edit"></i>
+                                                </a>
+                                            @endif
                                         @endif
                                     </td>
                                 </tr>
@@ -217,6 +229,58 @@
 </div>
 @endif
 
+@if(in_array((auth()->user()->role->name), ['fam','faspv']))
+<!-- Modal Konfirmasi -->
+<div id="awalSppModal" class="modal fade">
+    <div class="modal-dialog modal-confirm">
+        <div class="modal-content">
+            <div class="modal-header flex-column">
+                <h4 class="modal-title w-100">Ubah Awal Mula SPP</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <form action="{{route('kependidikan.psb.ubah-awal-spp')}}" method="POST">
+            @csrf
+            <div class="modal-body">
+                <div class="modal-body" id="form_penerimaan" style="display:block">
+                    <div class="form-group">
+                      <label for="year_spp" class="col-form-label">Nama</label>
+                      <input type="text" name="name" class="form-control" value="-" disabled>
+                    </div>
+                    <div class="form-group">
+                      <label for="year_spp" class="col-form-label">Tahun Mulai SPP</label>
+                      <input type="number" name="year_spp" class="form-control" id="year_spp" value="{{date('Y')}}" min="2000" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="month_spp" class="col-form-label">Bulan Mulai SPP</label>
+                        <select name="month_spp" class="select2 form-control select2-hidden-accessible auto_width" id="month_spp" style="width:100%;" tabindex="-1" aria-hidden="true" required>
+                            <option value="1" selected>Januari</option>
+                            <option value="2">Februari</option>
+                            <option value="3">Maret</option>
+                            <option value="4">April</option>
+                            <option value="5">Mei</option>
+                            <option value="6">Juni</option>
+                            <option value="7">Juli</option>
+                            <option value="8">Agustus</option>
+                            <option value="9">September</option>
+                            <option value="10">Oktober</option>
+                            <option value="11">November</option>
+                            <option value="12">Desember</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                    <input type="hidden" name="id" id="id" class="id"/>
+                    <button type="submit" class="btn btn-success">Ya</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
+
+@if($status_id == 2)
 <!-- Modal Diterima -->
 <div id="WawancaraDone" class="modal fade">
     <div class="modal-dialog modal-confirm">
@@ -249,7 +313,14 @@
                 </div>
                 <div class="form-group">
                   <label for="bms_potongan" class="col-form-label">Potongan BMS</label>
-                  <input type="text" name="bms_potongan" class="form-control number-separator" id="bms_potongan" value="0" required>
+
+                  <input type="hidden" name="bms_potongan" id="bms_potongan" value="0" required>
+                  <select name="potongan" class="form-control" name="potongan" required="required"/>
+                    <option value="0">== Pilih ==</option>
+                    @foreach($deductions as $d)
+                    <option value="{{ $d->isPercentage ? $d->percentage : $d->nominal }}" data-is-percentage="{{ $d->isPercentage ? 1 : 0 }}">{{ $d->isPercentage ? $d->nameWithPercentage : $d->nameWithNominal }}</option>
+                    @endforeach
+                  </select>
                 </div>
                 <div class="form-group">
                   <label for="bms_bersih" class="col-form-label">BMS Bersih</label>
@@ -265,36 +336,12 @@
                 </div>
                 <div class="form-group bms-berkala-2" style="display: none">
                   <label for="bms_berkala_2" class="col-form-label">BMS Berkala 2</label>
-                  <input type="text" name="bms_sisa_bms[]" class="form-control number-separator" id="bms_berkala_2" value="0" required>
+                  <input type="text" name="bms_sisa_bms[]" class="form-control number-separator" id="bms_berkala_2" value="0" readonly required>
                 </div>
                 <div class="form-group bms-berkala-3" style="display: none">
                   <label for="bms_berkala_3" class="col-form-label">BMS Berkala 3</label>
-                  <input type="text" name="bms_sisa_bms[]" class="form-control number-separator" id="bms_berkala_3" value="0" required>
+                  <input type="text" name="bms_sisa_bms[]" class="form-control number-separator" id="bms_berkala_3" value="0" readonly required>
                 </div>
-                {{-- <div class="form-group">
-                  <label for="du_nominal" class="col-form-label">Nominal Biaya Berkala 1</label>
-                  <input type="text" name="du_nominal" class="form-control number-separator" id="du_nominal" value="0" required>
-                </div>
-                <div class="form-group">
-                  <label for="bms_nominal" class="col-form-label">Nominal Biaya Berkala 2 & 3</label>
-                  <input type="text" name="bms_nominal" class="form-control number-separator" id="bms_nominal" value="0" required>
-                </div>
-                <div class="form-group">
-                  <label for="bms_deduction" class="col-form-label">Potongan Biaya Berkala 2 & 3</label>
-                  <input type="text" name="bms_deduction" class="form-control number-separator" id="bms_deduction" value="0" required>
-                </div>
-                <div class="form-group">
-                    <label for="bms_termin" class="col-form-label">Jumlah Termin Per Tahun</label>
-                    <select name="bms_termin" class="select2 form-control select2-hidden-accessible auto_width" id="bms_termin" style="width:100%;" tabindex="-1" aria-hidden="true">
-                        <option value="1" selected>1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                  <label for="bms_per_termin" class="col-form-label">Termin Per Tahun</label>
-                  <input type="text" name="bms_per_termin" class="form-control number-separator" id="bms_per_termin" required value="0" disabled>
-                </div> --}}
             </div>
             <div class="modal-footer justify-content-center" id="yakin_button" style="display:none">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
@@ -310,6 +357,86 @@
         </div>
     </div>
 </div>
+@endif
+
+@if($status_id >= 3)
+<!-- Modal Ubah BMS -->
+<div id="ubahBms" class="modal fade">
+    <div class="modal-dialog modal-confirm">
+        <div class="modal-content">
+            <div class="modal-header flex-column" id="form_yakin" style="display:none">
+                <div class="icon-box">
+                    <i class="material-icons">&#xe5ca;</i>
+                </div>
+                <h4 class="modal-title w-100">Apakah Anda yakin?</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-header flex-column" id="form_title" style="display:block">
+                <h4 class="modal-title w-100">Ubah BMS</h4>
+                <h4 class="modal-title w-100" id="ubahbmsname">Ubah BMS</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <form action="{{url('/kependidikan/psb/ubah-bms')}}" method="POST">
+            @csrf
+            <input type="hidden" name="unit_bms">
+            <div class="modal-body" id="form_penerimaan" style="display:block">
+                <div class="form-group">
+                    <label for="type_pembayaran" class="col-form-label">Tipe BMS</label>
+                    <select name="type_pembayaran" class="select2 form-control select2-hidden-accessible auto_width" id="type_pembayaran" style="width:100%;" tabindex="-1" aria-hidden="true">
+                        <option value="1" selected>Tunai</option>
+                        <option value="2">Berkala</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                  <label for="bms_total" class="col-form-label">BMS Tunai</label>
+                  <input type="text" readonly name="bms_total" class="form-control number-separator" id="bms_total" value="0" required>
+                </div>
+                <div class="form-group">
+                  <label for="bms_potongan" class="col-form-label">Potongan BMS</label>
+                  <input type="hidden" name="bms_potongan" id="bms_potongan" value="0" required>
+                  <select name="potongan" class="form-control" name="potongan" required="required"/>
+                    <option value="0">== Pilih ==</option>
+                    @foreach($deductions as $d)
+                    <option value="{{ $d->isPercentage ? $d->percentage : $d->nominal }}" data-is-percentage="{{ $d->isPercentage ? 1 : 0 }}">{{ $d->isPercentage ? $d->nameWithPercentage : $d->nameWithNominal }}</option>
+                    @endforeach
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="bms_bersih" class="col-form-label">BMS Bersih</label>
+                  <input type="text" name="bms_bersih" class="form-control number-separator" id="bms_bersih" value="0" readonly required>
+                </div>
+                <div class="form-group">
+                  <label for="bms_daftar_ulang" class="col-form-label">Daftar Ulang</label>
+                  <input type="text" name="bms_daftar_ulang" class="form-control number-separator" id="bms_daftar_ulang" value="0" {{$title=="Peresmian Siswa"?'readonly':''}} required>
+                </div>
+                <div class="form-group">
+                  <label for="bms_sisa_bms" class="col-form-label">Sisa BMS</label>
+                  <input type="text" name="bms_sisa_bms[]" class="form-control number-separator" id="bms_sisa_bms" value="0" readonly required>
+                </div>
+                <div class="form-group bms-berkala-2" style="display: none">
+                  <label for="bms_berkala_2" class="col-form-label">BMS Berkala 2</label>
+                  <input type="text" name="bms_sisa_bms[]" class="form-control number-separator" id="bms_berkala_2" value="0" readonly required>
+                </div>
+                <div class="form-group bms-berkala-3" style="display: none">
+                  <label for="bms_berkala_3" class="col-form-label">BMS Berkala 3</label>
+                  <input type="text" name="bms_sisa_bms[]" class="form-control number-separator" id="bms_berkala_3" value="0" readonly required>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center" id="yakin_button" style="display:none">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                <input type="text" name="id" id="id" class="id" hidden/>
+                <button type="submit" class="btn btn-success">Ya</button>
+            </div>
+            <div class="modal-footer justify-content-center" id="next_button" style="display:block">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                <input type="text" name="id" id="id" class="id" hidden/>
+                <button type="button" class="btn btn-success" onclick="nextTerima()">Ubah</button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
 
 <!-- Modal Dicadangkan -->
 <div id="DicadangkanModal" class="modal fade">
@@ -464,6 +591,7 @@
         </form>
     </div>
 </div>
+
 <!--Row-->
 @endsection
 
@@ -482,8 +610,16 @@
     function hitung(){
 
         var bms_total = parseInt($('#bms_total').val().replace(/\./g, ""));
-        var bms_potongan = parseInt($('#bms_potongan').val().replace(/\./g, ""));
+        //var bms_potongan = parseInt($('#bms_potongan').val().replace(/\./g, ""));
+        var potongan = $('select[name="potongan"]').val();
+        var isPercentage = $('select[name="potongan"]').find('option:selected').attr('data-is-percentage');
+        var bms_potongan = 0;
+        if(isPercentage > 0)
+            bms_potongan = (potongan/100)*bms_total;
+        else
+            bms_potongan = potongan;
         var bms_bersih = bms_total - bms_potongan;
+        $('#bms_potongan').val(bms_potongan);
         $('#bms_bersih').val(bms_bersih);
 
         var bms_daftar_ulang = parseInt($('#bms_daftar_ulang').val().replace(/\./g, ""));
@@ -514,7 +650,32 @@
             modal.find('label[for="bms_potongan"]').text('Potongan BMS Tunai');
             modal.find('label[for="bms_bersih"]').text('BMS Tunai Bersih');
             modal.find('label[for="bms_sisa_bms"]').text('Sisa BMS Tunai');
-        })
+        });
+        $('#ubahBms').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget) // Button that triggered the modal
+            var id = button.data('id') // Extract info from data-* attributes
+            var name_calon = button.data('name') // Extract info from data-* attributes
+            var unit = button.data('unit') // Extract info from data-* attributes
+            var du = button.data('du') // Extract info from data-* attributes
+            var modal = $(this)
+            jQuery.ajax({
+                url: '/kependidikan/psb/saving-seat/cari?unit_bms='+unit+'&type_pembayaran=1',
+                type:'GET',
+                success:function(data){
+                    $('input[name="bms_total"]').val(data);
+                    hitung();
+                }
+            });
+            modal.find('input[name="id"]').val(id);
+            modal.find('input[name="unit_bms"]').val(unit);
+            modal.find('#ubahbmsname').text(name_calon);
+            modal.find('#bms_daftar_ulang').val(du);
+
+            modal.find('label[for="bms_total"]').text('BMS Tunai');
+            modal.find('label[for="bms_potongan"]').text('Potongan BMS Tunai');
+            modal.find('label[for="bms_bersih"]').text('BMS Tunai Bersih');
+            modal.find('label[for="bms_sisa_bms"]').text('Sisa BMS Tunai');
+        });
         $('#DiterimaModal').on('show.bs.modal', function (event) {
             var page1 = document.getElementById("form_yakin");
             var page2 = document.getElementById("form_penerimaan");
@@ -532,7 +693,7 @@
             var id = button.data('id') // Extract info from data-* attributes
             var modal = $(this)
             modal.find('input[name="id"]').val(id)
-        })
+        });
 
         $('#SavingSeatModal').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget) // Button that triggered the modal
@@ -541,7 +702,7 @@
             var id = button.data('id') // Extract info from data-* attributes
             var modal = $(this)
             modal.find('input[name="id"]').val(id)
-        })
+        });
         $('#DicadangkanModal').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget) // Button that triggered the modal
             var id = button.data('id') // Extract info from data-* attributes
@@ -549,15 +710,15 @@
             $('b[id="pDicadangkan"]').text(name_calon);
             var modal = $(this)
             modal.find('input[name="id"]').val(id)
-        })
+        });
         $('#HapusModal').on('show.bs.modal', function (event) {
-            var button = $(event.relatedTarget) // Button that triggered the modal
-            var id = button.data('id') // Extract info from data-* attributes
-            var name_calon = button.data('name') // Extract info from data-* attributes
+            var button = $(event.relatedTarget); // Button that triggered the modal
+            var id = button.data('id'); // Extract info from data-* attributes
+            var name_calon = button.data('name'); // Extract info from data-* attributes
             $('b[id="pDihapus"]').text(name_calon);
-            var modal = $(this)
-            modal.find('input[name="id"]').val(id)
-        })
+            var modal = $(this);
+            modal.find('input[id="hapusid"]').val(id);
+        });
         $('#WawancaraLink').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget) // Button that triggered the modal
             var id = button.data('id') // Extract info from data-* attributes
@@ -576,14 +737,25 @@
             modal.find('input[name="observation_link"]').val(observation_link)
             modal.find('input[name="observation_date"]').val(observation_date)
             modal.find('input[name="observation_time"]').val(observation_time)
-        })
+        });
         $('#ResmikanModal').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget) // Button that triggered the modal
             var id = button.data('id') // Extract info from data-* attributes
             var modal = $(this)
             modal.find('input[name="id"]').val(id)
-        })
-
+        });
+        $('#awalSppModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget) // Button that triggered the modal
+            var id = button.data('id') // Extract info from data-* attributes
+            var name_calon = button.data('name') // Extract info from data-* attributes
+            var year = button.data('year') // Extract info from data-* attributes
+            var month = button.data('month') // Extract info from data-* attributes
+            var modal = $(this)
+            modal.find('input[name="id"]').val(id)
+            modal.find('input[name="name"]').val(name_calon)
+            modal.find('input[name="year_spp"]').val(year)
+            modal.find('select[name="month_spp"]').val(month)
+        });
         $('select[name="tipe_wawancara"]').on('change',function(){
             var tipe_wawancara = this.value;
             if(tipe_wawancara == 1){
@@ -605,6 +777,9 @@
             $('#bms_per_termin').val(hasil);
         });
         $('input[name="bms_potongan"]').on('change', function() {
+            hitung();
+        });
+        $('select[name="potongan"]').on('change', function() {
             hitung();
         });
         $('input[name="bms_daftar_ulang"]').on('change', function() {
@@ -651,6 +826,22 @@
                 $('label[for="bms_potongan"]').text('Potongan BMS Berkala 1');
                 $('label[for="bms_bersih"]').text('BMS Berkala 1 Bersih');
                 $('label[for="bms_sisa_bms"]').text('Sisa BMS Berkala 1');
+                jQuery.ajax({
+                    url: '/kependidikan/psb/saving-seat/cari?unit_bms='+unit_bms+'&type_pembayaran=3',
+                    type:'GET',
+                    success:function(data){
+                        $('#bms_berkala_2').val(data);
+                        hitung();
+                    }
+                });
+                jQuery.ajax({
+                    url: '/kependidikan/psb/saving-seat/cari?unit_bms='+unit_bms+'&type_pembayaran=4',
+                    type:'GET',
+                    success:function(data){
+                        $('#bms_berkala_3').val(data);
+                        hitung();
+                    }
+                });
                 $('.bms-berkala-2').show();
                 if(unit_bms != 1){
                     $('.bms-berkala-3').show();

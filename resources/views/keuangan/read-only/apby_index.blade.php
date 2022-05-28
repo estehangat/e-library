@@ -117,10 +117,21 @@ APB
                 <h6 class="m-0 font-weight-bold text-brand-purple">Anggaran Tersedia</h6>
                 @if(in_array(Auth::user()->role->name,['ketuayys','direktur','fam','faspv']) && count($apby) > 0)
                 <div class="m-0 float-right">
-                    @if(in_array(Auth::user()->role->name,['fam','faspv']) && $perubahan)
-                    <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#acceptAll">APB Perubahan <i class="fas fa-pen-alt ml-1"></i></button>
-                    @elseif(in_array(Auth::user()->role->name,['fam','faspv']) && !$perubahan)
+                    @if(in_array(Auth::user()->role->name,['fam','faspv']))
+                    @if($perubahan)
+                    <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#perubahanModal">APB Perubahan <i class="fas fa-pen-alt ml-1"></i></button>
+                    @else
                     <button type="button" class="btn btn-secondary btn-sm" disabled>APB Perubahan <i class="fas fa-pen-alt ml-1"></i></button>
+                    @endif
+                    @endif
+                    @if(!$isYear)
+                    @if(in_array(Auth::user()->role->name,['ketuayys']))
+                    @if($changeYear && $nextYear)
+                    <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#tutupModal">Tutup Tahun <i class="fas fa-book ml-1"></i></button>
+                    @else
+                    <button type="button" class="btn btn-secondary btn-sm" disabled>Tutup Tahun <i class="fas fa-book ml-1"></i></button>
+                    @endif
+                    @endif
                     @endif
                     @if($checkApby && $checkApby->count() > 0)
                     <a class="btn btn-brand-green-dark btn-sm" href="{{ route('apby.ekspor', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun])}}">Ekspor <i class="fas fa-file-export ml-1"></i></a>
@@ -134,6 +145,14 @@ APB
                 @if(count($apby) > 0 && in_array(Auth::user()->role->name,['fam','faspv']) && !$perubahan)
                 <div class="alert alert-light alert-dismissible fade show" role="alert">
                   <i class="fa fa-info-circle text-info mr-2"></i>Untuk dapat melakukan APB Perubahan, pastikan tidak ada PPA, PPB, maupun RPPA yang belum selesai prosesnya
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                @endif
+                @if(count($apby) > 0 && in_array(Auth::user()->role->name,['ketuayys']) && $changeYear && !$nextYear)
+                <div class="alert alert-light alert-dismissible fade show" role="alert">
+                  <i class="fa fa-info-circle text-info mr-2"></i>Untuk dapat melakukan tutup tahun {{ $jenisAktif->name }}, mohon pastikan ketersediaan tahun pelajaran
                   <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                   </button>
@@ -165,7 +184,7 @@ APB
                     $apbyCount = !$isYear ? $a->apby()->where('academic_year_id',$tahun->id)->count() : $a->apby()->where('year',$tahun)->aktif()->count();
                     $anggaranAktif += $apbyCount;
                     @endphp
-                    @if(($isYear && (($tahun != date('Y') && $apbyCount > 0) || $tahun == date('Y'))) || (!$isYear && (($tahun->is_active != 1 && $apbyCount > 0) || $tahun->is_active == 1)))
+                    @if(($isYear && (($tahun != date('Y') && $apbyCount > 0) || $tahun == date('Y'))) || (!$isYear && (($tahun->is_finance_year != 1 && $apbyCount > 0) || $tahun->is_finance_year == 1)))
                     <div class="col-md-6 col-12 mb-3">
                         <div class="row py-2 rounded border border-light mr-2">
                             <div class="col-8 d-flex align-items-center">
@@ -193,7 +212,7 @@ APB
                     </div>
                     @endif
                     @endforeach
-                    @if((($isYear && $tahun != date('Y')) || (!$isYear && $tahun->is_active != 1)) && $anggaranAktif == 0)
+                    @if((($isYear && $tahun != date('Y')) || (!$isYear && $tahun->is_finance_year != 1)) && $anggaranAktif == 0)
                     <div class="col-12 pl-0 pr-3">
                         <div class="text-center mx-3 mt-4 mb-5">
                             <h3>Mohon Maaf,</h3>
@@ -215,7 +234,7 @@ APB
 </div>
 
 @if(count($apby) > 0 && in_array(Auth::user()->role->name,['fam','faspv']) && $perubahan)
-<div class="modal fade" id="acceptAll" tabindex="-1" role="dialog" aria-labelledby="setujuiModalLabel" aria-hidden="true" style="display: none;">
+<div class="modal fade" id="perubahanModal" tabindex="-1" role="dialog" aria-labelledby="perubahanModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog modal-confirm" role="document">
     <div class="modal-content">
       <div class="modal-header flex-column">
@@ -236,6 +255,34 @@ APB
           {{ csrf_field() }}
           {{ method_field('PUT') }}
           <button type="submit" class="btn btn-warning">Ya, Ubah</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+@endif
+
+@if(count($apby) > 0 && in_array(Auth::user()->role->name,['ketuayys']) && $changeYear && $nextYear)
+<div class="modal fade" id="tutupModal" tabindex="-1" role="dialog" aria-labelledby="tutupModalLabel" aria-hidden="true" style="display: none;">
+  <div class="modal-dialog modal-confirm" role="document">
+    <div class="modal-content">
+      <div class="modal-header flex-column">
+        <div class="icon-box border-warning">
+          <i class="material-icons text-warning">&#xE865;</i>
+        </div>
+        <h4 class="modal-title w-100">Apakah Anda yakin?</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      </div>
+      
+      <div class="modal-body p-1">
+        Apakah Anda yakin ingin menutup tahun {{ $jenisAktif->name }}?
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-light mr-1" data-dismiss="modal">Tidak</button>
+        <form action="{{ route('apby.tutup', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun])}}" method="post">
+          {{ csrf_field() }}
+          <button type="submit" class="btn btn-warning">Ya, Tutup</button>
         </form>
       </div>
     </div>

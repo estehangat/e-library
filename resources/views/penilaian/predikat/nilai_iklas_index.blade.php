@@ -52,40 +52,40 @@ Predikat IKLaS
                 <div class="alert alert-secondary" role="alert">
                     <i class="fa fas fa-exclamation-triangle text-yellow mr-2"></i><strong>Catatan</strong> : Harap isikan predikat dan deskripsi dengan lengkap. Kekurangan dalam pengaturan predikat dan deskripsi akan berpengaruh pada tampilan cetak rapor.
                 </div>
-				@if($rpd && count($rpd) > 0)
-				<div class="table-responsive">
-					<table class="table align-items-center table-flush">
-						<thead class="thead-light">
-							<tr>
-								<th style="width: 15px">#</th>
-								<th style="width: 250px">Predikat</th>
-								<th>Deskripsi</th>
-								<th style="width: 120px">Aksi</th>
-							</tr>
-						</thead>
-						<tbody>
-							@foreach($rpd as $no => $r)
-							<tr>
-								<td>{{$no+1}}</td>
-								<td>
+                @if($rpd && count($rpd) > 0)
+                <div class="table-responsive">
+                    <table class="table align-items-center table-flush">
+                        <thead class="thead-light">
+                            <tr>
+                                <th style="width: 15px">#</th>
+                                <th style="width: 250px">Predikat</th>
+                                <th>Deskripsi</th>
+                                <th style="width: 120px">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($rpd as $no => $r)
+                            <tr>
+                                <td>{{$no+1}}</td>
+                                <td>
                                 @for($i=0;$i<$r->predicate;$i++)<i class="fas fa-star"></i>
-								@endfor
-								</td>
-								<td>{{$r->description}}</td>
-								<td>
-									<a href="javascript:void(0)" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#edit-form" onclick="editModal('{{ route('predikat.iklas.ubah') }}','{{ $r->predicate }}')" data-toggle="modal" data-target="#edit-form"><i class="fas fa-pen"></i></a>
-								</td>
-							</tr>
-							@endforeach
-						</tbody>
-					</table>
-				</div>
-				@else		
-				<div class="text-center mx-3 my-5">
-					<h3 >Mohon Maaf,</h3>
-					<h6 class="font-weight-light mb-3">Tidak ada deskripsi predikat IKLaS yang ditemukan</h6>
-				</div>
-				@endif
+                                @endfor
+                                </td>
+                                <td>{{$r->description}}</td>
+                                <td>
+                                    <a href="javascript:void(0)" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#edit-form" onclick="editModal('{{ route('predikat.iklas.ubah') }}','{{ $r->predicate }}')" data-toggle="modal" data-target="#edit-form"><i class="fas fa-pen"></i></a>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @else       
+                <div class="text-center mx-3 my-5">
+                    <h3 >Mohon Maaf,</h3>
+                    <h6 class="font-weight-light mb-3">Tidak ada deskripsi predikat IKLaS yang ditemukan</h6>
+                </div>
+                @endif
             </div>
         </div>
     </div>
@@ -109,21 +109,21 @@ Predikat IKLaS
                         <label for="predikat" class="col-sm-4 control-label">Predikat</label>
                         <div class="col-sm-4">
                             <select name="predikat" class="form-control">
-								@for($i=1;$i<=5;$i++)
-								@if($rpd && !in_array($i,$rpd->pluck('predicate')->toArray()))
+                                @for($i=1;$i<=5;$i++)
+                                @if($rpd && !in_array($i,$rpd->pluck('predicate')->toArray()))
                                 <option value="{{ $i }}">
                                 @for($j=0;$j<$i;$j++)&#9733;
                                 @endfor
-								</option>
-								@endif
-								@endfor
+                                </option>
+                                @endif
+                                @endfor
                             </select>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label for="predikat" class="col-sm-4 control-label">Deskripsi</label>
                         <div class="col-sm-8">
-                            <textarea type="text" name="deskripsi" class="form-control" maxlength="80"></textarea>
+                            <textarea type="text" name="deskripsi" class="form-control" maxlength="73"></textarea>
                         </div>
                     </div>
                 </div>

@@ -23,14 +23,16 @@ Pendaftaran Siswa Baru
 </div>
 
 <div class="row mb-3">
+    @foreach($units as $u)
+    @if($u->psb_active == 1)
     <!-- Pengisian Formulir -->
-    <a href="/psb/pendaftaran-siswa?unit=TK" class="col-xl-2 col-md-3 mb-2">
+    <a href="/psb/pendaftaran-siswa?unit={{$u->name}}" class="col-xl-2 col-md-3 mb-2">
         <div class="card h-100">
             <div class="card-body">
                 <div class="row align-items-center">
                     <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-uppercase mb-1">Form Pendaftaran</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">TK</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{$u->name}}</div>
                     </div>
                     <div class="col-auto">
                         <i class="fas fa-clipboard-list fa-2x text-brand-green"></i>
@@ -39,54 +41,25 @@ Pendaftaran Siswa Baru
             </div>
         </div>
     </a>
+    @else
     <!-- Pengisian Formulir -->
-    <a href="/psb/pendaftaran-siswa?unit=SD" class="col-xl-2 col-md-3 mb-2">
+    <div class="col-xl-2 col-md-3 mb-2">
         <div class="card h-100">
             <div class="card-body">
                 <div class="row align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-uppercase mb-1">Form Pendaftaran</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">SD</div>
+                        <div class="text-xs font-weight-bold text-uppercase text-secondary mb-1">Form Pendaftaran</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{$u->name}}</div>
                     </div>
                     <div class="col-auto">
-                        <i class="fas fa-clipboard-list fa-2x text-brand-green"></i>
+                        <i class="fas fa-clipboard-list fa-2x text-danger"></i>
                     </div>
                 </div>
             </div>
         </div>
-    </a>
-    <!-- Pengisian Formulir -->
-    <a href="/psb/pendaftaran-siswa?unit=SMP" class="col-xl-2 col-md-3 mb-2">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-uppercase mb-1">Form Pendaftaran</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">SMP</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-clipboard-list fa-2x text-brand-green"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </a>
-    <!-- Pengisian Formulir -->
-    <a href="/psb/pendaftaran-siswa?unit=SMA" class="col-xl-2 col-md-3 mb-2">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-uppercase mb-1">Form Pendaftaran</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">SMA</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-clipboard-list fa-2x text-brand-green"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </a>
+    </div>
+    @endif
+    @endforeach
 
 </div>
 

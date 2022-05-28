@@ -14,10 +14,10 @@ Masuk @endsection
             <form class="login100-form validate-form" action="{{ url('/login') }}" method="post">
                 @csrf
                 <div class="login100-logo m-b-5">
-                     <img src="{{ asset('img/logo/logomark.png') }}"> 
+                    <img src="{{ asset('img/logo/logomark.png') }}">
                 </div>
-                <span class="login100-form-title">MUDA</span>
-                <span class="login100-form-subtitle p-b-27">Make Ur Digital Assistant <i>for School</i></span>
+                <span class="login100-form-title">SISTA</span>
+                <span class="login100-form-subtitle p-b-27">Sistem Informasi SIT Auliya</span>
 
                 @if(Session::has('success'))
                   <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -35,8 +35,8 @@ Masuk @endsection
                     </button>
                   </div>
                   @endif
-                <div class="wrap-input100 validate-input m-b-20" data-validate="Masukkan Username">
-                    <input class="input100" type="text" name="username" placeholder="Username">
+                <div class="wrap-input100 validate-input m-b-20" data-validate="Masukkan Email">
+                    <input class="input100" type="text" name="username" placeholder="Email">
                     <span class="focus-input100"></span>
                 </div>
 
@@ -51,16 +51,16 @@ Masuk @endsection
                     </button>
                 </div>
                 <!--<div class="text-center m-t-25">
-					<a href="{{ route('forget.password.get') }}" class="text-brand-purple-dark font-weight-bold">Lupa sandi?</a>
+                    <a href="{{ route('forget.password.get') }}" class="text-brand-purple-dark font-weight-bold">Lupa sandi?</a>
                 </div>
-				<div class="p-t-5 p-b-10">-->
-				<div class="p-t-20 p-b-10">
-					<hr>
-				</div>
+                <div class="p-t-5 p-b-10">-->
+                <div class="p-t-20 p-b-10">
+                    <hr>
+                </div>
                 <div class="row">
-					<div class="container-login100-form-btn">
-						<a href="/psb" class="btn btn-outline-brand-blue">Menu Wali Murid</a>
-					</div>
+                    <div class="container-login100-form-btn">
+                        <a href="/psb" class="btn btn-outline-brand-green">Menu Wali Murid</a>
+                    </div>
                 </div>
             </form>
         </div>

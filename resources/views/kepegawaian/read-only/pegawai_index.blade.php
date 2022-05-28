@@ -1,7 +1,7 @@
 @extends('template.main.master')
 
 @section('title')
-Pegawai
+{{ $category ? ucwords($category) : 'Civitas Auliya' }}
 @endsection
 
 @section('headmeta')
@@ -23,10 +23,10 @@ Pegawai
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-2">
-    <h1 class="h3 mb-0 text-gray-800">Pegawai</h1>
+    <h1 class="h3 mb-0 text-gray-800">{{ $category ? ucwords($category) : 'Civitas Auliya' }}</h1>
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="./">Beranda</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Pegawai</li>
+        <li class="breadcrumb-item active" aria-current="page">{{ $category ? ucwords($category) : 'Civitas Auliya' }}</li>
     </ol>
 </div>
 
@@ -109,12 +109,12 @@ Pegawai
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Pegawai {{ $status == 'nonaktif' ? ucwords($status) : 'Aktif' }}</h6>
+                <h6 class="m-0 font-weight-bold text-brand-purple">{{ $category ? ucwords($category) : 'Civitas Auliya' }} {{ $status == 'nonaktif' ? ucwords($status) : 'Aktif' }}</h6>
                 @if($importable)
                 <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="#" data-toggle="modal" data-target="#import-modal">Impor <i class="fas fa-file-import ml-1"></i></a>
                 @endif
                 @if($exportable)
-                <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="{{ route('pegawai.ekspor') }}">Ekspor <i class="fas fa-file-export ml-1"></i></a>
+                <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="{{ route('pegawai.ekspor',['category' => $category]) }}">Ekspor <i class="fas fa-file-export ml-1"></i></a>
                 @endif
             </div>
             <div class="card-body p-3">
@@ -145,7 +145,7 @@ Pegawai
                     <tr>
                       <th style="width: 15px">#</th>
                       <th>Nama</th>
-                      <th>{{ $category == 'Mitra' ? 'NIMY' : 'NIPY' }}</th>
+                      <th>{{ $category == 'mitra' ? 'NIMY' : 'NIPY' }}</th>
                       <th>Tempat Lahir</th>
                       <th>Tanggal Lahir</th>
                       <th>Unit</th>
@@ -153,7 +153,7 @@ Pegawai
                       <th>Jabatan</th>
                       @endif
                       <th>Masa Kerja</th>
-                      <th>Status Pegawai</th>
+                      <th>Status {{ $category ? ucwords($category) : 'Civitas Auliya' }}</th>
                       <th>Aksi</th>
                     </tr>
                   </thead>
@@ -219,7 +219,7 @@ Pegawai
               @else
               <div class="text-center mx-3 mt-4 mb-5">
                 <h3 >Mohon Maaf,</h3>
-                <h6 class="font-weight-light mb-3">Tidak ada data pegawai {{ $status == 'nonaktif' ? $status : 'aktif' }} yang ditemukan</h6>
+                <h6 class="font-weight-light mb-3">Tidak ada data {{ $category ? ucwords($category) : 'Civitas Auliya' }} {{ $status == 'nonaktif' ? $status : 'aktif' }} yang ditemukan</h6>
               </div>
               @endif
             </div>
@@ -288,7 +288,7 @@ Pegawai
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header bg-danger border-0">
-        <h5 class="modal-title text-white">Ajukan PHK Pegawai</h5>
+        <h5 class="modal-title text-white">Ajukan PHK {{ $category ? ucwords($category) : 'Civitas Auliya' }}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>
         </button>

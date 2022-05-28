@@ -29,4 +29,4 @@
       <input id="save-data" type="submit" class="btn btn-brand-purple-dark" value="Simpan">
     </div>
   </div>
-/* </form>
+</form>

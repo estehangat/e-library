@@ -99,7 +99,7 @@
                 <tr>
                     <td>NPSN</td>
                     <td>:</td>
-                    <td>&nbsp;</td>
+                    <td>{!! $unit->npsn ? $unit->npsn : '&nbsp;' !!}</td>
                 </tr>
                 <tr>
                     <td>NIS/NSS/NDS</td>

@@ -1,7 +1,7 @@
 @extends('template.main.master')
 
 @section('title')
-Ubah Calon Pegawai
+Ubah Calon Civitas Auliya
 @endsection
 
 @section('headmeta')
@@ -23,11 +23,11 @@ Ubah Calon Pegawai
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-2">
-  <h1 class="h3 mb-0 text-gray-800">Ubah Calon Pegawai</h1>
+  <h1 class="h3 mb-0 text-gray-800">Ubah Calon Civitas Auliya</h1>
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="./">Beranda</a></li>
     <li class="breadcrumb-item"><a href="{{ route('rekrutmen.index') }}">Rekrutmen</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('calon.index') }}">Calon Pegawai</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('calon.index') }}">Calon Civitas Auliya</a></li>
     <li class="breadcrumb-item active" aria-current="page">Ubah</li>
   </ol>
 </div>
@@ -647,7 +647,7 @@ Ubah Calon Pegawai
                     <label for="select2Position" class="form-control-label">Jabatan</label>
                   </div>
                   <div  class="col-lg-9 col-md-8 col-12">
-                    <select class="select2-multiple form-control @error('position') is-invalid @enderror" name="position[]" multiple="multiple" id="select2Position" {{ (old('position') && count(old('position')) > 0) || $calon->jabatans()->count() > 0 ? '' : 'disabled="disabled"' }}>
+                    <select class="select2-multiple form-control @error('position') is-invalid @enderror" name="position[]" multiple="multiple" id="select2Position" {{ (old('position') && count(old('position')) > 0) || $calon->units()->count() > 0 ? '' : 'disabled="disabled"' }}>
                       @foreach($jabatan as $j)
                       <option value="{{ $j->id }}" class=" bg-gray-300" {{ (old('position') && count(old('position')) > 0) || $calon->jabatans()->count() > 0 ? (old('position', $calon->jabatans->pluck('id')->toArray()) && is_array(old('position', $calon->jabatans->pluck('id')->toArray())) && in_array($j->id, old('position', $calon->jabatans->pluck('id')->toArray() )) ? 'selected' : '') : '' }} data-unit="{{ $j->unit_id }}" {{ old('unit', $calon->units->pluck('id')->toArray()) && is_array(old('unit', $calon->units->pluck('id')->toArray())) && in_array($j->unit_id,old('unit', $calon->units->pluck('id')->toArray() )) ? '' : 'disabled="disabled"' }}>{{ $j->name }}</option>
                       @endforeach

@@ -33,16 +33,21 @@
           @endif
       </td>
       <td class="detail-value" style="min-width: 200px">
+          @if($ppaAktif->type_id == 2)
+          {{ $p->valueWithSeparator }}
+          @else
           @if($p->pa_acc_status_id == 1 || !$apbyAktif || ($apbyAktif && $apbyAktif->is_active == 0))
           <input type="text" class="form-control form-control-sm" value="{{ $p->valueWithSeparator }}" disabled>
           @else
           <input name="value-{{ $p->id }}" type="text" class="form-control form-control-sm number-separator" value="{{ $p->valueWithSeparator }}">
+          @endif
           @endif
       </td>
       @if(($apbyAktif && $apbyAktif->is_active == 1) && $isAnggotaPa && ((in_array(Auth::user()->role->name, ['fam','faspv']) && $ppaAktif->finance_acc_status_id != 1) || $ppaAktif->pa_acc_status_id != 1))
       <td>
           @if($p->pa_acc_status_id != 1)
           @if($ppaAktif->type_id == 2)
+          <a href="{{ route('ppa.ubah.proposal', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber, 'id' => $p->id]) }}" class="btn btn-sm btn-brand-purple-dark"><i class="fas fa-list-ul"></i></a>
           <a href="#" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#edit-form" onclick="editModal('{{ route('ppa.ubah.detail', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]) }}','{{ $p->id }}')"><i class="fas fa-pen"></i></a>
           @else
           <button type="button" class="btn btn-sm btn-warning btn-edit" data-toggle="modal" data-target="#edit-form">
@@ -61,6 +66,7 @@
 @endsection
 
 @section('footer')
+  @if($ppaAktif->type_id != 2)
   @if(($apbyAktif && $apbyAktif->is_active == 1) && $ppaAktif->pa_acc_status_id != 1 && $ppaAktif->detail()->where(function($q){$q->where('pa_acc_status_id','!=',1)->orWhereNull('pa_acc_status_id');})->count() > 0)
   <div class="row">
       <div class="col-12">
@@ -69,5 +75,6 @@
           </div>
       </div>
   </div>
+  @endif
   @endif
 @endsection

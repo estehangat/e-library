@@ -83,7 +83,7 @@ APB
                     <div class="input-group">
                     <select aria-label="Tahun" name="tahun" class="form-control" id="yearOpt">
                       @foreach($tahunPelajaran as $t)
-                      @if($t->is_active == 1 || ($t->is_active != 1 && $t->whereHas('apby',function($q)use($jenisAktif,$t){$q->where('academic_year_id',$t->id)->whereHas('jenisAnggaranAnggaran',function($q)use($jenisAktif){$q->where('budgeting_type_id',$jenisAktif->id);});})->count()))
+                      @if($t->is_finance_year == 1 || ($t->is_finance_year != 1 && $t->whereHas('apby',function($q)use($jenisAktif,$t){$q->where('academic_year_id',$t->id)->whereHas('jenisAnggaranAnggaran',function($q)use($jenisAktif){$q->where('budgeting_type_id',$jenisAktif->id);});})->count()))
                       <option value="{{ $t->academicYearLink }}" {{ $tahun->id == $t->id ? 'selected' : '' }}>{{ $t->academic_year }}</option>
                       @endif
                       @endforeach
@@ -151,7 +151,7 @@ APB
                     $apbyCount = $a->apby()->where('academic_year_id',$tahun->id)->count();
                     $anggaranAktif += $apbyCount;
                     @endphp
-                    @if(($tahun->is_active != 1 && $apbyCount > 0) || $tahun->is_active == 1)
+                    @if(($tahun->is_finance_year != 1 && $apbyCount > 0) || $tahun->is_finance_year == 1)
                     <div class="col-md-6 col-12 mb-3">
                         <div class="row py-2 rounded border border-light mr-2">
                             <div class="col-8 d-flex align-items-center">
@@ -171,7 +171,7 @@ APB
                     </div>
                     @endif
                     @endforeach
-                    @if($tahun->is_active != 1 && $anggaranAktif == 0)
+                    @if($tahun->is_finance_year != 1 && $anggaranAktif == 0)
                     <div class="col-12 pl-0 pr-3">
                         <div class="text-center mx-3 mt-4 mb-5">
                             <h3>Mohon Maaf,</h3>

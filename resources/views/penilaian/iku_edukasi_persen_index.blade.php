@@ -92,7 +92,7 @@ IKU Edukasi
                     <label for="yearOpt" class="form-control-label">Unit</label>
                   </div>
                   <div class="col-lg-6 col-md-6 col-12">
-                    @if(Auth::user()->role->name == 'kepsek')
+                    @if(in_array(Auth::user()->role->name,['kepsek','wakasek']))
                     <input type="text" class="form-control" value="{{ $unit->name }}" disabled>
                     @else
                     <div class="input-group">
@@ -183,6 +183,7 @@ IKU Edukasi
     </div>
   </div>
 </div>
+
 @endif
 
 @if(isset($score) && ($score > 0))
@@ -210,4 +211,5 @@ IKU Edukasi
 @include('template.footjs.kependidikan.change-unit')
 @endif
 @include('template.footjs.kependidikan.change-ledger')
+@yield('additional-scripts')
 @endsection

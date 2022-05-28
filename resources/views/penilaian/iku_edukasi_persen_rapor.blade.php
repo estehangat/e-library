@@ -24,7 +24,7 @@
                     </button>
                 </div>
                 @endif
-                @if(count($kelasList) > 0)
+                @if(count($kelasList) > 0 && $mataPelajaran && count($mataPelajaran) > 0)
                 <div class="table-responsive">
                     <table id="dataTable" class="table align-items-center table-flush">
                         <thead class="thead-light">
@@ -83,10 +83,15 @@
                         </tbody>
                     </table>
                 </div>
-                @else
+                @elseif(count($kelasList) < 1)
                 <div class="text-center mx-3 mt-4 mb-5">
                     <h3 >Mohon Maaf,</h3>
                     <h6 class="font-weight-light mb-3">Tidak ada data kelas yang ditemukan</h6>
+                </div>
+                @else
+                <div class="text-center mx-3 mt-4 mb-5">
+                    <h3 >Mohon Maaf,</h3>
+                    <h6 class="font-weight-light mb-3">Tidak ada data mata pelajaran yang ditemukan</h6>
                 </div>
                 @endif
             </div>

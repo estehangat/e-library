@@ -82,7 +82,7 @@ APB
                     <div class="input-group">
                     <select aria-label="Tahun" name="tahun" class="form-control" id="yearOpt">
                       @foreach($tahunPelajaran as $t)
-                      @if($t->is_active == 1 || ($t->is_active != 1 && $t->whereHas('apby',function($q)use($jenisAktif,$t){$q->where('academic_year_id',$t->id)->whereHas('jenisAnggaranAnggaran',function($q)use($jenisAktif){$q->where('budgeting_type_id',$jenisAktif->id);});})->count()))
+                      @if($t->is_finance_year == 1 || ($t->is_finance_year != 1 && $t->whereHas('apby',function($q)use($jenisAktif,$t){$q->where('academic_year_id',$t->id)->whereHas('jenisAnggaranAnggaran',function($q)use($jenisAktif){$q->where('budgeting_type_id',$jenisAktif->id);});})->count()))
                       <option value="{{ $t->academicYearLink }}" {{ $tahun->id == $t->id ? 'selected' : '' }}>{{ $t->academic_year }}</option>
                       @endif
                       @endforeach

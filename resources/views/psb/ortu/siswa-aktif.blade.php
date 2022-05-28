@@ -23,22 +23,6 @@
             <div class="card-body">
                 <div class="row align-items-center">
                     <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-uppercase mb-1">NIPD Siswa</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{$anak->siswas()->latest()->first()->student_nis?$anak->siswas()->latest()->first()->student_nis:'Belum disetting'}}</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-graduation-cap fa-2x text-brand-green"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-xl-2 col-md-3 mb-2">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col mr-2">
                         <div class="text-xs font-weight-bold text-uppercase mb-1">VA Biaya Masuk Sekolah</div>
                         <div class="h5 mb-0 font-weight-bold text-gray-800">{{$anak->siswas()->latest()->first()->virtualAccount?$anak->siswas()->latest()->first()->virtualAccount->bms_va:'Belum disetting'}}</div>
                     </div>

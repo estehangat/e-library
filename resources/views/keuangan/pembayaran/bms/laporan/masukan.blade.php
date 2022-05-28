@@ -8,11 +8,13 @@ Biaya Masuk Sekolah
 @php
 $role = Auth::user()->role->name;
 @endphp
-@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','pembinayys','ketuayys','wakasek']))
+@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','keu','pembinayys','ketuayys','wakasek']))
 @include('template.sidebar.keuangan.'.$role)
 @else
 @include('template.sidebar.keuangan.employee')
 @endif
+<!-- Select2 -->
+<link href="{{url('/vendor/select2/dist/css/select2.min.css')}}" rel="stylesheet" type="text/css">
 @endsection
 
 @section('content')
@@ -34,7 +36,7 @@ $role = Auth::user()->role->name;
                     </div>
                     <div class="col">
                         <div class="h6 mb-0 font-weight-bold text-gray-800">Rencana</div>
-                        Rp {{number_format($plan->total_plan)}}
+                        Rp {{number_format($plan?$plan->total_plan:'0')}}
                     </div>
                 </div>
             </div>
@@ -49,7 +51,7 @@ $role = Auth::user()->role->name;
                     </div>
                     <div class="col">
                         <div class="h6 mb-0 font-weight-bold text-gray-800">Realisasi</div>
-                        Rp {{number_format($plan->total_get)}}
+                        Rp {{number_format($plan?$plan->total_get:'0')}}
                     </div>
                 </div>
             </div>
@@ -64,7 +66,7 @@ $role = Auth::user()->role->name;
                     </div>
                     <div class="col">
                         <div class="h6 mb-0 font-weight-bold text-gray-800">Selisih</div>
-                        Rp {{number_format($plan->total_plan-$plan->total_get)}}
+                        Rp {{number_format($plan?$plan->total_plan-$plan->total_get:'0')}}
                     </div>
                 </div>
             </div>
@@ -95,26 +97,22 @@ $role = Auth::user()->role->name;
                 <div class="row">
                     <div class="col-md-8">
                         <form action="/keuangan/bms/laporan-masukan-bms" method="get">
-                            @if($unit_id==5)
                             <div class="form-group row">
                                 <label for="kelas" class="col-sm-3 control-label">Unit</label>
                                 <div class="col-sm-5">
-                                    <select name="level" class="select2 form-control select2-hidden-accessible auto_width" id="kelas" style="width:100%;" tabindex="-1" aria-hidden="true">
-                                        <option value="semua">Semua</option>
-                                        <option value="1" selected>TK</option>
-                                        <option value="2" selected>SD</option>
-                                        <option value="3" selected>SMP</option>
-                                        <option value="4" selected>SMA</option>
+                                    <select name="unit_id" class="select2 form-control select2-hidden-accessible auto_width" id="unit_id" style="width:100%;" tabindex="-1" aria-hidden="true">
+                                        @foreach (getUnits() as $index => $units)
+                                            <option value="{{$units->id}}" {{$index==0?'selected':''}}>{{$units->name}}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                             </div>
-                            @endif
                             <div class="form-group row">
-                                <label for="tahun" class="col-sm-3 control-label">Tahun</label>
+                                <label for="year" class="col-sm-3 control-label">Tahun</label>
                                 <div class="col-sm-5">
-                                    <select name="tahun" class="select2 form-control select2-hidden-accessible auto_width" id="tahun" style="width:100%;" tabindex="-1" aria-hidden="true">
-                                        @foreach ($years as $y)
-                                        <option value="{{$y->year}}" {{$year==$y->year?'selected':''}}>{{$y->year}}</option>
+                                    <select name="year" class="select2 form-control select2-hidden-accessible auto_width" id="year" style="width:100%;" tabindex="-1" aria-hidden="true">
+                                        @foreach (yearList() as $index => $year_list)
+                                        <option value="{{$year_list}}" {{$index==0?'selected':''}}>{{$year_list}}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -122,23 +120,14 @@ $role = Auth::user()->role->name;
                             <div class="form-group row">
                                 <label for="kelas" class="col-sm-3 control-label">Bulan</label>
                                 <div class="col-sm-5">
-                                    <select name="bulan" class="select2 form-control select2-hidden-accessible auto_width" id="kelas" style="width:100%;" tabindex="-1" aria-hidden="true">
+                                    <select name="month" class="select2 form-control select2-hidden-accessible auto_width" id="month" style="width:100%;" tabindex="-1" aria-hidden="true">
                                         <option value="">Semua</option>
-                                        <option value="1" {{$month=='1'?'selected':''}}>Januari</option>
-                                        <option value="2" {{$month=='2'?'selected':''}}>Februari</option>
-                                        <option value="3" {{$month=='3'?'selected':''}}>Maret</option>
-                                        <option value="4" {{$month=='4'?'selected':''}}>April</option>
-                                        <option value="5" {{$month=='5'?'selected':''}}>Mei</option>
-                                        <option value="6" {{$month=='6'?'selected':''}}>Juni</option>
-                                        <option value="7" {{$month=='7'?'selected':''}}>Juli</option>
-                                        <option value="8" {{$month=='8'?'selected':''}}>Agustus</option>
-                                        <option value="9" {{$month=='9'?'selected':''}}>September</option>
-                                        <option value="10" {{$month=='10'?'selected':''}}>Oktober</option>
-                                        <option value="11" {{$month=='11'?'selected':''}}>November</option>
-                                        <option value="12" {{$month=='12'?'selected':''}}>Desember</option>
+                                        @foreach (monthList() as $months)
+                                            <option value="{{$months->id}}">{{$months->name}}</option>
+                                        @endforeach
                                     </select>
                                 </div>
-                                <button class="btn btn-brand-purple-dark btn-sm" type="submit">Saring</button>
+                                <button id="filter_submit" class="btn btn-brand-purple-dark btn-sm" type="button">Saring</button>
                             </div>
                         </form>
                     </div>
@@ -164,18 +153,22 @@ $role = Auth::user()->role->name;
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @foreach ( $lists as $list )
+                            <tbody id="tbody">
+                                {{-- @foreach ( $lists as $list )
                                 <tr>
                                     <td>{{$list->created_at}}</td>
                                     <td>{{$list->siswa->student_nis}}</td>
                                     <td>{{$list->siswa->identitas->student_name}}</td>
                                     <td>Rp {{number_format($list->nominal)}}</td>
                                     <td>
-                                        <a href="#" class="btn btn-sm btn-success"   data-toggle="modal" data-target="#ubahKategori" data-name="{{$list->siswa->student_name}}" data-id="{{$list->id}}"><i class="fa fa-random"></i></a>
+                                        @if($list->exchange_que)
+                                        Dalam Pengajuan Pemindahan Dana
+                                        @else
+                                        <a href="#" class="btn btn-sm btn-success"  data-total="{{$list->nominal}}" data-toggle="modal" data-target="#ubahKategori" data-name="{{$list->siswa->identitas->student_name}}" data-id="{{$list->id}}"><i class="fa fa-random"></i></a>
+                                        @endif
                                     </td>
                                 </tr>
-                                @endforeach
+                                @endforeach --}}
                             </tbody>
                         </table>
                     </div>
@@ -190,24 +183,86 @@ $role = Auth::user()->role->name;
 <div id="ubahKategori" class="modal fade">
     <div class="modal-dialog modal-confirm">
         <div class="modal-content">
-            <div class="modal-header flex-column">
-                <div class="icon-box">
-                    <i class="material-icons">&#xe5ca;</i>
+            <form action="/keuangan/bms/change-transaction" method="POST">
+                <div class="modal-header flex-column">
+                    {{-- <div class="icon-box">
+                        <i class="material-icons">&#xe5ca;</i>
+                    </div> --}}
+                    <h4 class="modal-title w-100">Ubah Transaksi</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 </div>
-                <h4 class="modal-title w-100">Apakah Anda yakin?</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            </div>
-            <div class="modal-body">
-                <p id="name">Apakah Anda yakin akan mengubah Kategori?</p>
-            </div>
-            <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                <form action="/keuangan/bms/laporan-masukan-bms/ubah-kategori" method="POST">
-                    @csrf
-                    <input type="text" name="id" id="id" class="id" hidden/>
+                <div class="modal-body">
+                    <div class="form-group">
+                      <label for="nama_siswa" class="col-form-label">Siswa</label>
+                      <input type="text" name="nama_siswa" class="form-control" id="nama_siswa" value="" disabled>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="jenis_pembayaran" class="col-form-label">Jenis Pembayaran</label>
+                        <select name="jenis_pembayaran" class="select2 form-control auto_width" id="jenis_pembayaran" style="width:100%;" tabindex="-1" aria-hidden="true">
+                            <option value="1" selected>BMS</option>
+                            <option value="2">SPP</option>
+                        </select>
+                    </div>
+
+                    <input type="hidden" name="id" class="form-control" id="id" value="0" disabled>
+                    <input type="hidden" name="total" class="form-control" id="total" value="0" disabled>
+                    <div class="form-group">
+                      <label for="nominal_siswa" class="col-form-label">Nominal</label>
+                      <input type="text" name="nominal_siswa" class="form-control number-separator" id="nominal_siswa" value="0" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="split" class="col-form-label">Split dengan pembayaran lain?</label>
+                        <select name="split" class="select2 form-control auto_width" id="split" style="width:100%;" tabindex="-1" aria-hidden="true">
+                            <option value="0" selected>Tidak</option>
+                            <option value="1" >Ya</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group split-siswa">
+                        <label for="unit_split" class="col-form-label">Unit Siswa</label>
+                        <select name="unit_split" class="form-control auto_width" id="unit_split" style="width:100%;" tabindex="-1" aria-hidden="true">
+                            @foreach (getUnits() as $index => $units)
+                                <option value="{{$units->id}}" {{$index==0?'selected':''}}>{{$units->name}}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-group split-siswa">
+                        <label for="siswa_split" class="col-form-label">Pilih siswa</label>
+                        <select name="siswa_split" class="select2-hidden-accessible form-control auto_width" id="siswa_split" style="width:100%;" tabindex="-1" aria-hidden="true">
+                        </select>
+                    </div>
+
+                    <div class="form-group split-siswa">
+                        <label for="jenis_pembayaran_split" class="col-form-label">Jenis Pembayaran</label>
+                        <select name="jenis_pembayaran_split" class="select2 form-control auto_width" id="jenis_pembayaran_split" style="width:100%;" tabindex="-1" aria-hidden="true">
+                            <option value="1">BMS</option>
+                            <option value="2" selected>SPP</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group split-siswa">
+                      <label for="nominal_split" class="col-form-label">Nominal</label>
+                      <input type="text" name="nominal_split" class="form-control number-separator" id="nominal_split" value="0" required>
+                    </div>
+
+                    <div class="form-group">
+                      <label for="refund" class="col-form-label">Refund</label>
+                      <input type="text" readonly name="refund" class="form-control number-separator" id="refund" value="0" required>
+                    </div>
+
+
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                        @csrf
+                        <input type="text" name="student_id" id="student_id" class="id" hidden/>
+                        <input type="text" name="id" id="id" class="id" hidden/>
                     <button type="submit" class="btn btn-success">Ya</button>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -216,6 +271,8 @@ $role = Auth::user()->role->name;
 @endsection
 
 @section('footjs')
+<!-- Select2 -->
+<script src="{{ asset('vendor/select2/dist/js/select2.min.js') }}"></script>
 <!-- DataTables -->
 <script src="{{ asset('vendor/datatables/jquery.dataTables.min.js') }}"></script>
 <script src="{{ asset('vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
@@ -228,16 +285,160 @@ $role = Auth::user()->role->name;
 @include('template.footjs.kbm.datatables')
 
 <script>
-    $(document).ready(function()
-    {
-        $('#ubahKategori').on('show.bs.modal', function (event) {
-            var button = $(event.relatedTarget) // Button that triggered the modal
-            var id = button.data('id') // Extract info from data-* attributes
-            var name = button.data('name') // Extract info from data-* attributes
-            var modal = $(this)
-            modal.find('input[name="id"]').val(id)
-            modal.find('p[id="name"]').text('Apakah Anda yakin akan mengubah kategori transaksi '+name+'?');
-        })
-    })
+$(document).ready(function()
+{
+    const unitnya = $('#unit_split').val();
+    getSiswaList(unitnya);
+
+    $('#ubahKategori').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget) // Button that triggered the modal
+        var id = button.data('id');
+        var name = button.data('name');
+        var total = button.data('total');
+        var student_id = button.data('student_id');
+        var modal = $(this);
+        modal.find('input[name="id"]').val(id)
+        $('#nama_siswa').val(name);
+        $('#student_id').val(student_id);
+        $('#total').val(total);
+        $('#nominal_siswa').val(total);
+        $('#nominal_split').val(0);
+        $('#refund').val(0);
+        $('#split').val(0);
+        $('.split-siswa').hide();
+        hitungSemua();
+        modal.find('p[id="name"]').text('Apakah Anda yakin akan mengubah kategori transaksi '+name+'?');
+    });
+
+    $('.select2-hidden-accessible').select2();
+
+    $('#nominal_siswa').on('change', function() {
+        hitungSemua();
+    });
+    $('#nominal_split').on('change', function() {
+        hitungSemua();
+    });
+    $('#refund').on('change', function() {
+        hitungSemua();
+    });
+    $('#split').on('change', function() {
+        var value = this.value;
+        $('#nominal_split').val(0);
+        hitungSemua();
+        if(value == 1){
+            $('.split-siswa').show();
+        }else{
+            $('.split-siswa').hide();
+        }
+    });
+
+    $('#unit_split').on('change', function() {
+        getSiswaList(this.value);
+    });
+
+    $('#filter_submit').click(function(){
+        console.log('1123');
+        getData();
+    });
+    getData();
+
+    $('#jenis_pembayaran').on('change', function() {
+        getSiswaList($('#unit_split').val());
+    });
+    $('#jenis_pembayaran_split').on('change', function() {
+        getSiswaList($('#unit_split').val());
+    });
+})
+
+function hitungSemua(){
+    var total = parseInt($('#total').val().replace(/\./g, ""));
+    var nominal_siswa = parseInt($('#nominal_siswa').val().replace(/\./g, ""));
+    var nominal_split = parseInt($('#nominal_split').val().replace(/\./g, ""));
+    var refund = total - (nominal_siswa + nominal_split);
+
+    $('#refund').val(refund);
+    
+    if(nominal_siswa > total){
+        $('#nominal_siswa').val(total-nominal_split);
+        $('#refund').val(0);
+    }else if(refund < 0){
+        $('#nominal_split').val(total-nominal_siswa);
+        console.log(total-nominal_siswa);
+        $('#refund').val(0);
+    }
+}
+
+function getSiswaList(unit){
+    const jenis_split = $('#jenis_pembayaran_split').val();
+    const jenis = $('#jenis_pembayaran').val();
+    const student_id = $('#student_id').val();
+    jQuery.ajax({
+        url: "{{url('/keuangan/spp/list-siswa')}}/"+unit,
+        type : "GET",
+        success:function(data)
+        {
+            $('.option-siswa').remove();
+            data.map((item, index) => {
+                if(item[0] == student_id && jenis == jenis_split){
+
+                }else{
+                    const valuenya = '<option class="option-siswa" value="'+item[0]+'" selected>'+item[1] + ' - ' + item[2]+'</option>';
+                    $('#siswa_split').append(valuenya);
+                }
+            });
+        }
+    });
+}
+
+function getData(){
+
+    var year = $('#year').val();
+    var month = $('#month').val();
+    var unit_id = $('#unit_id').val();
+    // var level_id = $('#level').val();
+
+    console.log (
+        year,
+        month,
+        unit_id,
+        // level_id,
+    );
+
+    $('#dataTable').DataTable().destroy();
+    $('#tbody').empty();
+    $.ajax({
+        url         : window.location.href,
+        type        : 'POST',
+        dataType    : 'JSON',
+        headers     : {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+        data        : {
+            year : year,
+            month : month,
+            unit_id : unit_id,
+            // level_id : level_id,
+        },
+        beforeSend  : function() {
+        },
+        complete    : function() {
+        }, 
+        success: function async(response){
+            console.log(response);
+            response[0].map((item, index) => {
+                let row = '<tr>+'+
+                        '<td>'+item[0]+'</td>'+
+                        '<td>'+item[1]+'</td>'+
+                        '<td>'+item[2]+'</td>'+
+                        '<td>'+item[3]+'</td>'+
+                        '<td>'+item[4]+'</td>'+
+                    '</tr>';
+                $('#tbody').append(row);
+            });
+            $('#dataTable').DataTable();
+        },
+        error: function(xhr, textStatus, errorThrown){
+            alert(xhr.responseText);
+        },
+    });
+}
 </script>
 @endsection

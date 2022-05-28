@@ -7,18 +7,18 @@
       <li class="nav-item {{ request()->routeIs('psc*') ? 'active' : '' }}">
         <a class="nav-link {{ request()->routeIs('psc*') ? '' : 'collapsed' }}" href="#" data-toggle="collapse" data-target="#collapsePSC" aria-expanded="{{ request()->routeIs('psc*') ? 'true' : 'false' }}" aria-controls="collapsePSC">
           <i class="mdi mdi-star"></i>
-          <span>Kinerja Pegawai</span>
+          <span>Performance Scorecard</span>
         </a>
         <div id="collapsePSC" class="collapse {{ request()->routeIs('psc*')? 'show' : '' }}" aria-labelledby="headingPSC" data-parent="#accordionSidebar" style="">
           <div class="bg-white py-2 collapse-inner rounded">
-            <h6 class="collapse-header">Kinerja Pegawai</h6>
-            @if(Auth::user()->pegawai->jabatan->pscRoleTarget()->select('target_position_id')->where('pa_role_mapping_id',2)->count() > 0 || Auth::user()->pegawai->jabatan->penilaiPsc()->count() > 0)
+            <h6 class="collapse-header">Performance Scorecard</h6>
+            @if(Auth::user()->pegawai->position_id && (Auth::user()->pegawai->jabatan->pscRoleTarget()->select('target_position_id')->where('pa_role_mapping_id',2)->count() > 0 || Auth::user()->pegawai->jabatan->penilaiPsc()->count() > 0))
             <a class="collapse-item {{ request()->routeIs('psc.penilaian*') ? 'active' : '' }}" href="{{ route('psc.penilaian.index') }}">
               <i class="mdi mdi-star-plus"></i>
               <span>PSC Pegawai</span>
             </a>
             @endif
-            @if(Auth::user()->pegawai->jabatan->pscRoleTarget()->select('target_position_id')->where('pa_role_mapping_id',3)->count() > 0)
+            @if(Auth::user()->pegawai->position_id && Auth::user()->pegawai->jabatan->pscRoleTarget()->select('target_position_id')->where('pa_role_mapping_id',3)->count() > 0)
             <a class="collapse-item {{ request()->routeIs('psc.laporan.pegawai*') ? 'active' : '' }}" href="{{ route('psc.laporan.pegawai.index') }}">
               <i class="mdi mdi-card-account-details-star"></i>
               <span>Laporan Prestasi Kerja</span>
@@ -36,7 +36,7 @@
               <i class="mdi mdi-cog"></i>
               <span>Pemetaan Peran</span>
             </a>
-            @if(Auth::user()->pegawai->jabatan->pscRoleTarget()->select('target_position_id')->where('pa_role_mapping_id',1)->count() > 0)
+            @if((in_array(Auth::user()->role->name,['etl','etm'])) || (Auth::user()->pegawai->position_id && Auth::user()->pegawai->jabatan->pscRoleTarget()->select('target_position_id')->where('pa_role_mapping_id',1)->count() > 0))
             <a class="collapse-item {{ request()->routeIs('psc.aspek*') ? 'active' : '' }}" href="{{ route('psc.aspek.index') }}">
               <i class="mdi mdi-cog"></i>
               <span>Aspek Evaluasi</span>
@@ -54,7 +54,7 @@
               <i class="mdi mdi-cog"></i>
               <span>Rentang Nilai</span>
             </a>
-            @elseif($isTopManagements || (!$isTopManagements && Auth::user()->pegawai->jabatan->pscRoleTarget()->select('target_position_id')->where('pa_role_mapping_id',1)->count() > 0))
+            @elseif($isTopManagements || (!$isTopManagements && Auth::user()->pegawai->position_id && Auth::user()->pegawai->jabatan->pscRoleTarget()->select('target_position_id')->where('pa_role_mapping_id',1)->count() > 0))
             <hr class="sidebar-divider">
             <a class="collapse-item {{ request()->routeIs('psc.aspek*') ? 'active' : '' }}" href="{{ route('psc.aspek.index') }}">
               <i class="mdi mdi-cog"></i>
@@ -108,7 +108,7 @@
         </div>
       </li>
       @else
-      @if(in_array(Auth::user()->role->name,['kepsek','etl']) || Auth::user()->pegawai->jabatan->ikuAspek()->select('iku_aspect_id')->where('pa_role_mapping_id',3)->count() > 0 || Auth::user()->pegawai->jabatan->ikuAspek()->select('iku_aspect_id')->where('pa_role_mapping_id',1)->count() > 0)
+      @if(Auth::user()->pegawai->position_id && (in_array(Auth::user()->role->name,['kepsek','etl']) || Auth::user()->pegawai->jabatan->ikuAspek()->select('iku_aspect_id')->where('pa_role_mapping_id',3)->count() > 0 || Auth::user()->pegawai->jabatan->ikuAspek()->select('iku_aspect_id')->where('pa_role_mapping_id',1)->count() > 0))
       <li class="nav-item {{ request()->routeIs('iku*') ? 'active' : '' }}">
         <a class="nav-link {{ request()->routeIs('iku*') ? '' : 'collapsed' }}" href="#" data-toggle="collapse" data-target="#collapseIKU" aria-expanded="{{ request()->routeIs('iku*') ? 'true' : 'false' }}" aria-controls="collapseIKU">
           <i class="mdi mdi-flag"></i>

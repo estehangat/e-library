@@ -30,42 +30,89 @@ $role = Auth::user()->role->name;
   </ol>
 </div>
 
+@if($years && count($years) > 0)
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card shadow">
+      <div class="card-body px-4 py-3">
+        <form action="{{ route($route.'.index') }}" id="viewItemForm" method="get">
+          <div class="row">
+            <div class="col-lg-10 col-md-12">
+              <div class="form-group">
+                <div class="row mb-3">
+                  <div class="col-lg-3 col-md-4 col-12">
+                    <label for="selectYear" class="form-control-label">Tahun</label>
+                  </div>
+                  <div class="col-lg-4 col-md-6 col-12">
+                    <select class="form-control @error('year') is-invalid @enderror" name="year" id="selectYear" onchange="if(this.value){ this.form.submit(); }" required="required">
+                      @if(!$years || ($years && count($years) < 1))
+                      <option value="" selected="selected" disabled="disabled">Belum Ada</option>
+                      @endif
+                      @foreach($years as $y)
+                      <option value="{{ $y }}" {{ old('year',$year) == $y ? 'selected' : '' }}>{{ $y }}</option>
+                      @endforeach
+                      @if(!in_array(date('Y'),$years->toArray()))
+                      <option value="{{ date('Y') }}" {{ $year == date('Y') ? 'selected' : '' }}>{{ date('Y') }}</option>
+                      @endif
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <input type="hidden" name="status" value="{{ $status }}">
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+@endif
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <ul class="nav nav-pills p-3">
+              @if(!isset($status) || $status != 'diajukan')
+              <li class="nav-item">
+                <a class="nav-link active" href="{{ route($route.'.index', ['year' => $year, 'status' => 'menunggu']) }}">Menunggu</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link text-brand-purple" href="{{ route($route.'.index', ['year' => $year, 'status' => 'diajukan']) }}">Diajukan</a>
+              </li>
+              @else
+              <li class="nav-item">
+                <a class="nav-link text-brand-purple" href="{{ route($route.'.index', ['year' => $year, 'status' => 'menunggu']) }}">Menunggu</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="{{ route($route.'.index', ['year' => $year, 'status' => 'diajukan']) }}">Diajukan</a>
+              </li>
+              @endif
+            </ul>
+        </div>
+    </div>
+</div>
+
+@if((!isset($status) || $status != 'diajukan') && (!isset($year) || $year == date('Y')))
 <div class="row mb-4">
   <div class="col-12">
     <div class="card shadow">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">Tambah</h6>
+        <h6 class="m-0 font-weight-bold text-brand-purple">Buat Proposal</h6>
       </div>
       <div class="card-body px-4 py-3">
-        <form action="{{ route($route.'.store') }}" id="addItemForm" method="post" enctype="multipart/form-data" accept-charset="utf-8">
+        <form action="{{ route($route.'.create') }}" id="addItemForm" method="post" enctype="multipart/form-data" accept-charset="utf-8">
           {{ csrf_field() }}
           <div class="row">
             <div class="col-lg-10 col-md-12">
               <div class="form-group">
                 <div class="row mb-3">
                   <div class="col-lg-3 col-md-4 col-12">
-                    <label for="normal-input" class="form-control-label">Deskripsi</label>
+                    <label for="normal-input" class="form-control-label">Nama Proposal</label>
                   </div>
                   <div class="col-lg-9 col-md-8 col-12">
-                    <input type="text" id="desc" class="form-control form-control-sm @error('desc') is-invalid @enderror" name="desc" value="{{ old('desc') }}" maxlength="255"  required="required">
-                    @error('desc')
-                    <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-lg-10 col-md-12">
-              <div class="form-group">
-                <div class="row">
-                  <div class="col-lg-3 col-md-4 col-12">
-                    <label for="normal-input" class="form-control-label">Nominal</label>
-                  </div>
-                  <div class="col-lg-6 col-md-8 col-12">
-                    <input type="text" id="amount" class="form-control form-control-sm @error('amount') is-invalid @enderror number-separator" name="amount" value="{{ old('amount') ? old('amount') : '0' }}" maxlength="15" required="required">
-                    @error('amount')
+                    <input type="text" id="desc" class="form-control form-control-sm @error('title') is-invalid @enderror" name="title" value="{{ old('title') }}" maxlength="100"  required="required">
+                    <small class="form-text text-muted">Maksimal 100 karakter</small>
+                    @error('title')
                     <span class="text-danger">{{ $message }}</span>
                     @enderror
                   </div>
@@ -88,6 +135,7 @@ $role = Auth::user()->role->name;
     </div>
   </div>
 </div>
+@endif
 
 <div class="row mb-4">
   <div class="col-12">
@@ -119,8 +167,8 @@ $role = Auth::user()->role->name;
               <tr>
                 <th style="width: 50px">#</th>
                 <th>Tanggal</th>
-                <th>Deskripsi</th>
-                <th>Nominal</th>
+                <th>Nama</th>
+                <th>Pengajuan</th>
                 <th>Unit</th>
                 <th>Jabatan</th>
                 <th style="width: 120px">Aksi</th>
@@ -132,15 +180,18 @@ $role = Auth::user()->role->name;
               <tr>
                 <td>{{ $no++ }}</td>
                 <td>{{ date('Y-m-d',strtotime($d->created_at)) }}</td>
-                <td>{{ $d->desc }}</td>
-                <td>{{ $d->amountWithSeparator }}</td>
+                <td>{{ $d->title }}</td>
+                <td>{{ $d->totalValueOriWithSeparator }}</td>
                 <td>{{ $d->unit->name }}</td>
                 <td>{{ $d->jabatan->name }}</td>
                 <td>
+                  <a href="{{ route($route.'.detail.show', ['id' => $d->id]) }}" class="btn btn-sm btn-brand-purple-dark"><i class="fas fa-eye"></i></a>
                   @if($d->pegawai->id == Auth::user()->pegawai->id)
                   @if($used && $used[$d->id] < 1)
+                  @if((!isset($status) || $status != 'diajukan') && (!isset($year) || $year == date('Y')))
                   <a href="#" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#edit-form" onclick="editModal('{{ route($route.'.edit') }}','{{ $d->id }}')" data-toggle="modal" data-target="#edit-form"><i class="fas fa-pen"></i></a>
-                  <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#delete-confirm" onclick="deleteModal('{{ $active }}', '{!! addslashes(htmlspecialchars($d->desc)) !!}', '{{ route($route.'.destroy', ['id' => $d->id]) }}')"><i class="fas fa-trash"></i></a>
+                  @endif
+                  <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#delete-confirm" onclick="deleteModal('{{ $active }}', '{!! addslashes(htmlspecialchars($d->title)) !!}', '{{ route($route.'.destroy', ['id' => $d->id, 'year' => $year, 'status' => $status]) }}')"><i class="fas fa-trash"></i></a>
                   @else
                   <button type="button" class="btn btn-sm btn-secondary" disabled="disabled"><i class="fas fa-trash"></i></button>
                   @endif

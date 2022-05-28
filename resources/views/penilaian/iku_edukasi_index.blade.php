@@ -1,11 +1,13 @@
 @extends('template.main.master')
 
 @section('title')
-Ledger Kelas
+Ledger Kelas 
 @endsection
 
 @section('headmeta')
 <link href="{{ asset('vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
+<link href="{{ asset('vendor/datatables-button/buttons.bootstrap4.min.css') }}" rel="stylesheet">
+<link href="{{ asset('vendor/datatables-button/jszip/datatables.min.css') }}" rel="stylesheet">
 @endsection
 
 @section('topbarpenilaian')
@@ -88,7 +90,7 @@ Ledger Kelas
                     @else
                     <div class="input-group">
                         <select aria-label="Kelas" name="kelas" class="form-control" id="classOpt">
-                          @foreach($kelasList->sortBy('levelName')->all() as $k)
+                          @foreach($kelasList as $k)
                           <option value="{{ $k->id }}" {{ $kelas && $kelas->id == $k->id ? 'selected' : '' }}>{{ $k->levelName }}</option>
                           @endforeach
                         </select>
@@ -161,7 +163,7 @@ Ledger Kelas
                             @php
                             $no = 1;
                             $siswas = $ranks = null;
-                            $riyawatKelas = $kelas->riwayat()->select('student_id')->where('semester_id',$semester->id)->get();
+                            $riyawatKelas = $kelas->riwayat()->select('student_id')->where('semester_id',$semester->id)->with(['siswa' => function ($q){$q->select('id','student_id')->with('identitas:id,student_name');}])->get()->sortBy('siswa.identitas.student_name');
                             foreach($riyawatKelas as $r){
                                 $s = $r->siswa()->select('id')->first();
                                 $rapor = $s->nilaiRapor()->select('id')->where('semester_id', $semester->id)->first();
@@ -257,10 +259,13 @@ Ledger Kelas
 <!-- DataTables -->
 <script src="{{ asset('vendor/datatables/jquery.dataTables.min.js') }}"></script>
 <script src="{{ asset('vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
+<script src="{{ asset('vendor/datatables-button/dataTables.buttons.min.js') }}"></script>
+<script src="{{ asset('vendor/datatables-button/buttons.bootstrap4.min.js') }}"></script>
+<script src="{{ asset('vendor/datatables-button/jszip/datatables.min.js') }}"></script>
 
 <!-- Page level custom scripts -->
 @include('template.footjs.kepegawaian.tooltip')
-@include('template.footjs.kepegawaian.datatables')
+@include('template.footjs.global.datatables-button')
 @if($semester && $kelasList)
 @include('template.footjs.kependidikan.change-class')
 @endif

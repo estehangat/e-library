@@ -131,7 +131,7 @@ PPA
                     <div class="input-group">
                     <select aria-label="Tahun" name="tahun" class="form-control" id="yearOpt">
                       @foreach($tahunPelajaran as $t)
-                      @if($t->is_active == 1 || ($t->is_active != 1 && $t->whereHas('ppa',function($q)use($jenisAktif,$t){$q->where('academic_year_id',$t->id)->whereHas('jenisAnggaranAnggaran',function($q)use($jenisAktif){$q->where('budgeting_type_id',$jenisAktif->id);});})->count()))
+                      @if($t->is_finance_year == 1 || ($t->is_finance_year != 1 && $t->whereHas('ppa',function($q)use($jenisAktif,$t){$q->where('academic_year_id',$t->id)->whereHas('jenisAnggaranAnggaran',function($q)use($jenisAktif){$q->where('budgeting_type_id',$jenisAktif->id);});})->count()))
                       <option value="{{ $t->academicYearLink }}" {{ $tahun->id == $t->id ? 'selected' : '' }}>{{ $t->academic_year }}</option>
                       @endif
                       @endforeach
@@ -173,7 +173,7 @@ PPA
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 <h6 class="m-0 font-weight-bold text-brand-purple">{{ $anggaranAktif->anggaran->name }}</h6>
-                @if($tahun->is_active == 1 && $isAnggotaPa && $apbyAktif->is_active == 1)
+                @if($tahun->is_finance_year == 1 && $isAnggotaPa && $apbyAktif->is_active == 1)
                 <a class="m-0 float-right btn btn-brand-purple-dark btn-sm" href="{{ route('ppa.buat', ['jenis' => $jenisAktif->link, 'tahun' => $tahun->academicYearLink, 'anggaran' => $anggaranAktif->anggaran->link])}}">Buat Pengajuan <i class="fas fa-plus-circle ml-1"></i></a>
                 @endif
             </div>

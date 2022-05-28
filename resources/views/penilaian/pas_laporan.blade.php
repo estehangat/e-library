@@ -261,7 +261,7 @@
 								<td class="text-center">{{ $keterampilan ? ($keterampilan->deskripsi && $keterampilan->deskripsi->predicate ? $keterampilan->deskripsi->predicate : '') : '' }}</td>
 								<td class="text-center">{{ $pengetahuan ? ($pengetahuan->deskripsi && $pengetahuan->deskripsi->description ? (strlen($pengetahuan->deskripsi->description) > 80 ? substr($pengetahuan->deskripsi->description, 0, strpos($pengetahuan->deskripsi->description, ' ', 80)).' ...' : $pengetahuan->deskripsi->description) : '') : '' }}</td>
 							</tr>
-							@if($unit->name == 'SD' && (($rapor->kelas->level->level < 3 && $i == 7) || ($rapor->kelas->level->level >= 3 && $i == 8)))
+							@if($unit->name == 'SD' && (($rapor->kelas->level->level < 4 && $i == 7) || ($rapor->kelas->level->level >= 4 && $i == 8)))
 						</table>
 					</div>
 				</div>
@@ -390,7 +390,7 @@
 				<div class="m-l-18">
 					<p class="fs-14 font-weight-bold">(Islami, Karakter Sukses, Literasi Era 4.0, Skill Abad 21)</p>
 					<div class="m-t-16 m-b-16">
-						<table class="table-border">
+						<table class="table-border page-break-auto">
 							<tr>
 								<th style="width: 3%">
 									No
@@ -432,7 +432,7 @@
                                     $scoreIklas = $nilai->detail()->where('iklas_ref_id',$i->id)->first();
                                     $stars = $scoreIklas->predicate;
                                     @endphp
-                                    @for($i=0;$i<$stars;$i++) <i class="fas fa-star"></i>
+                                    @for($j=0;$j<$stars;$j++) <i class="fas fa-star"></i>
                                         @endfor
                                     @endif
 								</td>
@@ -449,8 +449,8 @@
 										$q->where('rpd_type','Nilai IKLaS');
 									})->first();
 									@endphp
-									<!-- str_replace("@nama",$siswa->identitas->student_name ? $siswa->identitas->student_name : '',$descIklas->description) -->
-									{{ $descIklas ? $descIklas->description : '' }}
+									<!-- str_replace("@kompetensi",$i->competence && $i->category ? $i->competence.' - '.$i->category : 'ini',$descIklas->description) -->
+									{{ $descIklas ? str_replace("@kompetensi",$i->competence && $i->category ? $i->competence.' - '.$i->category : 'ini',$descIklas->description) : '' }}
 									@else
 									&nbsp;
 									@endif
@@ -919,7 +919,7 @@
         <div class="subpage">
             <p class="komponen-rapor">LAMPIRAN</p>
             <div id="lampiranIndikatorPengetahuan">
-                <p class="komponen-rapor">I. TABEL INDIKATOR KOMPETENSI PENGETAHUAN</p>
+                <p class="komponen-rapor">I. KOMPETENSI DASAR PENGETAHUAN</p>
                 <div class="m-l-18">
                     <div class="m-t-8 m-b-16">
                         <table class="table-border page-break-auto">
@@ -931,7 +931,7 @@
                                     Mata Pelajaran
                                 </th>
                                 <th style="width: 27%">
-                                    Indikator
+                                    Kompetensi Dasar
                                 </th>
                             </tr>
                             @php
@@ -959,7 +959,7 @@
                             @php
                             $subject_active = null;
                             $indikatorPengetahuan = $rapor->kelas->level->indikatorPengetahuan()->where([
-                                'semester_id' => $semester->semester_id,
+                                'semester_id' => $semester->id,
                                 'subject_id' => $m->id
                             ])->has('detail')->first();
                             $indikators_count = $indikatorPengetahuan ? $indikatorPengetahuan->detail()->count() : 0;
@@ -1004,7 +1004,7 @@
                             @if(count($matapelajarans) > 0)
                             @foreach($matapelajarans as $m)
                             @php
-                            $indikatorPengetahuans = $rapor->kelas->level->indikatorPengetahuan()->where('semester_id', $semester->semester_id)->whereIn('subject_id',$matapelajarans->pluck('id'))->has('detail')->get();
+                            $indikatorPengetahuans = $rapor->kelas->level->indikatorPengetahuan()->where('semester_id', $semester->id)->whereIn('subject_id',$matapelajarans->pluck('id'))->has('detail')->get();
                             $total_indicators = 0;
                             foreach($indikatorPengetahuans as $ip){
                                 $total_indicators += $ip ? $ip->detail()->count() : 0;
@@ -1021,7 +1021,7 @@
                             @php
                             $subject_active = null;
                             $indikatorPengetahuan = $rapor->kelas->level->indikatorPengetahuan()->where([
-                                'semester_id' => $semester->semester_id,
+                                'semester_id' => $semester->id,
                                 'subject_id' => $m->id
                             ])->has('detail')->first();
                             $indikators_count = $indikatorPengetahuan ? $indikatorPengetahuan->detail()->count() : 0;
@@ -1066,7 +1066,7 @@
 	<div class="page">
 		<div class="subpage">
 			<div id="lampiranKurikulumIklas">
-				<p class="komponen-rapor">II. TABEL INDIKATOR KOMPETENSI IKLaS</p>
+				<p class="komponen-rapor">II. INDIKATOR KOMPETENSI IKLaS</p>
 				<div class="m-l-18">
 					<div class="m-t-8 m-b-16">
 						<table class="table-border">
@@ -1141,7 +1141,7 @@
 	<div class="page">
 		<div class="subpage">
 			<div id="lampiranKurikulumTilawah">
-				<p class="komponen-rapor">III. TABEL INDIKATOR KOMPETENSI TILAWAH</p>
+				<p class="komponen-rapor">III. INDIKATOR KOMPETENSI TILAWAH</p>
 				<div class="m-l-18">
 					<div class="m-t-8 m-b-16">
 						<table class="table-border">

@@ -5,7 +5,7 @@ Kependidikan @endsection
 
 @section('sidebar-menu')
 <li class="nav-item {{ (Request::path()=='kependidikan') ? 'active' : '' }}">
-    <a class="nav-link" href="kependidikan">
+    <a class="nav-link" href="/kependidikan">
         <i class="mdi mdi-view-dashboard"></i>
         <span>Beranda</span>
     </a>
@@ -29,8 +29,8 @@ Kependidikan @endsection
     @else
     @include('template.sidebar.penilaianmapel')
     @endif
-<?php } elseif(in_array(Auth::user()->role->name, ['ketuayys','direktur','etl'])){ ?>
-	@include('template.sidebar.penilaianmanajemen')
+<?php } elseif(in_array(Auth::user()->role->name, ['pembinayys','ketuayys','direktur','etl'])){ ?>
+    @include('template.sidebar.penilaianmanajemen')
 <?php } ?>
 
 @endsection

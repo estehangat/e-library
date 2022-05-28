@@ -204,7 +204,7 @@
                                 Berikut kami informasikan <br>
                                 Jadwal Wawancara & Observasi: {{date('d M Y', strtotime($anak->interview_date))}} {{$anak->interview_time}}   <br>
                                 Bentuk Wawancara & Observasi: {{$anak->interview_type==1?'Online':'Offline'}}  <a href="{{$anak->interview_type==1?$anak->link:''}}"> <strong>{{$anak->interview_type==1?$anak->link:''}}</strong> </a><br><br>
-                                Untuk keperluan Wawancara & Observasi dapat melakukan pembayaran Observasi/Psikotes sebesar Rp 400.000 ke Bank Syariah Indonesia (BSI) dengan nomor rekening {{$anak->unit->va_number}}<br>dan bukti transfer dikirimkan melalui WhatsApp di bawah. Serta mengisi form untuk upload file foto/scan dokumen melalui <a href="{{$anak->unit->psb_document_link}}">Form Upload Dokumen</a> :<br>
+                                Untuk keperluan Wawancara & Observasi dapat melakukan pembayaran Observasi/Psikotes sebesar Rp 400.000 ke Bank Syariah Indonesia (BSI) dengan nomor rekening {{$anak->unit->va_number}}<br>dan bukti transfer dikirimkan melalui WhatsApp di bawah.Sserta mengisi form untuk upload file foto/scan dokumen melalui <a href="{{$anak->unit->psb_document_link}}">Form Upload Dokumen</a> :<br>
                                 1. Foto/Scan Akte Kelahiran Anak <br>
                                 2. Foto/Scan Kartu Keluarga <br>
                                 3. Foto/Scan KTP Ayah/Ibu atau Wali <br>

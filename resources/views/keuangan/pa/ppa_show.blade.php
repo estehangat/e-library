@@ -37,25 +37,34 @@
           @endif
       </td>
       <td class="detail-value" style="min-width: 200px">
-          @if($ppaAktif->pa_acc_status_id == 1 || !$apbyAktif || ($apbyAktif && $apbyAktif->is_active == 0))
+          @if($ppaAktif->type_id == 2)
+          {{ $p->valueWithSeparator }}
+          @else
+          @if($ppaAktif->pa_acc_status_id == 1 || !$apbyAktif || ($apbyAktif && ($apbyAktif->is_active == 0 || $apbyAktif->is_final == 1)))
           <input type="text" class="form-control form-control-sm" value="{{ $p->valueWithSeparator }}" disabled>
           @else
           <input name="value-{{ $p->id }}" type="text" class="form-control form-control-sm number-separator" value="{{ $p->valueWithSeparator }}">
           @endif
+          @endif
       </td>
-      @if(($apbyAktif && $apbyAktif->is_active == 1) && $isAnggotaPa && ((in_array(Auth::user()->role->name, ['fam','faspv']) && $ppaAktif->finance_acc_status_id != 1) || $ppaAktif->pa_acc_status_id != 1))
+      @if(($apbyAktif && $apbyAktif->is_active == 1 && ($apbyAktif->is_final != 1 && $ppaAktif->type_id == 1)) && $isAnggotaPa && ((in_array(Auth::user()->role->name, ['fam','faspv']) && $ppaAktif->finance_acc_status_id != 1) || $ppaAktif->pa_acc_status_id != 1))
       <td>
           @if($p->finance_acc_status_id != 1)
           @if($ppaAktif->type_id == 2)
+          <a href="{{ route('ppa.ubah.proposal', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber, 'id' => $p->id]) }}" class="btn btn-sm btn-brand-purple-dark"><i class="fas fa-list-ul"></i></a>
+          @if($apbyAktif->is_final != 1)
           <a href="#" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#edit-form" onclick="editModal('{{ route('ppa.ubah.detail', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]) }}','{{ $p->id }}')"><i class="fas fa-pen"></i></a>
-          @else
+          @endif
+          @elseif($apbyAktif->is_final != 1)
           <button type="button" class="btn btn-sm btn-warning btn-edit" data-toggle="modal" data-target="#edit-form">
               <i class="fa fa-pen"></i>
           </button>
           @endif
+          @if($apbyAktif->is_final != 1)
           <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#delete-confirm" onclick="deleteModal('Pengajuan', '{{ addslashes(htmlspecialchars($p->note)) }}', '{{ route('ppa.hapus', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber, 'id' => $p->id]) }}')">
               <i class="fas fa-trash"></i>
           </a>
+          @endif
           @endif
       </td>
       @endif
@@ -65,12 +74,16 @@
 @endsection
 
 @section('footer')
-  @if(($apbyAktif && $apbyAktif->is_active == 1) && ($ppaAktif->pa_acc_status_id != 1 || $ppaAktif->detail()->where(function($q){$q->where('pa_acc_status_id','!=',1)->orWhereNull('pa_acc_status_id');})->count() > 0))
+  @if(($apbyAktif && $apbyAktif->is_active == 1 && $apbyAktif->is_final != 1) && ($ppaAktif->pa_acc_status_id != 1 || $ppaAktif->detail()->where(function($q){$q->where('pa_acc_status_id','!=',1)->orWhereNull('pa_acc_status_id');})->count() > 0))
   <div class="row">
       <div class="col-12">
           <div class="text-center">
+              @if($ppaAktif->type_id == 2)
+              <button class="btn btn-secondary" type="button" data-toggle="modal" data-target="#saveAccept">Ajukan</button>
+              @else
               <button class="btn btn-brand-purple-dark" type="submit">Simpan</button>
               <button class="btn btn-secondary" type="button" data-toggle="modal" data-target="#saveAccept">Simpan & Ajukan</button>
+              @endif
           </div>
       </div>
   </div>
@@ -78,7 +91,7 @@
 @endsection
 
 @section('accept-modal')
-@if(($apbyAktif && $apbyAktif->is_active == 1) && $ppaAktif && $isAnggotaPa && ((in_array(Auth::user()->role->name, ['fam','faspv']) && $ppaAktif->finance_acc_status_id != 1) || $ppaAktif->pa_acc_status_id != 1))
+@if(($apbyAktif && $apbyAktif->is_active == 1 && $apbyAktif->is_final != 1) && $ppaAktif && $isAnggotaPa && ((in_array(Auth::user()->role->name, ['fam','faspv']) && $ppaAktif->finance_acc_status_id != 1) || $ppaAktif->pa_acc_status_id != 1))
 <div class="modal fade" id="saveAccept" tabindex="-1" role="dialog" aria-labelledby="simpanSetujuiModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog modal-confirm" role="document">
     <div class="modal-content">
@@ -91,12 +104,12 @@
       </div>
       
       <div class="modal-body p-1">
-        Apakah Anda yakin ingin menyimpan dan mengajukan semua alokasi dana yang ada?
+        Apakah Anda yakin ingin {{ $ppaAktif->type_id == 2 ? 'mengajukan' : 'menyimpan dan mengajukan' }} semua alokasi dana yang ada?
       </div>
 
       <div class="modal-footer justify-content-center">
         <button type="button" class="btn btn-danger mr-1" data-dismiss="modal">Tidak</button>
-        <button type="submit" id="saveAcceptBtn" class="btn btn-primary" data-form="ppa-form">Ya, Simpan & Ajukan</button>
+        <button type="submit" id="saveAcceptBtn" class="btn btn-primary" data-form="ppa-form">Ya, {{ $ppaAktif->type_id == 2 ? 'Ajukan' : 'Simpan & Ajukan' }}</button>
       </div>
     </div>
   </div>
@@ -105,7 +118,7 @@
 @endsection
 
 @section('accept-script')
-@if(($apbyAktif && $apbyAktif->is_active == 1) && $ppaAktif && $isAnggotaPa && ((in_array(Auth::user()->role->name, ['fam','faspv']) && $ppaAktif->finance_acc_status_id != 1) || $ppaAktif->pa_acc_status_id != 1))
+@if(($apbyAktif && $apbyAktif->is_active == 1 && $apbyAktif->is_final != 1) && $ppaAktif && $isAnggotaPa && ((in_array(Auth::user()->role->name, ['fam','faspv']) && $ppaAktif->finance_acc_status_id != 1) || $ppaAktif->pa_acc_status_id != 1))
 @include('template.footjs.modal.post_save_accept')
 @endif
 @endsection

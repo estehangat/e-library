@@ -46,10 +46,11 @@ Ubah Data Siswa
                         </div>
                         <div class="form-group">
                             <div class="row mb-3">
-                            <div class="col-lg-3 col-md-4 col-12">
+                            <div class="col-sm-4">
                                 <label for="unit" class="form-control-label">Program <span class="text-danger">*</span></label>
                             </div>
-                            <div class="col-lg-9 col-md-8 col-12">
+                            <div class="col-sm-6">
+                                @if(in_array(Auth::user()->role->name,['aspv']))
                                 @foreach($units as $unit)
                                 @if($unit->id !== 5)
                                 <div class="custom-control custom-radio custom-control-inline">
@@ -61,6 +62,12 @@ Ubah Data Siswa
                                 @error('unit')
                                 <span class="text-danger d-block">{{ $message }}</span>
                                 @enderror
+                                @else
+                                <div class="custom-control custom-radio custom-control-inline">
+                                <input type="radio" id="unitOpt{{ $siswa->unit->id }}" name="unit" class="custom-control-input" value="{{ $siswa->unit->id }}" required="required" checked disabled>
+                                <label class="custom-control-label" for="unitOpt{{ $siswa->unit->id }}">{{ $siswa->unit->name }}</label>
+                                </div>
+                                @endif
                             </div>
                             </div>
                         </div>
@@ -68,6 +75,12 @@ Ubah Data Siswa
                         <div class="row mb-4">
                             <div class="col-12">
                             <h6 class="font-weight-bold text-brand-purple">Informasi Umum Siswa</h6>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label for="nik" class="col-sm-4 control-label">NIK<span class="text-danger">*</span></label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" name="nik"  placeholder="Nomor Induk Kependudukan" maxlength="16" value="{{ $siswa->identitas->nik }}">
                             </div>
                         </div>
                         <div class="form-group row">
@@ -118,10 +131,10 @@ Ubah Data Siswa
                         <!-- Jenis Kelamin -->
                         <div class="form-group">
                             <div class="row mb-3">
-                            <div class="col-lg-3 col-md-4 col-12">
+                            <div class="col-sm-4">
                                 <label for="jenis_kelamin" class="form-control-label">Jenis Kelamin <span class="text-danger">*</span></label>
                             </div>
-                            <div class="col-lg-9 col-md-8 col-12">
+                            <div class="col-sm-6">
                                 @foreach($jeniskelamin as $j)
                                 <div class="custom-control custom-radio custom-control-inline">
                                 <input type="radio" id="genderOpt{{ $j->id }}" name="jenis_kelamin" class="custom-control-input" value="{{ $j->id }}" required="required" {{ old('gender') == $j->id ? 'checked' : '' }}{{ $j->id == $siswa->identitas->gender_id ? 'checked' : '' }}>
@@ -321,6 +334,35 @@ Ubah Data Siswa
                         <div class="row mb-4">
                             <div class="col-12">
                             <h6 class="font-weight-bold text-brand-purple">Informasi Orang Tua</h6>
+                            </div>
+                        </div>
+                        @php
+                        $employeeId = $siswa && $siswa->identitas && $siswa->identitas->orangtua? $siswa->identitas->orangtua->employee_id : null;
+                        @endphp
+                        <div class="form-group row">
+                            <label for="employeeOpt" class="col-sm-4 control-label">Civitas Auliya?</label>
+                            <div class="col-sm-6">
+                                <div class="custom-control custom-radio custom-control-inline">
+                                  <input type="radio" id="employeeOpt2" name="employeeOpt" class="custom-control-input" value="no" required="required" {{ !$employeeId ? 'checked' : null }}>
+                                  <label class="custom-control-label" for="employeeOpt2">Tidak</label>
+                                </div>
+                                <div class="custom-control custom-radio custom-control-inline">
+                                  <input type="radio" id="employeeOpt1" name="employeeOpt" class="custom-control-input" value="yes" required="required" {{ $employeeId ? 'checked' : null }}>
+                                  <label class="custom-control-label" for="employeeOpt1">Ya</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="employeeRow" {!! !$employeeId ? 'style="display: none;"' : null !!}>
+                            <div class="form-group row">
+                                <label for="employee" class="col-sm-4 control-label">Nama Civitas</label>
+                                <div class="col-sm-6">
+                                    <select name="employee" class="select2 form-control select2-hidden-accessible auto_width" id="employee" style="width:100%;" tabindex="-1" aria-hidden="true" {!! !$employeeId ? 'disabled="disabled"' : null !!}>
+                                        <option value="">== Pilih ==</option>
+                                        @foreach($pegawais as $key => $pegawai)
+                                        <option value="{{ $key }}" {{ $siswa && $siswa->identitas && $siswa->identitas->orangtua && $siswa->identitas->orangtua->employee_id == $key ? 'selected' : null }}>{{ $pegawai }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -715,7 +757,6 @@ Ubah Data Siswa
 @section('footjs')
 <!-- Plugins and scripts required by this view-->
 
-
 <!-- Bootstrap Touchspin -->
 <script src="{{ asset('vendor/bootstrap-touchspin/js/jquery.bootstrap-touchspin.js') }}"></script>
 
@@ -723,6 +764,19 @@ Ubah Data Siswa
 <script src="{{asset('js/demo/chart-area-demo.js')}}"></script>
 <script src="{{asset('js/wilayah.js')}}"></script>
 
-
-
+<!-- Page level custom scripts -->
+<script>
+    $(document).ready(function () {
+      $('input[name="employeeOpt"]').on('change',function(){
+        var employeeOpt = $(this).val();
+        if(employeeOpt == 'yes'){
+          $('select[name="employee"]').prop("required", true).prop("disabled", false);
+          $('#employeeRow').fadeIn('normal');
+        }else{
+          $('select[name="employee"]').prop("required", false).prop("disabled", true);
+          $('#employeeRow').fadeOut('normal');
+        }
+      });
+    });
+</script>
 @endsection

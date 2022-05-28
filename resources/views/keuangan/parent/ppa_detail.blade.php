@@ -156,6 +156,22 @@ PPA
                 <h6 class="m-0 font-weight-bold text-brand-purple">{{ $anggaranAktif->anggaran->name }}</h6>
                 @yield('buttons')
             </div>
+            @if(Session::has('success'))
+            <div class="alert alert-success alert-dismissible fade show mx-3" role="alert">
+              <strong>Sukses!</strong> {{ Session::get('success') }}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            @endif
+            @if(Session::has('danger'))
+            <div class="alert alert-danger alert-dismissible fade show mx-3" role="alert">
+              <strong>Gagal!</strong> {{ Session::get('danger') }}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+               <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            @endif
                 @if(count($ppa) > 0)
                 <div class="table-responsive">
                     <table class="table align-items-center table-flush">
@@ -165,9 +181,9 @@ PPA
                                 <th>Tanggal</th>
                                 <th style="white-space: nowrap">Nomor</th>
                                 <th>Status</th>
-                                <th>Pengajuan</th>
+                                <th>Diajukan</th>
+                                <th>Diperiksa</th>
                                 <th>Disetujui</th>
-                                <th>Realisasi</th>
                                 <th style="width: 120px">Aksi</th>
                             </tr>
                         </thead>
@@ -183,6 +199,8 @@ PPA
                                 <td>
                                     @if($p->detail()->count() < 1)
                                     <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Belum ada rincian akun anggaran yang dimasukkan untuk pengajuan ini"></i>
+                                    @elseif($p->eksklusi)
+                                    <i class="fa fa-lg fa-times-circle text-danger" data-toggle="tooltip" data-html="true" data-original-title="Dieksklusi<br>{{ date('d M Y H.i.s', strtotime($p->eksklusi->created_at)) }}"></i>
                                     @elseif(!$p->pa_acc_status_id)
                                     <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Persetujuan {{ Auth::user()->pegawai->position_id == $anggaranAktif->anggaran->acc_position_id ? 'Anda' : $anggaranAktif->anggaran->accJabatan->name }}"></i>
                                     @elseif($p->pa_acc_status_id == 1 && !$p->finance_acc_status_id)
@@ -237,6 +255,11 @@ PPA
                                 </td>
                                 <td>
                                     <a href="{{ route('ppa.show', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $p->firstNumber]) }}" class="btn btn-sm btn-primary"><i class="fas fa-eye"></i></a>
+                                    @if(in_array(Auth::user()->role->name,['fam']) && (($p->finance_acc_status_id == 1 && $p->total_value <= 0) || ($p->finance_acc_status_id != 1 && $p->detail()->sum('value') <= 0)) && $p->detail()->count() > 0 && !$p->eksklusi)
+                                    <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#delete-confirm" onclick="deleteModal('PPA', '{{ addslashes(htmlspecialchars('PPA No. '.$p->number)) }}', '{{ route('ppa.eksklusi', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $p->firstNumber]) }}')">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                    @endif
                                 </td>
                             </tr>
                             @endforeach
@@ -256,6 +279,10 @@ PPA
 @endif
 <!--Row-->
 
+@if(in_array(Auth::user()->role->name,['fam']))
+@include('template.modal.konfirmasi_eksklusi')
+@endif
+
 @endsection
 
 @section('footjs')
@@ -266,4 +293,7 @@ PPA
 <!-- Plugins and scripts required by this view-->
 @include('template.footjs.kepegawaian.tooltip')
 @include('template.footjs.keuangan.change-year')
+@if(in_array(Auth::user()->role->name,['fam']))
+@include('template.footjs.modal.get_delete')
+@endif
 @endsection

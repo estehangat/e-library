@@ -29,6 +29,10 @@ Pendaftaran Siswa Baru {{$unit_name}}
             <h6 class="m-0 font-weight-bold text-white">Form Pendaftaran Calon Siswa Baru Unit {{$unit_name}}</h6>
         </div>
             <div class="card-body">
+                @php
+                $psb_active = $units->where('name',$unit_name)->first()->psb_active;
+                @endphp
+                @if($psb_active == 1)
                 <form action="{{route('psb.siswa.store')}}"  method="POST">
                 @method('POST')
                 @csrf
@@ -91,21 +95,6 @@ Pendaftaran Siswa Baru {{$unit_name}}
                                 </select>
                             </div>
                         </div>
-                        @if(auth()->user()->orangtua->siswas()->count() > 0)
-                        <div id="siswa_exist" style="display: none">
-                            <div class="form-group row">
-                                <label for="siswa_id" class="col-sm-4 control-label">Siswa<span class="text-danger">*</span></label>
-                                <div class="col-sm-6">
-                                    <select name="siswa_id" id="siswa_id" class="select2 form-control auto_width select-exist" style="width:100%;" tabindex="-1" aria-hidden="true">
-                                        <option value="" selected>== Pilih Calon Siswa ==</option>
-                                        @foreach( auth()->user()->orangtua->siswas as $index => $anak )
-                                        <option value="{{$anak->id}}" >{{$anak->student_name}}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        @endif
                         <div id="asal_sekolah_lain" style="display:block">
                             <div class="form-group row">
                                 <label for="alamat_asal_sekolah" class="col-sm-4 control-label">Nama Asal Sekolah</label>
@@ -114,13 +103,48 @@ Pendaftaran Siswa Baru {{$unit_name}}
                                 </div>
                             </div>
                         </div>
-                        <div id="databaru">
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
                             <h6 class="font-weight-bold text-brand-purple">Informasi Umum Calon Siswa</h6>
                             </div>
                         </div>
+                        <div class="form-group row">
+                            <label for="existingOpt" class="col-sm-4 control-label">Calon Siswa Pernah di Auliya?<span class="text-danger">*</span></label>
+                            <div class="col-sm-6">
+                                <div class="custom-control custom-radio custom-control-inline">
+                                    <input type="radio" id="existingOpt1" name="existing" class="custom-control-input select-new" value="1" required="required" checked="checked">
+                                    <label class="custom-control-label" for="existingOpt1">Tidak</label>
+                                </div>
+                                <div class="custom-control custom-radio custom-control-inline">
+                                    <input type="radio" id="existingOpt2" name="existing" class="custom-control-input select-new" value="2" required="required" {!! auth()->user()->orangtua->siswas()->count() > 0 ? null : 'disabled="disabled"' !!}>
+                                    <label class="custom-control-label" for="existingOpt2">Pernah</label>
+                                </div>
+                                @error('existing')
+                                <span class="text-danger d-block">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </div>
+                        @if(auth()->user()->orangtua->siswas()->count() > 0)
+                        <div id="siswa_exist" style="display: none">
+                            <div class="form-group row">
+                                <label for="siswa_id" class="col-sm-4 control-label">Siswa<span class="text-danger">*</span></label>
+                                <div class="col-sm-6">
+                                    <select name="siswa_id" id="siswa_id" class="select2 form-control auto_width select-exist" style="width:100%;" tabindex="-1" aria-hidden="true">
+                                        <option value="" selected>== Pilih Calon Siswa ==</option>
+                                        @foreach( auth()->user()->orangtua->siswas as $index => $anak )
+                                        @if(auth()->user()->orangtua->calonSiswa()->count() < 1 || (auth()->user()->orangtua->calonSiswa()->count() > 0 && !in_array($anak->id,auth()->user()->orangtua->calonSiswa()->select('student_id')->get()->pluck('student_id')->toArray())))
+                                        <option value="{{$anak->id}}" >{{$anak->student_name}}</option>
+                                        @else
+                                        <option value="" class="bg-gray-300" disabled="disabled">{{$anak->student_name}}</option>
+                                        @endif
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        <div id="databaru">
                         <div class="form-group row">
                             <label for="nama" class="col-sm-4 control-label">NIK Calon Siswa<span class="text-danger">*</span></label>
                             <div class="col-sm-6">
@@ -328,6 +352,11 @@ Pendaftaran Siswa Baru {{$unit_name}}
                     </div>
                 </div>
                 </form>
+                @else
+                <div class="alert alert-light text-dark alert-dismissible fade show" role="alert">
+                    <i class="fa fa-info-circle text-info mr-2"></i>Mohon maaf, saat ini kami belum membuka pendaftaran siswa baru untuk unit {{ $unit_name }}.<br>Ikuti terus media sosial SIT AULIYA untuk mendapatkan info-info terbaru.
+                </div>
+                @endif
             </div>
         </div>
     </div>
@@ -374,12 +403,22 @@ Pendaftaran Siswa Baru {{$unit_name}}
             }
             if(sekolah_lain == true){
                 $('div[id="asal_sekolah_lain"]').hide();
+            }else{
+                $('div[id="asal_sekolah_lain"]').show();
+            }
+        });
+        $('input[name="existing"]').on('change', function() {
+            var riwayat = this.value;
+            var baru = false;
+            if(riwayat == "1"){
+                baru = true;
+            }
+            if(baru == false){
                 $('div[id="databaru"]').hide();
                 $('div[id="siswa_exist"]').show();
                 $('.select-new').removeAttr('required','required');
                 $('.select-exist').attr('required','required');
             }else{
-                $('div[id="asal_sekolah_lain"]').show();
                 $('div[id="databaru"]').show();
                 $('div[id="siswa_exist"]').hide();
                 $('.select-exist').removeAttr('required','required');

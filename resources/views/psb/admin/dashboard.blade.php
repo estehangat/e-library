@@ -74,12 +74,14 @@ Dashboard
                                     <th rowspan="2">#</th>
                                     <th rowspan="2">Unit</th>
                                     <th rowspan="2">Tahun</th>
+                                    <th rowspan="2">Status</th>
                                     <th colspan="3">Sudah Daftar Online</th>
                                     @if(in_array(Auth::user()->role->id,[1,2,3,7,8,14,17,18,20,21,25,26]))
                                         <th colspan="3">Biaya Observasi</th>
                                         <th colspan="3">Wawancara</th>
                                     @endif
                                     <th colspan="3">Diterima</th>
+                                    <th colspan="3">Bayar DU</th>
                                     <th colspan="3">Lunas DU</th>
                                     @if(in_array(Auth::user()->role->id,[1,2,3,7,8,14,17,18,20,21,25,26]))
                                         <th colspan="3">Peresmian</th>
@@ -124,6 +126,7 @@ Dashboard
                                     <td>{{$index+1}}</td>
                                     <td>{{$data->unit->name}}</td>
                                     <td>{{$data->tahunAkademik->academic_year}}</td>
+                                    <td>{{$data->statusSiswa->status }}</td>
                                     <td>{{$data->register_intern}}</td>
                                     <td>{{$data->register_extern}}</td>
                                     <td><b>{{$data->register_intern+$data->register_extern}}</b></td>
@@ -138,6 +141,9 @@ Dashboard
                                     <td>{{$data->accepted_intern}}</td>
                                     <td>{{$data->accepted_extern}}</td>
                                     <td><b>{{$data->accepted_intern+$data->accepted_extern}}</b></td>
+                                    <td>{{$data->before_reapply_intern}}</td>
+                                    <td>{{$data->before_reapply_extern}}</td>
+                                    <td><b>{{$data->before_reapply_intern+$data->before_reapply_extern}}</b></td>
                                     <td>{{$data->reapply_intern}}</td>
                                     <td>{{$data->reapply_extern}}</td>
                                     <td><b>{{$data->reapply_intern+$data->reapply_extern}}</b></td>

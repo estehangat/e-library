@@ -19,11 +19,5 @@ Keuangan @endsection
           <span>PPB</span>
         </a>
       </li>
-      <li class="nav-item {{ request()->routeIs('saldo*') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ route('saldo.index') }}">
-          <i class="mdi mdi-wallet"></i>
-          <span>Saldo Akun Anggaran</span>
-        </a>
-      </li>
       <hr class="sidebar-divider">
 @endsection

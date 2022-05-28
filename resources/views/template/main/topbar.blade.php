@@ -245,7 +245,7 @@
                 </h6>
                 <a class="dropdown-item d-flex align-items-center" href="{{ route('kepegawaian.index') }}">
                   <div class="mr-3">
-                    <i class="zmdi zmdi-accounts-list-alt zmdi-hc-2x text-brand-blue"></i>
+                    <i class="zmdi zmdi-accounts-list-alt zmdi-hc-2x text-primary"></i>
                   </div>
                   <div>
                     <span class="font-weight-bold">Kepegawaian</span>
@@ -290,7 +290,7 @@
                   </div>
                   <div>
                     <h5 class="font-weight-bold mb-1">{{ Auth::user()->pegawai->name }}</h5>
-                    <h6 class="mb-0"><i class="mdi mdi-office-building mr-2 text-brand-blue-dark"></i>{{ Auth::user()->pegawai->unit->name }}</h6>
+                    <h6 class="mb-0"><i class="mdi mdi-office-building mr-2 text-brand-purple-dark"></i>{{ Auth::user()->pegawai->unit->name }}</h6>
                   </div>
                 </div>
                 <div class="dropdown-divider"></div>

@@ -97,28 +97,45 @@ $role = Auth::user()->role->name;
                                     <td>Rp {{number_format($list->bms_nominal)}}</td>
                                     <td>Rp {{number_format($list->bms_remain)}}</td>
                                     <td>Rp 
+                                        @php
+                                            $ada = false;
+                                            $remain = 0;
+                                        @endphp
                                         @if (count($list->terminTahun)>0)
-                                            @php
-                                                $ada = false
-                                            @endphp
                                             @foreach ($list->terminTahun as $termin)
                                                 @if($termin->academic_year_id == $tahun_aktif->id)
                                                     {{number_format($termin->remain)}}
                                                     @php
-                                                        $ada = true
+                                                        $ada = true;
+                                                        $remain = $termin->remain;
                                                     @endphp
                                                     @endif
                                             @endforeach
-                                            @if ($ada == false)
-                                                0
+                                            @if (!$ada)
+                                                {{number_format($list->bms_remain)}}
+                                                @php
+                                                    $remain = $list->bms_remain;
+                                                @endphp
                                             @endif
                                         @else
-                                            0
+                                            {{number_format($list->bms_remain)}}
+                                            @php
+                                                $remain = $list->bms_remain;
+                                            @endphp
                                         @endif
                                     </td>
                                     <td>
                                         {{-- <a href="#" class="btn btn-sm btn-warning"><i class="fas fa-pen"></i></a>&nbsp; --}}
+                                        @if($list->bms_remain > 0)
+                                        <a href="{{ route('bms.reminder.wa',['id'=>$list->id]) }}" class="btn btn-sm btn-success" target="_blank"><i class="fas fa-comment"></i></a>
+                                        <a href="#" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#edit-form" onclick="editModal('{{ route('bms.reminder.email.create') }}','{{ $list->id }}')"><i class="fas fa-envelope"></i></a>
+                                        @endif
                                         <Button href="#" class="btn btn-sm btn-danger" btn-danger" data-toggle="modal" data-target="#HapusModal" disabled><i class="fas fa-trash"></i></Button>
+                                        @php
+                                        $id = Crypt::encrypt($list->id);
+                                        $surat_url = route('bms.cetak',$id);
+                                        @endphp
+                                        <a href="{{$surat_url}}"><button class="m-0 btn btn-info btn-sm"><i class="fa fa-download"></i></button></a>
                                     </td>
                                 </tr>
                                 @endforeach
@@ -131,6 +148,31 @@ $role = Auth::user()->role->name;
     </div>
 </div>
 
+<div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: none;">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-brand-purple border-0">
+        <h5 class="modal-title text-white">Kirim Email Pengingat Tanggungan BMS</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">x</span>
+        </button>
+      </div>
+
+      <div class="modal-load p-4">
+        <div class="row">
+          <div class="col-12">
+            <div class="text-center my-5">
+              <i class="fa fa-spin fa-circle-notch fa-lg text-brand-green"></i>
+              <h5 class="font-weight-light mb-3">Memuat...</h5>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-body p-4" style="display: none;">
+      </div>
+    </div>
+  </div>
+</div>
 
 <!--Row-->
 @endsection
@@ -145,5 +187,7 @@ $role = Auth::user()->role->name;
 <script src="{{ asset('vendor/datatablestambahan/vfs_fonts.js') }}"></script>
 <script src="{{ asset('vendor/datatablestambahan/buttons.html5.min.js') }}"></script>
 <!-- Page level custom scripts -->
+@include('template.footjs.global.custom-file-input')
+@include('template.footjs.modal.post_edit')
 @include('template.footjs.kbm.datatables')
 @endsection

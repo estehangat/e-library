@@ -36,18 +36,22 @@ Daftar Kelas
                 @endif
             </div>
             <div class="table-responsive">
-                <table class="table align-items-center table-flush">
+                <table id="dataTable" class="table align-items-center table-flush">
                     <thead class="thead-light">
                         <tr>
+                            <th>#</th>
                             <th>Kelas</th>
                             <th>Nama Kelas</th>
                             <th>Wali Kelas</th>
+                            @if( in_array((auth()->user()->role_id), array(1,2)))
                             <th>Aksi</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach( $kelases as $kelas)
+                        @foreach( $kelases as $index => $kelas)
                         <tr>
+                            <td>{{$index+1}}</td>
                             <td>{{ $kelas->level->level }} {{$kelas->major_id==null?'':$kelas->jurusan->major_name}}</td>
                             <td>{{ $kelas->namakelases->class_name }}</td>
                             <td>{{ $kelas->walikelas->name }}</td>
@@ -109,4 +113,6 @@ Daftar Kelas
 <!-- Plugins and scripts required by this view-->
 <script src="{{asset('vendor/chart.js/Chart.min.js')}}"></script>
 <script src="{{asset('js/demo/chart-area-demo.js')}}"></script>
+
+@include('template.footjs.kbm.datatables')
 @endsection

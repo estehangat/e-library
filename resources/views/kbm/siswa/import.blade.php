@@ -60,6 +60,8 @@
 </form>
 <br>
 <br>
+<a href="{{route('bms-generator.reset')}}">click to reset bms calon</a>
+<a href="{{route('bms-generator.generate')}}">click to generate bms calon</a>
 <br>
 @if (session()->has('success'))
 {{ session()->get('success') }}

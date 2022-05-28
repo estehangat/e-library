@@ -29,7 +29,7 @@ Tahun Pelajaran
                                 <input type="text" class="form-control" value="{{ is_null($aktif)?'Belum diatur':$aktif->academic_year}}" readonly="">
                             </div>
                         </div>
-                        @if( in_array((auth()->user()->role_id), array(1,16)))
+                        @if( in_array((auth()->user()->role_id), array(1,13)))
                         <form action="tahun-ajaran/ubah"  method="POST">
                         @csrf
                         <div class="form-group row">
@@ -77,7 +77,7 @@ Tahun Pelajaran
                                 <input type="text" class="form-control" value="{{ is_null($smsaktif)?'Belum diatur':$smsaktif->semester_id.' ('.$smsaktif->semester.')'}}" readonly="">
                             </div>
                         </div>
-                        @if( in_array((auth()->user()->role_id), array(1,16)))
+                        @if( in_array((auth()->user()->role_id), array(1,13)))
                         <form action="tahun-ajaran/ubah-semester"  method="POST">
                         @csrf
                         <div class="form-group row">

@@ -11,13 +11,34 @@ Kepegawaian @endsection
       </li>
       <hr class="sidebar-divider">
       <div class="sidebar-heading">
-        Manajemen Pegawai
+        Manajemen Civitas Auliya
       </div>
       <li class="nav-item {{ request()->routeIs('pegawai*') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ route('pegawai.index') }}">
-          <i class="mdi mdi-account-group"></i>
-          <span>Pegawai</span>
+        <a class="nav-link {{ request()->routeIs('pegawai*') ? '' : 'collapsed' }}" href="#" data-toggle="collapse" data-target="#collapseCivitas" aria-expanded="{{ request()->routeIs('pegawai*') ? 'true' : 'false' }}" aria-controls="collapseCivitas">
+          <i class="mdi mdi-tree"></i>
+          <span>Civitas Auliya</span>
         </a>
+        <div id="collapseCivitas" class="collapse {{ request()->routeIs('pegawai*') ? 'show' : '' }}" aria-labelledby="headingCivitas" data-parent="#accordionSidebar" style="">
+          <div class="bg-white py-2 collapse-inner rounded">
+            <h6 class="collapse-header">Civitas Auliya</h6>
+            <a class="collapse-item {{ request()->routeIs('pegawai*') && !isset($category) ? 'active' : '' }}" href="{{ route('pegawai.index') }}">
+              <i class="mdi mdi-account-group"></i>
+              <span>Semua</span>
+            </a>
+            <a class="collapse-item {{ request()->routeIs('pegawai*') && isset($category) && $category == 'pegawai' ? 'active' : '' }}" href="{{ route('pegawai.index',['category' => 'pegawai']) }}">
+              <i class="mdi mdi-account"></i>
+              <span>Pegawai</span>
+            </a>
+            <a class="collapse-item {{ request()->routeIs('pegawai*') && isset($category) && $category == 'mitra' ? 'active' : '' }}" href="{{ route('pegawai.index',['category' => 'mitra']) }}">
+              <i class="mdi mdi-handshake"></i>
+              <span>Mitra</span>
+            </a>
+            <a class="collapse-item {{ request()->routeIs('pegawai*') && isset($category) && $category == 'yayasan' ? 'active' : '' }}" href="{{ route('pegawai.index',['category' => 'yayasan']) }}">
+              <i class="mdi mdi-domain"></i>
+              <span>Yayasan</span>
+            </a>
+          </div>
+        </div>
       </li>
       <li class="nav-item {{ request()->routeIs('struktural*') || request()->routeIs('nonstruktural*') ? 'active' : '' }}">
         <a class="nav-link {{ request()->routeIs('struktural*') || request()->routeIs('nonstruktural*') ? '' : 'collapsed' }}" href="#" data-toggle="collapse" data-target="#collapsePenempatan" aria-expanded="{{ request()->routeIs('struktural*') || request()->routeIs('nonstruktural*') ? 'true' : 'false' }}" aria-controls="collapsePenempatan">

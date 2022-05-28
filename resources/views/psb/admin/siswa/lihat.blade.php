@@ -64,7 +64,6 @@ Lihat Data Siswa
                             </div>
                         </div>
                         @endif
-                        @if ($siswa->status_id == 1)
                         <div class="form-group">
                             <div class="row mb-3">
                             <div class="col-lg-3 col-md-4 col-10">
@@ -77,7 +76,6 @@ Lihat Data Siswa
                             </div>
                             </div>
                         </div>
-                        @endif
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
@@ -96,6 +94,16 @@ Lihat Data Siswa
                             </div>
                         </div>
                         <hr/>
+                        <div class="form-group">
+                            <div class="row mb-3">
+                                <div class="col-lg-3 col-md-4 col-12">
+                                    <label for="unit" class="form-control-label">Kelas <span class="text-danger">*</span></label>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control" value="{{ $siswa->level->level }}" disabled>
+                                </div>
+                            </div>
+                        </div>
                         <div class="row mb-4">
                             <div class="col-12">
                             <h6 class="font-weight-bold text-brand-purple">Informasi Umum Siswa</h6>
@@ -103,6 +111,20 @@ Lihat Data Siswa
                         </div>
                         @if ($siswa->status_id != 5)
                         @if(in_array(Auth::user()->role->name,['admin','sek','keu']))
+                        <div class="form-group">
+                            <div class="row mb-3">
+                                <div class="col-lg-3 col-md-4 col-10"></div>
+                                <div class="col-md-4">
+                                    <div class="text-center mt-4">
+                                        <a class="btn btn-brand-purple-dark" href="{{route('kependidikan.psb.calonsiswa.edit',$siswa->id)}}">Ubah data siswa</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                        @endif
+                        @if($siswa->status_id == 5)
+                        @if(in_array(Auth::user()->role->name,['ctl']))
                         <div class="form-group">
                             <div class="row mb-3">
                             <div class="col-lg-3 col-md-4 col-10">
@@ -560,7 +582,7 @@ Lihat Data Siswa
 </div>
 
 
-@if ($siswa->status_id == 1)
+{{-- @if ($siswa->status_id == 1) --}}
 <!-- Modal UbahTahunAkademik -->
 <div id="UbahTahunAkademik" class="modal fade">
     <div class="modal-dialog modal-confirm">
@@ -583,8 +605,8 @@ Lihat Data Siswa
                 <div class="form-group">
                     <label for="semester" class="col-form-label">Semester</label>
                     <select name="semester" class="select2 form-control select2-hidden-accessible auto_width" id="semester" style="width:100%;" tabindex="-1" aria-hidden="true">
-                        <option value="Ganjil" selected>Ganjil</option>
-                        <option value="Genap">Genap</option>
+                        <option value="Ganjil" {{ $siswa->semester&&$siswa->semester->semester=='Ganjil'?'selected':''}}>Ganjil</option>
+                        <option value="Genap" {{ $siswa->semester&&$siswa->semester->semester=='Genap'?'selected':''}}>Genap</option>
                     </select>
                 </div>
             </div>
@@ -597,7 +619,7 @@ Lihat Data Siswa
         </div>
     </div>
 </div>
-@endif
+{{-- @endif --}}
 
 
 <!--Row-->

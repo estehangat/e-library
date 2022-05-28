@@ -8,7 +8,7 @@ Sumbangan Pembinaan Pendidikan
 @php
 $role = Auth::user()->role->name;
 @endphp
-@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','pembinayys','ketuayys','wakasek']))
+@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','keu','pembinayys','ketuayys','wakasek']))
 @include('template.sidebar.keuangan.'.$role)
 @else
 @include('template.sidebar.keuangan.employee')
@@ -24,152 +24,53 @@ $role = Auth::user()->role->name;
     </ol>
 </div>
 
-<div class="row">
-    <div class="col-xl-4 col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-body p-0">
-                <div class="row align-items-center mx-0">
-                    <div class="col-auto px-3 py-2 bg-brand-green">
-                        <i class="mdi mdi-file-document-outline mdi-24px text-white"></i>
-                    </div>
-                    <div class="col">
-                        <div class="h6 mb-0 font-weight-bold text-gray-800">Rencana</div>
-                        Rp {{$plan?number_format($plan->total_plan):'0'}}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-4 col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-body p-0">
-                <div class="row align-items-center mx-0">
-                    <div class="col-auto px-3 py-2 bg-brand-green">
-                        <i class="mdi mdi-file-document-outline mdi-24px text-white"></i>
-                    </div>
-                    <div class="col">
-                        <div class="h6 mb-0 font-weight-bold text-gray-800">Realisasi</div>
-                        Rp {{$plan?number_format($plan->total_get):'0'}} 
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-4 col-md-6 mb-4">
-        <div class="card h-100">
-            <div class="card-body p-0">
-                <div class="row align-items-center mx-0">
-                    <div class="col-auto px-3 py-2 bg-brand-green">
-                        <i class="mdi mdi-file-document-outline mdi-24px text-white"></i>
-                    </div>
-                    <div class="col">
-                        <div class="h6 mb-0 font-weight-bold text-gray-800">Selisih</div>
-                        Rp {{$plan?number_format($plan->total_plan - $plan->total_get):'0'}}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-md-6 col-12 mb-4">
-        <div class="card">
-            <div class="card-body p-4">
-                <div class="d-flex align-items-center">
-                    <div class="mr-3">
-                        <div class="icon-circle bg-brand-green">
-                        <i class="mdi mdi-file-document-outline mdi-24px text-white"></i>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="small text-gray-500">Jumlah Siswa Lunas</div>
-                        <h6 class="mb-0">{{$plan?number_format($plan->total_student - $plan->student_remain):'0'}}</h6>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-6 col-12 mb-4">
-        <div class="card">
-            <div class="card-body p-4">
-                <div class="d-flex align-items-center">
-                    <div class="mr-3">
-                        <div class="icon-circle bg-brand-green">
-                        <i class="mdi mdi-file-document-outline mdi-24px text-white"></i>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="small text-gray-500">Jumlah Siswa Belum Lunas</div>
-                        <h6 id="summary" class="mb-0">{{$plan?number_format($plan->student_remain):'0'}} ({{$plan?($plan->student_remain/$plan->total_student)*100:'0'}}%)</h6>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <div class="row mb-3">
     <div class="col-md-12">
         <div class="card h-100">
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-8">
-                        <form action="{{route('laporan-spp-siswa-filter')}}" method="POST">
+                        <form action="{{route('spp.laporan-spp-siswa-filter')}}" method="POST">
                         @csrf
                             <div class="form-group row">
-                                <label for="kelas" class="col-sm-3 control-label">Tahun</label>
+                                <label for="year" class="col-sm-3 control-label">Tahun</label>
                                 <div class="col-sm-5">
-                                    <select name="year" class="select2 form-control select2-hidden-accessible auto_width" id="kelas" style="width:100%;" tabindex="-1" aria-hidden="true">
-                                        <option value="2021" {{$year=="2021"?'selected':''}}>2021</option>
-                                        <option value="2020" {{$year=="2020"?'selected':''}}>2020</option>
+                                    <select name="year" class="select2 form-control select2-hidden-accessible auto_width" id="year" style="width:100%;" tabindex="-1" aria-hidden="true">
+                                        @foreach (yearList() as $index => $year_list)
+                                        <option value="{{$year_list}}" {{$index==0?'selected':''}}>{{$year_list}}</option>
+                                        @endforeach
                                     </select>
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label for="kelas" class="col-sm-3 control-label">Bulan</label>
                                 <div class="col-sm-5">
-                                    <select name="month" class="select2 form-control select2-hidden-accessible auto_width" id="kelas" style="width:100%;" tabindex="-1" aria-hidden="true">
-                                        <option value="0">Semua</option>
-                                        <option value="01" {{$month=='01'?'selected':''}}>Januari</option>
-                                        <option value="02" {{$month=='02'?'selected':''}}>Februari</option>
-                                        <option value="03" {{$month=='03'?'selected':''}}>Maret</option>
-                                        <option value="04" {{$month=='04'?'selected':''}}>April</option>
-                                        <option value="05" {{$month=='05'?'selected':''}}>Mei</option>
-                                        <option value="06" {{$month=='06'?'selected':''}}>Juni</option>
-                                        <option value="07" {{$month=='07'?'selected':''}}>Juli</option>
-                                        <option value="08" {{$month=='08'?'selected':''}}>Agustus</option>
-                                        <option value="09" {{$month=='09'?'selected':''}}>September</option>
-                                        <option value="10" {{$month=='10'?'selected':''}}>Oktober</option>
-                                        <option value="11" {{$month=='11'?'selected':''}}>November</option>
-                                        <option value="12" {{$month=='12'?'selected':''}}>Desember</option>
-                                    </select>
-                                </div>
-                            </div>
-                            @if (auth()->user()->pegawai->unit_id == 5)
-                            <div class="form-group row">
-                                <label for="kelas" class="col-sm-3 control-label">Unit</label>
-                                <div class="col-sm-5">
-                                    <select name="unit_id" class="select2 form-control select2-hidden-accessible auto_width" id="kelas" style="width:100%;" tabindex="-1" aria-hidden="true">
-                                        <option value="1" {{$unit_id==1?'selected':''}}>TK</option>
-                                        <option value="2" {{$unit_id==2?'selected':''}}>SD</option>
-                                        <option value="3" {{$unit_id==3?'selected':''}}>SMP</option>
-                                        <option value="4" {{$unit_id==4?'selected':''}}>SMA</option>
-                                    </select>
-                                </div>
-                            </div>
-                            @endif
-                            <div class="form-group row">
-                                <label for="kelas" class="col-sm-3 control-label">Tingkat Kelas</label>
-                                <div class="col-sm-5">
-                                    <select name="level" class="select2 form-control select2-hidden-accessible auto_width" id="kelas" style="width:100%;" tabindex="-1" aria-hidden="true">
-                                        <option value="semua" {{$level=='semua'?'selected':''}}>Semua</option>
-                                        @foreach( $levels as $tingkat)
-                                            <option value="{{$tingkat->id}}" {{$level==$tingkat->id?'selected':''}}>{{$tingkat->level}}</option>
+                                    <select name="month" class="select2 form-control select2-hidden-accessible auto_width" id="month" style="width:100%;" tabindex="-1" aria-hidden="true">
+                                        <option value="">Semua</option>
+                                        @foreach (monthList() as $months)                                        
+                                            <option value="{{$months->id}}">{{$months->name}}</option>
                                         @endforeach
                                     </select>
                                 </div>
-                                <button class="btn btn-brand-purple-dark btn-sm" type="submit">Saring</button>
+                            </div>
+                            <div class="form-group row">
+                                <label for="kelas" class="col-sm-3 control-label">Unit</label>
+                                <div class="col-sm-5">
+                                    <select name="unit_id" class="select2 form-control select2-hidden-accessible auto_width" id="unit_id" style="width:100%;" tabindex="-1" aria-hidden="true">
+                                        @foreach (getUnits() as $index => $units)
+                                            <option value="{{$units->id}}" {{$index==0?'selected':''}}>{{$units->name}}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label for="kelas" class="col-sm-3 control-label">Tingkat Kelas</label>
+                                <div class="col-sm-5">
+                                    <select name="level" class="select2 form-control select2-hidden-accessible auto_width" id="level" style="width:100%;" tabindex="-1" aria-hidden="true">
+                                        <option value="">Semua</option>
+                                    </select>
+                                </div>
+                                <button id="filter_submit" class="btn btn-brand-purple-dark btn-sm" type="button">Saring</button>
                             </div>
                         </form>
                     </div>
@@ -177,9 +78,7 @@ $role = Auth::user()->role->name;
                         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                             <h6 class="m-0 font-weight-bold text-brand-purple">Laporan SPP Siswa</h6>
                             <div class="float-right">
-                                @if ($level != 'semua')
-                                <button class="m-0 btn btn-brand-purple-dark btn-sm" data-toggle="modal" data-target="#AturModal">Atur Sekaligus <i class="fas fa-cogs"></i></button>
-                                @endif
+                                <button class="m-0 btn btn-brand-purple-dark btn-sm" data-toggle="modal" id="atur_sekaligus" style="display: none" data-target="#AturModal">Atur Sekaligus <i class="fas fa-cogs"></i></button>
                             </div>
                         </div>
                         @if(Session::has('sukses'))
@@ -202,8 +101,8 @@ $role = Auth::user()->role->name;
                                     <th>Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @foreach ($datas as $data)
+                            <tbody id="tbody">
+                                {{-- @foreach ($datas as $data)
                                 <tr>
                                     <td>{{$data->siswa->student_nis}}</td>
                                     <td>{{$data->siswa->identitas->student_name}}</td>
@@ -212,10 +111,10 @@ $role = Auth::user()->role->name;
                                     <td>{{number_format($data->spp_paid)}}</td>
                                     <td>{{$data->status=='0'?'Belum':'Lunas'}}</td>
                                     <td>
-                                        <button class="m-0 btn btn-warning btn-sm" data-toggle="modal" data-target="#PotonganModal" data-id="{{$data->id}}" data-name="{{$data->siswa->student_name}}" data-potongan="{{$data->deduction_nominal}}"><i class="fas fa-cogs"></i></button>
+                                        <button class="m-0 btn btn-warning btn-sm" data-toggle="modal" data-target="#PotonganModal" data-id="{{$data->id}}" data-name="{{$data->siswa->student_name}}" data-potongan="{{$data->deduction_id}}"><i class="fas fa-cogs"></i></button>
                                     </td>
                                 </tr>
-                                @endforeach
+                                @endforeach --}}
                             </tbody>
                         </table>
                     </div>
@@ -230,7 +129,7 @@ $role = Auth::user()->role->name;
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
   
-          <form action="{{route('laporan-spp-siswa-filter-atur')}}"  method="POST">
+          <form action="{{route('spp.laporan-spp-siswa-filter-atur')}}"  method="POST">
           @csrf
               <div class="modal-header">
                   <h5 class="modal-title" id="exampleModalLongTitle">Atur Sekaligus</h5>
@@ -248,9 +147,9 @@ $role = Auth::user()->role->name;
               </div>
               <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                  <input type="hidden" name="year" value="{{$year}}">
-                  <input type="hidden" name="month" value="{{$month}}">
-                  <input type="hidden" name="level" value="{{$level}}">
+                  <input type="hidden" name="year" id="atur_year" value="">
+                  <input type="hidden" name="month" id="atur_month" value="">
+                  <input type="hidden" name="level" id="atur_level" value="">
                   <button type="submit" class="btn btn-primary">Atur</button>
               </div>
           </form>
@@ -264,7 +163,7 @@ $role = Auth::user()->role->name;
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
   
-          <form action="{{route('laporan-spp-siswa-filter-atur')}}"  method="POST">
+          <form action="{{route('spp.laporan-spp-siswa-filter-atur')}}"  method="POST">
         @method('PUT')
           @csrf
               <div class="modal-header">
@@ -283,14 +182,20 @@ $role = Auth::user()->role->name;
                   <div class="form-group row">
                       <label for="potongan" class="col-sm-3 control-label">Potongan</label>
                       <div class="col-sm-8">
-                          <input type="text" id="potongan" name="potongan" class="form-control number-separator">
+                          {{--<input type="text" id="potongan" name="potongan" class="form-control number-separator">--}}
+                          <select id="potongan" class="form-control" name="potongan" {{ $deductions && count($deductions) < 1 ? 'disabled="disabled"' : null }}/>
+                            <option value="">== Belum Ada Potongan ==</option>
+                            @foreach($deductions as $d)
+                            <option value="{{ $d->id }}">{{ $d->nameWithPercentage }}</option>
+                            @endforeach
+                          </select>
                       </div>
                   </div>
               </div>
               <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
                   <input type="hidden" id="id" name="id" value="">
-                  <button type="submit" class="btn btn-primary">Atur</button>
+                  <button type="submit" class="btn btn-primary"  {{ $deductions && count($deductions) < 1 ? 'disabled="disabled"' : null }}>Atur</button>
               </div>
           </form>
       </div>
@@ -315,21 +220,104 @@ $role = Auth::user()->role->name;
 <script src="{{ asset('vendor/easy-number-separator/easy-number-separator.js') }}"></script>
 <!-- Page level custom scripts -->
 
+<script src="{{ asset('js/level.js') }}"></script>
+
 <script>
-    $(document).ready(function()
-    {
-        $('#PotonganModal').on('show.bs.modal', function (event) {
-            var button = $(event.relatedTarget) // Button that triggered the modal
-            var id = button.data('id') // Extract info from data-* attributes
-            var name = button.data('name') // Extract info from data-* attributes
-            var potongan = button.data('potongan') // Extract info from data-* attributes
-            var modal = $(this)
-            console.log(name)
-            modal.find('input[id="id"]').val(id)
-            modal.find('input[id="name"]').val(name)
-            modal.find('input[id="potongan"]').val(potongan)
-        })
-    })
+$(document).ready(function()
+{
+    $('#PotonganModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget) // Button that triggered the modal
+        var id = button.data('id') // Extract info from data-* attributes
+        var name = button.data('name') // Extract info from data-* attributes
+        var potongan = button.data('potongan') // Extract info from data-* attributes
+        var modal = $(this)
+        console.log(name)
+        modal.find('input[id="id"]').val(id)
+        modal.find('input[id="name"]').val(name)
+        //modal.find('select[id="potongan"]').val(potongan)
+    });
+
+    $('#unit_id').on('change',function(){
+        const unit_id = $(this).val();
+        changeUnit(unit_id);
+    });
+    changeUnit($('#unit_id').val());
+
+    $('#filter_submit').click(function(){
+        console.log('1123');
+        checkActiveButton();
+        getData();
+    });
+    checkActiveButton();
+    getData();
+});
+
+function checkActiveButton(){
+    var month = $('#month').val();    
+    var level = $('#level').val();    
+    var year = $('#year').val();    
+    if(month && level){
+        $('#atur_sekaligus').show();
+    }else{
+        $('#atur_sekaligus').hide();
+    }
+    $('#atur_year').val(year);
+    $('#atur_month').val(month);
+    $('#atur_level').val(level);
+}
+
+function getData(){
+
+    var year = $('#year').val();
+    var month = $('#month').val();
+    var unit_id = $('#unit_id').val();
+    var level_id = $('#level').val();
+
+    console.log (
+        year,
+        month,
+        unit_id,
+        level_id,
+    );
+
+    $('#dataTable').DataTable().destroy();
+    $('#tbody').empty();
+    $.ajax({
+        url         : window.location.href,
+        type        : 'POST',
+        dataType    : 'JSON',
+        headers     : {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')},
+        data        : {
+            year : year,
+            month : month,
+            unit_id : unit_id,
+            level_id : level_id,
+        },
+        beforeSend  : function() {
+        },
+        complete    : function() {
+        }, 
+        success: function async(response){
+            console.log(response);
+            response[0].map((item, index) => {
+                let row = '<tr>+'+
+                        '<td>'+item[0]+'</td>'+
+                        '<td>'+item[1]+'</td>'+
+                        '<td>'+item[2]+'</td>'+
+                        '<td>'+item[3]+'</td>'+
+                        '<td>'+item[4]+'</td>'+
+                        '<td>'+item[5]+'</td>'+
+                        '<td>'+item[6]+'</td>'+
+                    '</tr>';
+                $('#tbody').append(row);
+            });
+            $('#dataTable').DataTable();
+        },
+        error: function(xhr, textStatus, errorThrown){
+            alert(xhr.responseText);
+        },
+    });
+}
 </script>
-@include('template.footjs.kbm.datatables')
+{{-- @include('template.footjs.kbm.datatables') --}}
 @endsection

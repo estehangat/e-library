@@ -1,7 +1,7 @@
 @extends('template.main.master')
 
 @section('title')
-RKAT
+RKAB
 @endsection
 
 @section('headmeta')
@@ -14,10 +14,10 @@ RKAT
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-2">
-  <h1 class="h3 mb-0 text-gray-800">RKAT</h1>
+  <h1 class="h3 mb-0 text-gray-800">RKAB</h1>
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{{ route('keuangan.index')}}">Beranda</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('rkat.index')}}">RKAT</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('rkat.index')}}">RKAB</a></li>
     <li class="breadcrumb-item"><a href="{{ route('rkat.index', ['jenis' => $jenisAktif->link])}}">{{ $jenisAktif->name }}</a></li>
     <li class="breadcrumb-item"><a href="{{ route('rkat.index', ['jenis' => $jenisAktif->link,'tahun' => $tahun->academicYearLink])}}">{{ $tahun->academic_year }}</a></li>
     <li class="breadcrumb-item active" aria-current="page">{{ $anggaranAktif->anggaran->name }}</li>
@@ -82,7 +82,7 @@ RKAT
                     <div class="input-group">
                     <select aria-label="Tahun" name="tahun" class="form-control" id="yearOpt">
                       @foreach($tahunPelajaran as $t)
-                      @if($t->is_active == 1 || ($t->is_active != 1 && $t->whereHas('rkat',function($q)use($jenisAktif,$t){$q->where('academic_year_id',$t->id)->whereHas('jenisAnggaranAnggaran',function($q)use($jenisAktif){$q->where('budgeting_type_id',$jenisAktif->id);});})->count()))
+                      @if($t->is_finance_year == 1 || ($t->is_finance_year != 1 && $t->whereHas('rkat',function($q)use($jenisAktif,$t){$q->where('academic_year_id',$t->id)->whereHas('jenisAnggaranAnggaran',function($q)use($jenisAktif){$q->where('budgeting_type_id',$jenisAktif->id);});})->count()))
                       <option value="{{ $t->academicYearLink }}" {{ $tahun->id == $t->id ? 'selected' : '' }}>{{ $t->academic_year }}</option>
                       @endif
                       @endforeach

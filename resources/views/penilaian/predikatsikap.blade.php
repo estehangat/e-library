@@ -127,7 +127,7 @@ Predikat Sikap
                     <div class="form-group row">
                         <label for="predikat" class="col-sm-4 control-label">Deskripsi</label>
                         <div class="col-sm-8">
-                            <textarea type="text" name="deskripsi" class="form-control"></textarea>
+                            <textarea type="text" name="deskripsi" class="form-control" maxlength="100"></textarea>
                         </div>
                     </div>
                 </div>
@@ -181,7 +181,7 @@ Predikat Sikap
                     <div class="form-group row">
                         <label for="predikat" class="col-sm-4 control-label">Deskripsi</label>
                         <div class="col-sm-8">
-                            <textarea type="text" name="deskripsi" id="ubahdeskripsi" class="form-control"></textarea>
+                            <textarea type="text" name="deskripsi" id="ubahdeskripsi" class="form-control" maxlength="100"></textarea>
                         </div>
                     </div>
                 </div>

@@ -105,7 +105,7 @@ Lihat Data Siswa
                             <div class="col-lg-9 col-md-8 col-12">
                                 <div class="custom-control custom-radio custom-control-inline">
                                 <input type="radio" id="genderOpt" name="jenis_kelamin" class="custom-control-input" value="" required="required" checked>
-                                <label class="custom-control-label" for="genderOpt">{{ $siswa->gender_id?$siswa->jeniskelamin->name:'-' }}</label>
+                                <label class="custom-control-label" for="genderOpt">{{ $siswa->identitas->gender_id?$siswa->identitas->jeniskelamin->name:'-' }}</label>
                                 </div>
                             </div>
                             </div>
@@ -143,7 +143,7 @@ Lihat Data Siswa
                         <div class="form-group row">
                             <label for="kelas" class="col-sm-4 control-label">Kelas</label>
                             <div class="col-sm-6">
-                                <input type="text" class="form-control" name="tanggal_masuk" placeholder="" value="{{ $siswa->level->level }}" disabled>
+                                <input type="text" class="form-control" name="tanggal_masuk" placeholder="" value="{{ $siswa->level?$siswa->level->level:'-' }}" disabled>
                             </div>
                         </div>
                         <hr>

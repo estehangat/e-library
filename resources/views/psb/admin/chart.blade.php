@@ -26,7 +26,7 @@ Chart
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-8">
-                        <form action="{{route('kependidikan.infopsb.chart')}}" method="get">
+                        <form action="{{route('kependidikan.psb..chart')}}" method="get">
                         @csrf
                             <div class="form-group row">
                                 <label for="kelas" class="col-sm-3 control-label">Asal Calon</label>
@@ -69,7 +69,7 @@ Chart
                     <div class="col-xl-8 col-lg-7">
                         <div class="card mb-4">
                           <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                            <h6 class="m-0 font-weight-bold text-primary">PSB Recap Report</h6>
+                            <h6 class="m-0 font-weight-bold text-primary">Monthly Recap Report</h6>
                             <div class="dropdown no-arrow">
                               <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown"
                                 aria-haspopup="true" aria-expanded="false">
@@ -112,7 +112,7 @@ var ctx = document.getElementById("myAreaChart");
 var myLineChart = new Chart(ctx, {
   type: 'line',
   data: {
-    labels: ["Sudah Daftar Online", "Bayar Formulir", "Wawancara", "Diterima", "Lunas DU"],
+    labels: ["Formulir", "Biaya Observasi", "Wawancara", "Diterima", "Lunas DU"],
     datasets: [{
       label: "Calon ",
       lineTension: 0.3,

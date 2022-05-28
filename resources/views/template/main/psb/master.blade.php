@@ -56,7 +56,7 @@
       <footer class="sticky-footer bg-white">
         <div class="container my-auto">
           <div class="copyright text-center my-auto">
-            <span>Copyright &copy; <script> document.write(new Date().getFullYear()); </script> MUDA INCOMSO. All Rights Reserved.</b>
+            <span>Copyright &copy; <script> document.write(new Date().getFullYear()); </script> SIT Auliya. All Rights Reserved.</b>
             </span>
           </div>
         </div>

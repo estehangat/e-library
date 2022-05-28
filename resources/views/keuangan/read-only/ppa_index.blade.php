@@ -176,7 +176,7 @@ PPA
                     $ppaCount = $a->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->count();
                     $anggaranAktif += $ppaCount > 0 ? 1 : 0;
                     @endphp
-                    @if(($isYear && (($tahun != date('Y') && $ppaCount > 0) || $tahun == date('Y'))) || (!$isYear && (($tahun->is_active != 1 && $ppaCount > 0) || $tahun->is_active == 1)))
+                    @if(($isYear && (($tahun != date('Y') && $ppaCount > 0) || $tahun == date('Y'))) || (!$isYear && (($tahun->is_finance_year != 1 && $ppaCount > 0) || $tahun->is_finance_year == 1)))
                     <div class="col-md-6 col-12 mb-3">
                         <div class="row py-2 rounded border border-light mr-2">
                             <div class="col-8 d-flex align-items-center">
@@ -197,7 +197,7 @@ PPA
                     @endif
                     @endif
                     @endforeach
-                    @if((($isYear && $tahun == date('Y')) || (!$isYear && $tahun->is_active == 1)) && $apbyAktif == 0 && $anggaranAktif == 0)
+                    @if((($isYear && $tahun == date('Y')) || (!$isYear && $tahun->is_finance_year == 1)) && $apbyAktif == 0 && $anggaranAktif == 0)
                     <div class="col-12 pl-0 pr-3">
                         <div class="text-center mx-3 mt-4 mb-5">
                             <h3>Mohon Maaf,</h3>
