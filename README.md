@@ -1,2 +1,2 @@
 # SISTA
-This repo is for MUDA for School Application
+This repo is for Information System called "SISTA"
