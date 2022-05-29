@@ -1,7 +1,7 @@
 @extends('template.main.master')
 
 @section('title')
-Ubah Calon Civitas Auliya
+Ubah Calon Pegawai
 @endsection
 
 @section('headmeta')
@@ -23,11 +23,11 @@ Ubah Calon Civitas Auliya
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-2">
-  <h1 class="h3 mb-0 text-gray-800">Ubah Calon Civitas Auliya</h1>
+  <h1 class="h3 mb-0 text-gray-800">Ubah Calon Pegawai</h1>
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="./">Beranda</a></li>
     <li class="breadcrumb-item"><a href="{{ route('rekrutmen.index') }}">Rekrutmen</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('calon.index') }}">Calon Civitas Auliya</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('calon.index') }}">Calon Pegawai</a></li>
     <li class="breadcrumb-item active" aria-current="page">Ubah</li>
   </ol>
 </div>

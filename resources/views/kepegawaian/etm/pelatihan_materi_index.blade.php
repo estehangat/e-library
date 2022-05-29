@@ -257,7 +257,7 @@ Materi Pelatihan
                   <div class="col-12">
                     <div class="custom-control custom-radio custom-control-inline">
                       <input type="radio" id="speakerCategoryOpt1" name="speaker_category" class="custom-control-input" value="1" checked="checked" required="required">
-                      <label class="custom-control-label" for="speakerCategoryOpt1">Civitas Auliya</label>
+                      <label class="custom-control-label" for="speakerCategoryOpt1">Pegawai</label>
                     </div>
                     <div class="custom-control custom-radio custom-control-inline">
                       <input type="radio" id="speakerCategoryOpt2" name="speaker_category" class="custom-control-input" value="2" {{ old('speaker_name') ? 'checked' : '' }} required="required">

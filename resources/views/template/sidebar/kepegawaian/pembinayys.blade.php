@@ -11,21 +11,21 @@ Kepegawaian @endsection
       </li>
       <hr class="sidebar-divider">
       <div class="sidebar-heading">
-        Manajemen Civitas Auliya
+        Manajemen Pegawai
       </div>
       <li class="nav-item {{ request()->routeIs('pegawai*') ? 'active' : '' }}">
         <a class="nav-link {{ request()->routeIs('pegawai*') ? '' : 'collapsed' }}" href="#" data-toggle="collapse" data-target="#collapseCivitas" aria-expanded="{{ request()->routeIs('pegawai*') ? 'true' : 'false' }}" aria-controls="collapseCivitas">
           <i class="mdi mdi-tree"></i>
-          <span>Civitas Auliya</span>
+          <span>Sivitas Akademika</span>
         </a>
         <div id="collapseCivitas" class="collapse {{ request()->routeIs('pegawai*') ? 'show' : '' }}" aria-labelledby="headingCivitas" data-parent="#accordionSidebar" style="">
           <div class="bg-white py-2 collapse-inner rounded">
-            <h6 class="collapse-header">Civitas Auliya</h6>
+            <h6 class="collapse-header">Sivitas Akademika</h6>
             <a class="collapse-item {{ request()->routeIs('pegawai*') && !isset($category) ? 'active' : '' }}" href="{{ route('pegawai.index') }}">
               <i class="mdi mdi-account-group"></i>
               <span>Semua</span>
             </a>
-            <a class="collapse-item {{ request()->routeIs('pegawai*') && isset($category) && $category == 'pegawai' ? 'active' : '' }}" href="{{ route('pegawai.index',['category' => 'pegawai']) }}">
+            <a class="collapse-item {{ request()->routeIs('pegawai*') && isset($category) && $category == 'pegawai' ? 'active' : '' }}" href="{{ route('pegawai.index',['category' => 'auliya']) }}">
               <i class="mdi mdi-account"></i>
               <span>Pegawai</span>
             </a>
@@ -50,7 +50,7 @@ Kepegawaian @endsection
             <h6 class="collapse-header">Rekrutmen</h6>
             <a class="collapse-item {{ request()->routeIs('calon*') ? 'active' : '' }}" href="{{ route('calon.index') }}">
               <i class="mdi mdi-account-plus"></i>
-              <span>Calon Civitas Auliya</span>
+              <span>Calon Pegawai</span>
             </a>
             <a class="collapse-item {{ request()->routeIs('spk*') ? 'active' : '' }}" href="{{ route('spk.index') }}">
               <i class="mdi mdi-file-document"></i>
@@ -87,8 +87,8 @@ Kepegawaian @endsection
       <li class="nav-item {{ request()->routeIs('evaluasi*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('evaluasi.index') }}">
           <i class="mdi mdi-account-switch"></i>
-          <span>Evaluasi Civitas Auliya</span>
-        </a>
+          <span>Evaluasi Pegawai</span>
+		</a>
       </li>
       <li class="nav-item {{ request()->routeIs('phk*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('phk.index') }}">

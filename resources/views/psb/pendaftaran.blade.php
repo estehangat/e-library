@@ -16,12 +16,11 @@ Pendaftaran @endsection
                 <div class="login100-logo m-b-5">
                     <img src="{{ asset('img/logo/logomark.png') }}">
                 </div>
-                <span class="login100-form-title">SIT AULIYA</span>
+                <span class="login100-form-title">MUDA</span>
                 <span class="login100-form-subtitle p-b-27">Form Pendaftaran Siswa Baru</span>
-
-                @if(isset($lock) && $lock->value == 1)
+				@if(isset($lock) && $lock->value == 1)
                 <div class="alert alert-light text-dark alert-dismissible fade show" role="alert">
-                    <i class="fa fa-info-circle text-info mr-2"></i>Mohon maaf, saat ini kami belum membuka pendaftaran siswa baru.<br>Ikuti terus media sosial SIT AULIYA untuk mendapatkan info-info terbaru.
+                    <i class="fa fa-info-circle text-info mr-2"></i>Mohon maaf, saat ini kami belum membuka pendaftaran siswa baru.<br>Ikuti terus media sosial MUDA untuk mendapatkan info-info terbaru.
                 </div>
                 @else
                 @if(Session::has('success'))
@@ -50,7 +49,7 @@ Pendaftaran @endsection
                     </div>
                   @endif
                     <div class="row align-items-center">
-                        <label class="col-md-3 col-xs-4">Memiliki Putra/i di Auliya?</label>
+                        <label class="col-md-3 col-xs-4">Memiliki Putra/i di MUDA?</label>
                         <div class="col-md-9 col-xs-6 wrap-input1005 validate-input m-b-10" data-validate="Masukkan No Pendaftaran">
                             <select class="input1005 select-existing" style="width:100%; border-style:none" name="siswa" id="" required="required">
                                 <option class="input1005" value="0" selected>Tidak</option>
@@ -63,7 +62,7 @@ Pendaftaran @endsection
                     <div id="nipd_siswa" class="row align-items-center" style="display:none">
                         <label class="col-md-3 col-xs-4">NIPD Siswa</label>
                         <div class="col-md-9 col-xs-6 wrap-input1005 validate-input m-b-10" data-validate="Masukkan No Pendaftaran">
-                            <input class="input1005 select-exist" type="text" name="nipd" placeholder="NIPD Siswa AULIYA">
+                            <input class="input1005 select-exist" type="text" name="nipd" placeholder="NIPD Siswa MUDA">
                         </div>
                     </div>
                 <div id="ortu">
@@ -121,7 +120,7 @@ Pendaftaran @endsection
                     </div>
                     <div class="row align-items-center">
                         <label class="col-md-12 col-xs-12">
-                            Note :<br>1. Email Ayah menjadi username pada saat login<br>2. No. handphone Ibu akan dijadikan komunikasi dengan AULIYA via Whatsapp</label>
+                            Note :<br>1. Email Ayah menjadi username pada saat login<br>2. No. handphone Ibu akan dijadikan komunikasi dengan MUDA via Whatsapp</label>
                     </div>
                 </div>
                 <div class="text-center mt-2">
@@ -131,7 +130,6 @@ Pendaftaran @endsection
                         </button>
                     </div>
                 </div>
-                @endif
 				<div class="text-center m-t-45">
 				    <a href="{{ route('psb.index') }}" class="text-secondary font-weight-bold">Kembali ke Halaman Awal</a>
 				</div>

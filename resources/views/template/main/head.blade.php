@@ -26,7 +26,7 @@
   <link href="{{ asset('vendor/materialdesign/css/materialdesignicons.min.css') }}" rel="stylesheet" type="text/css">
   <!-- Main styles for this application-->
   <link href="{{ asset('vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css">
-  <link href="{{ asset('css/sista.min.css') }}" rel="stylesheet">
+  <link href="{{ asset('css/sista.css') }}" rel="stylesheet">
   <link href="{{ asset('css/custom.css') }}" rel="stylesheet">
   <!-- Modal Hapus -->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">

@@ -1,7 +1,7 @@
 @extends('template.main.master')
 
 @section('title')
-Detail Calon Civitas Auliya
+Detail Calon Pegawai
 @endsection
 
 @section('sidebar')
@@ -10,10 +10,10 @@ Detail Calon Civitas Auliya
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-2">
-  <h1 class="h3 mb-0 text-gray-800">Detail Calon Civitas Auliya</h1>
+  <h1 class="h3 mb-0 text-gray-800">Detail Calon Pegawai</h1>
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="./">Beranda</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('calon.index') }}">Calon Civitas Auliya</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('calon.index') }}">Calon Pegawai</a></li>
     <li class="breadcrumb-item active" aria-current="page">Detail</li>
   </ol>
 </div>
@@ -45,9 +45,9 @@ Detail Calon Civitas Auliya
       <div class="card-body bg-gray-200 p-4">
         <div class="d-flex align-items-center">
           @if(!$calon->education_acc_id)
-          <span class="mdi mdi-24px mdi-information text-info mr-2"></span>Calon civitas Auliya ini masih menunggu persetujuan Education Team Leader
+          <span class="mdi mdi-24px mdi-information text-info mr-2"></span>Calon pegawai ini masih menunggu persetujuan Education Team Leader
           @else
-          <span class="mdi mdi-24px mdi-check-circle text-success mr-2"></span>Rekomendasi calon civitas Auliya ini telah disetujui oleh {{ $calon->accEdukasi->name }}
+          <span class="mdi mdi-24px mdi-check-circle text-success mr-2"></span>Rekomendasi calon pegawai ini telah disetujui oleh {{ $calon->accEdukasi->name }}
           @endif
         </div>
       </div>

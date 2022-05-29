@@ -1,7 +1,7 @@
 @extends('template.main.master')
 
 @section('title')
-Detail Civitas Auliya
+Detail Pegawai
 @endsection
 
 @section('sidebar')
@@ -13,7 +13,7 @@ Detail Civitas Auliya
   <h1 class="h3 mb-0 text-gray-800">Detail Pegawai</h1>
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="./">Beranda</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('pegawai.index') }}">Civitas Auliya</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('pegawai.index') }}">Pegawai</a></li>
     <li class="breadcrumb-item active" aria-current="page">Detail</li>
   </ol>
 </div>
@@ -45,7 +45,7 @@ Detail Civitas Auliya
       @if($pegawai->status->status == 'nonaktif' && $pegawai->disjoin_date)
       <div class="card-body bg-gray-200 p-4">
         <div class="d-flex align-items-center">
-          <span class="mdi mdi-24px mdi-information text-info mr-2"></span>Civitas Auliya ini telah dinonaktifkan per tanggal {{ date('j F Y', strtotime($pegawai->disjoin_date)) }}
+          <span class="mdi mdi-24px mdi-information text-info mr-2"></span>Pegawai ini telah dinonaktifkan per tanggal {{ date('j F Y', strtotime($pegawai->disjoin_date)) }}
         </div>
       </div>
       @endif

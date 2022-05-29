@@ -1,7 +1,7 @@
 @extends('template.main.master')
 
 @section('title')
-Ubah Civitas Auliya
+Ubah Pegawai
 @endsection
 
 @section('headmeta')
@@ -16,10 +16,10 @@ Ubah Civitas Auliya
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-2">
-  <h1 class="h3 mb-0 text-gray-800">Ubah Civitas Auliya</h1>
+  <h1 class="h3 mb-0 text-gray-800">Ubah Pegawai</h1>
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="./">Beranda</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('pegawai.index') }}">Civitas Auliya</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('pegawai.index') }}">Pegawai</a></li>
     <li class="breadcrumb-item active" aria-current="page">Ubah</li>
   </ol>
 </div>

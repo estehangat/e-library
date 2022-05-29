@@ -340,7 +340,7 @@ Ubah Data Siswa
                         $employeeId = $siswa && $siswa->identitas && $siswa->identitas->orangtua? $siswa->identitas->orangtua->employee_id : null;
                         @endphp
                         <div class="form-group row">
-                            <label for="employeeOpt" class="col-sm-4 control-label">Civitas Auliya?</label>
+                            <label for="employeeOpt" class="col-sm-4 control-label">Sivitas Akademika?</label>
                             <div class="col-sm-6">
                                 <div class="custom-control custom-radio custom-control-inline">
                                   <input type="radio" id="employeeOpt2" name="employeeOpt" class="custom-control-input" value="no" required="required" {{ !$employeeId ? 'checked' : null }}>

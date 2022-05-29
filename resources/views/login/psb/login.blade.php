@@ -14,9 +14,9 @@ Masuk @endsection
             <form class="login100-form validate-form" action="/psb" method="post">
                 @csrf
                 <div class="login100-logo m-b-5">
-                    <img src="{{ asset('img/logo/logomark.png') }}">
+                   <img src="{{ asset('img/logo/logomark.png') }}">
                 </div>
-                <span class="login100-form-title">SIT AULIYA</span>
+                <span class="login100-form-title">MUDA</span>
                 <span class="login100-form-subtitle p-b-27">LOGIN Pendaftaran Siswa Baru</span>
 
                 <div id="buttonForm" class="row mt-4" style="justify-content: center {{ $request->view == "login" ? ';display: none' : ''}}">

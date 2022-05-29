@@ -1,7 +1,7 @@
 @extends('template.main.master')
 
 @section('title')
-{{ $category ? ucwords($category) : 'Civitas Auliya' }}
+{{ $category ? ucwords($category) : 'Sivitas Akademika' }}
 @endsection
 
 @section('headmeta')
@@ -23,10 +23,10 @@
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-2">
-    <h1 class="h3 mb-0 text-gray-800">{{ $category ? ucwords($category) : 'Civitas Auliya' }}</h1>
+    <h1 class="h3 mb-0 text-gray-800">{{ $category ? ucwords($category) : 'Sivitas Akademika' }}</h1>
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="./">Beranda</a></li>
-        <li class="breadcrumb-item active" aria-current="page">{{ $category ? ucwords($category) : 'Civitas Auliya' }}</li>
+        <li class="breadcrumb-item active" aria-current="page">{{ $category ? ucwords($category) : 'Sivitas Akademika' }}</li>
     </ol>
 </div>
 
@@ -109,7 +109,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">{{ $category ? ucwords($category) : 'Civitas Auliya' }} {{ $status == 'nonaktif' ? ucwords($status) : 'Aktif' }}</h6>
+                <h6 class="m-0 font-weight-bold text-brand-purple">{{ $category ? ucwords($category) : 'Sivitas Akademika' }} {{ $status == 'nonaktif' ? ucwords($status) : 'Aktif' }}</h6>
                 @if($importable)
                 <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="#" data-toggle="modal" data-target="#import-modal">Impor <i class="fas fa-file-import ml-1"></i></a>
                 @endif
@@ -153,7 +153,7 @@
                       <th>Jabatan</th>
                       @endif
                       <th>Masa Kerja</th>
-                      <th>Status {{ $category ? ucwords($category) : 'Civitas Auliya' }}</th>
+                      <th>Status {{ $category ? ucwords($category) : 'Sivitas Akademika' }}</th>
                       <th>Aksi</th>
                     </tr>
                   </thead>
@@ -219,7 +219,7 @@
               @else
               <div class="text-center mx-3 mt-4 mb-5">
                 <h3 >Mohon Maaf,</h3>
-                <h6 class="font-weight-light mb-3">Tidak ada data {{ $category ? ucwords($category) : 'Civitas Auliya' }} {{ $status == 'nonaktif' ? $status : 'aktif' }} yang ditemukan</h6>
+                <h6 class="font-weight-light mb-3">Tidak ada data {{ $category ? ucwords($category) : 'Sivitas Akademika' }} {{ $status == 'nonaktif' ? $status : 'aktif' }} yang ditemukan</h6>
               </div>
               @endif
             </div>
@@ -288,7 +288,7 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header bg-danger border-0">
-        <h5 class="modal-title text-white">Ajukan PHK {{ $category ? ucwords($category) : 'Civitas Auliya' }}</h5>
+        <h5 class="modal-title text-white">Ajukan PHK {{ $category ? ucwords($category) : 'Sivitas Akademika' }}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>
         </button>

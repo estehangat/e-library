@@ -1,7 +1,7 @@
 @extends('template.main.master')
 
 @section('title')
-Civitas Auliya
+Pegawai
 @endsection
 
 @section('headmeta')
@@ -19,10 +19,10 @@ Civitas Auliya
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-2">
-    <h1 class="h3 mb-0 text-gray-800">Civitas Auliya</h1>
+    <h1 class="h3 mb-0 text-gray-800">Pegawai</h1>
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="./">Beranda</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Civitas Auliya</li>
+        <li class="breadcrumb-item active" aria-current="page">Pegawai</li>
     </ol>
 </div>
 
@@ -88,7 +88,7 @@ Civitas Auliya
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Civitas Auliya Aktif</h6>
+                <h6 class="m-0 font-weight-bold text-brand-purple">Pegawai Aktif</h6>
                 <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="{{ route('pegawai.ekspor') }}">Ekspor <i class="fas fa-file-export ml-1"></i></a>
             </div>
             <div class="card-body p-3">
@@ -99,7 +99,7 @@ Civitas Auliya
                     <tr>
                       <th style="width: 15px">#</th>
                       <th>Nama</th>
-                      <th>NIPY</th>
+                      <th>{{ $pegawai->statusPegawai->kategori->name == 'Mitra' ? 'NIMY' : 'NIPY' }}</th>
                       <th>Tempat Lahir</th>
                       <th>Tanggal Lahir</th>
                       <th>Unit</th>
@@ -146,7 +146,7 @@ Civitas Auliya
               @else
               <div class="text-center mx-3 mt-4 mb-5">
                 <h3 >Mohon Maaf,</h3>
-                <h6 class="font-weight-light mb-3">Tidak ada data Civitas Auliya aktif yang ditemukan</h6>
+                <h6 class="font-weight-light mb-3">Tidak ada data pegawai aktif yang ditemukan</h6>
               </div>
               @endif
             </div>

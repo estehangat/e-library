@@ -1,7 +1,7 @@
 @extends('template.main.master')
 
 @section('title')
-Civitas Auliya
+Pegawai
 @endsection
 
 @section('headmeta')
@@ -14,10 +14,10 @@ Civitas Auliya
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-2">
-    <h1 class="h3 mb-0 text-gray-800">Civitas Auliya</h1>
+    <h1 class="h3 mb-0 text-gray-800">Pegawai</h1>
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="./">Beranda</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Civitas Auliya</li>
+        <li class="breadcrumb-item active" aria-current="page">Pegawai</li>
     </ol>
 </div>
 
@@ -40,7 +40,7 @@ Civitas Auliya
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Civitas Auliya Nonaktif</h6>
+                <h6 class="m-0 font-weight-bold text-brand-purple">Pegawai Nonaktif</h6>
             </div>
             <div class="card-body p-3">
               @if(count($pegawai) > 0)

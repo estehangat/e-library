@@ -56,7 +56,7 @@
           <div class="col-12">
             <div class="custom-control custom-radio custom-control-inline">
               <input type="radio" id="editSpeakerCategory1" name="speaker_category" class="custom-control-input" value="1" {{ $pelatihan->speaker_id && !$pelatihan->speaker_name ? 'checked' : '' }} required="required" >
-              <label class="custom-control-label" for="editSpeakerCategory1">Civitas Auliya</label>
+              <label class="custom-control-label" for="editSpeakerCategory1">Pegawai</label>
             </div>
             <div class="custom-control custom-radio custom-control-inline">
               <input type="radio" id="editSpeakerCategory2" name="speaker_category" class="custom-control-input" value="2" {{ $pelatihan->speaker_name ? 'checked' : '' }} required="required">

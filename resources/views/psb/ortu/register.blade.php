@@ -90,7 +90,7 @@ Pendaftaran Siswa Baru {{$unit_name}}
                             <label for="asal_sekolah" class="col-sm-4 control-label">Asal Sekolah<span class="text-danger">*</span></label>
                             <div class="col-sm-6">
                                 <select name="asal_sekolah" id="" class="select2 form-control auto_width" id="kelas" style="width:100%;" tabindex="-1" aria-hidden="true" required="required">
-                                    @if(auth()->user()->orangtua->siswas()->count() > 0)<option value="SIT Auliya">Sekolah Islam Terpadu Auliya</option>@endif
+                                    @if(auth()->user()->orangtua->siswas()->count() > 0)<option value="MUDA">Sekolah MUDA</option>@endif
                                     <option value="Sekolah Lain" selected="selected">Sekolah Lain</option>
                                 </select>
                             </div>
@@ -110,7 +110,7 @@ Pendaftaran Siswa Baru {{$unit_name}}
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="existingOpt" class="col-sm-4 control-label">Calon Siswa Pernah di Auliya?<span class="text-danger">*</span></label>
+                            <label for="existingOpt" class="col-sm-4 control-label">Calon Siswa Pernah di MUDA?<span class="text-danger">*</span></label>
                             <div class="col-sm-6">
                                 <div class="custom-control custom-radio custom-control-inline">
                                     <input type="radio" id="existingOpt1" name="existing" class="custom-control-input select-new" value="1" required="required" checked="checked">
@@ -291,7 +291,7 @@ Pendaftaran Siswa Baru {{$unit_name}}
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="asal_sekolah" class="col-sm-4 control-label">Nama Saudara Kandung di Auliya</label>
+                            <label for="asal_sekolah" class="col-sm-4 control-label">Nama Saudara Kandung di MUDA</label>
                             <div class="col-sm-6">
                                 <input type="text" class="form-control" name="saudara_nama" placeholder="Nama" value="">
                             </div>
@@ -318,11 +318,11 @@ Pendaftaran Siswa Baru {{$unit_name}}
                             <div class="col-sm-6">
                                 <select name="info_dari" class="form-control auto_width select-new" id="kelas" style="width:100%;" tabindex="-1" aria-hidden="true" required="required">
                                         <option value="">== Pilih ==</option>
-                                        <option value="Orangtua Auliya">Orangtua Auliya</option>
+                                        <option value="Orang Tua MUDA">Orang Tua MUDA</option>
                                         <option value="Guru/Staf">Guru/Staf</option>
                                         <option value="Brosur">Brosur</option>
                                         <option value="Spanduk">Spanduk</option>
-                                        <option value="Website dan Sosmed Auliya Keren">Website dan Sosmed Auliya Keren</option>
+                                        <option value="Website dan Sosmed MUDA">Website dan Sosmed MUDA</option>
                                         <option value="Media Cetak">Media Cetak</option>
                                         <option value="Sering Lewat">Sering Lewat</option>
                                         <option value="Teman">Teman</option>
@@ -354,7 +354,7 @@ Pendaftaran Siswa Baru {{$unit_name}}
                 </form>
                 @else
                 <div class="alert alert-light text-dark alert-dismissible fade show" role="alert">
-                    <i class="fa fa-info-circle text-info mr-2"></i>Mohon maaf, saat ini kami belum membuka pendaftaran siswa baru untuk unit {{ $unit_name }}.<br>Ikuti terus media sosial SIT AULIYA untuk mendapatkan info-info terbaru.
+                    <i class="fa fa-info-circle text-info mr-2"></i>Mohon maaf, saat ini kami belum membuka pendaftaran siswa baru untuk unit {{ $unit_name }}.<br>Ikuti terus media sosial Sekolah MUDA untuk mendapatkan info-info terbaru.
                 </div>
                 @endif
             </div>
@@ -384,7 +384,7 @@ Pendaftaran Siswa Baru {{$unit_name}}
             console.log('masuk sini');
             var info_dari = this.value;
             var pegawai = false;
-            if(info_dari == "Orangtua Auliya"){
+            if(info_dari == "Orang Tua MUDA"){
                 pegawai = true;
             }else if(info_dari == "Guru/Staf"){
                 pegawai = true;
@@ -398,7 +398,7 @@ Pendaftaran Siswa Baru {{$unit_name}}
         $('select[name="asal_sekolah"]').on('change', function() {
             var asal_sekolah = this.value;
             var sekolah_lain = false;
-            if(asal_sekolah == "SIT Auliya"){
+            if(asal_sekolah == "Sekolah MUDA"){
                 sekolah_lain = true;
             }
             if(sekolah_lain == true){

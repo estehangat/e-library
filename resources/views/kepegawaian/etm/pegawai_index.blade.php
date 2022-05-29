@@ -1,7 +1,7 @@
 @extends('template.main.master')
 
 @section('title')
-Civitas Auliya
+Pegawai Auliya
 @endsection
 
 @section('headmeta')
@@ -19,10 +19,10 @@ Civitas Auliya
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-2">
-    <h1 class="h3 mb-0 text-gray-800">Civitas Auliya</h1>
+    <h1 class="h3 mb-0 text-gray-800">Pegawai</h1>
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="./">Beranda</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Civitas Auliya</li>
+        <li class="breadcrumb-item active" aria-current="page">Pegawai</li>
     </ol>
 </div>
 
@@ -88,7 +88,7 @@ Civitas Auliya
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Civitas Auliya Aktif</h6>
+                <h6 class="m-0 font-weight-bold text-brand-primary">Pegawai Aktif</h6>
                 <!-- <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="#" data-toggle="modal" data-target="#import-modal">Impor <i class="fas fa-file-import ml-1"></i></a> -->
             </div>
             <div class="card-body p-3">
@@ -121,7 +121,7 @@ Civitas Auliya
                       <th>Unit</th>
                       <th>Jabatan</th>
                       <th>Masa Kerja</th>
-                      <th>Status Civitas Auliya</th>
+                      <th>Status Pegawai</th>
                       <th>Aksi</th>
                     </tr>
                   </thead>
@@ -170,7 +170,7 @@ Civitas Auliya
               @else
               <div class="text-center mx-3 mt-4 mb-5">
                 <h3 >Mohon Maaf,</h3>
-                <h6 class="font-weight-light mb-3">Tidak ada data Civitas Auliya aktif yang ditemukan</h6>
+                <h6 class="font-weight-light mb-3">Tidak ada data pegawai aktif yang ditemukan</h6>
               </div>
               @endif
             </div>
@@ -235,7 +235,7 @@ Civitas Auliya
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header bg-danger border-0">
-        <h5 class="modal-title text-white">Ajukan PHK Civitas Auliya</h5>
+        <h5 class="modal-title text-white">Ajukan PHK Pegawai</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>
         </button>
