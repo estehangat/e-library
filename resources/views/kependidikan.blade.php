@@ -170,7 +170,7 @@ Dasbor
                                     <th colspan="3">Diterima</th>
                                     <th colspan="3">Lunas DU</th>
                                     @if(in_array(Auth::user()->role->id,[1,2,3,7,8,14,17,18,20,21,25,26]))
-                                        <th colspan="3">Peresmian</th>
+                                        <th colspan="3">Diresmikan</th>
                                         <th colspan="3">Dicadangkan</th>
                                         <th colspan="3">Pembatalan DU</th>
                                     @endif
