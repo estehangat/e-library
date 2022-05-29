@@ -50,14 +50,7 @@
 
 .sidebar.toggled .nav-item .nav-link .mdi {
   font-size: 1.2rem;
-  margin: 0 .2rem .7rem .9rem
-}
-
-@media (min-width: 576px){
-  .sidebar.toggled .nav-item .nav-link .mdi {
-    font-size: 1.2rem;
-    margin: 0 0 .7rem .9rem
-  }
+  margin: 0 0 .7rem 0
 }
 
 .avatar-xl {
@@ -402,22 +395,6 @@
 .sidebar .nav-item .collapse .collapse-inner .collapse-header,
 .sidebar .nav-item .collapsing .collapse-inner .collapse-header {
   color: black
-}
-
-.sidebar.toggled {
-  width: 6.6rem !important;
-}
-
-@media (max-width:768px) {
-  .sidebar.toggled {
-      width: 50vw !important
-  }
-}
-
-@media (max-width:576px) {
-  .sidebar.toggled {
-      width: 100vw !important
-  }
 }
 
 .sidebar.toggled .nav-item .nav-link[data-toggle=collapse]::after {

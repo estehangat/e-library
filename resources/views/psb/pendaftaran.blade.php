@@ -128,8 +128,9 @@ Pendaftaran @endsection
                         <button class="login100-form-btn" onclick="showmodals()">
                             Daftar
                         </button>
-                    </div>
+                    </div>		
                 </div>
+                @endif
 				<div class="text-center m-t-45">
 				    <a href="{{ route('psb.index') }}" class="text-secondary font-weight-bold">Kembali ke Halaman Awal</a>
 				</div>

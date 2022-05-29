@@ -89,14 +89,14 @@ Masuk @endsection
                     </button>
                   </div>
                   <div class="text-center m-t-25">
-                    <a href="{{ route('forget.password.get') }}" class="text-brand-purple-dark font-weight-bold">Lupa sandi?</a>
+                    <a href="{{ route('forget.password.get') }}" class="text-brand-blue-dark font-weight-bold">Lupa sandi?</a>
                   </div>
                   <div class="p-t-20 p-b-10">
                     <hr>
                   </div>
                   <div class="text-center">
                     <div class="container-login100-form-btn">
-                      <a href="{{ route('psb.index') }}" class="btn btn-outline-brand-green">Halaman Awal</a>
+                      <a href="{{ route('psb.index') }}" class="btn btn-outline-brand-blue">Halaman Awal</a>
                     </div>
                   </div>
               </div>

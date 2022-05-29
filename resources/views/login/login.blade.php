@@ -36,7 +36,7 @@ Masuk @endsection
                   </div>
                   @endif
                 <div class="wrap-input100 validate-input m-b-20" data-validate="Masukkan username">
-                    <input class="input100" type="text" name="username" placeholder="username">
+                    <input class="input100" type="text" name="username" placeholder="Username">
                     <span class="focus-input100"></span>
                 </div>
 
