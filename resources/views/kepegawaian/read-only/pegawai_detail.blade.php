@@ -31,7 +31,7 @@ Detail Pegawai
               @if($pegawai->gender_id == '1')
               <span class="badge badge-info font-weight-normal">{{ ucwords($pegawai->jenisKelamin->name) }}</span>
               @elseif($pegawai->gender_id == '2')
-              <span class="badge badge-brand-purple font-weight-normal">{{ ucwords($pegawai->jenisKelamin->name) }}</span>
+              <span class="badge badge-brand-green font-weight-normal">{{ ucwords($pegawai->jenisKelamin->name) }}</span>
               @endif
               @if($pegawai->statusBaru && $pegawai->statusBaru->status == 'aktif' && !$pegawai->statusPhk)
               <span class="badge badge-primary font-weight-normal">Baru</span>
@@ -52,7 +52,7 @@ Detail Pegawai
       <div class="card-body p-4">
         <div class="row mb-3">
           <div class="col-12">
-            <h6 class="font-weight-bold text-brand-purple">Info Umum</h6>
+            <h6 class="font-weight-bold text-brand-green">Info Umum</h6>
           </div>
         </div>
         <div class="row">
@@ -184,7 +184,7 @@ Detail Pegawai
         <hr>
         <div class="row mb-3">
           <div class="col-12">
-            <h6 class="font-weight-bold text-brand-purple">Info Alamat dan Kontak</h6>
+            <h6 class="font-weight-bold text-brand-green">Info Alamat dan Kontak</h6>
           </div>
         </div>
         <div class="row">
@@ -226,7 +226,7 @@ Detail Pegawai
         <hr>
         <div class="row mb-3">
           <div class="col-12">
-            <h6 class="font-weight-bold text-brand-purple">Pendidikan</h6>
+            <h6 class="font-weight-bold text-brand-green">Pendidikan</h6>
           </div>
         </div>
         <div class="row">
@@ -272,7 +272,7 @@ Detail Pegawai
         <hr>
         <div class="row mb-3">
           <div class="col-12">
-            <h6 class="font-weight-bold text-brand-purple">Kepegawaian</h6>
+            <h6 class="font-weight-bold text-brand-green">Kepegawaian</h6>
           </div>
         </div>
         <div class="row">

@@ -1,7 +1,7 @@
 @extends('template.main.master')
 
 @section('title')
-Evaluasi Civitas Auliya
+Evaluasi Civitas
 @endsection
 
 @section('headmeta')
@@ -16,11 +16,11 @@ Evaluasi Civitas Auliya
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-2">
-    <h1 class="h3 mb-0 text-gray-800">Evaluasi Civitas Auliya</h1>
+    <h1 class="h3 mb-0 text-gray-800">Evaluasi Civitas</h1>
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="./">Beranda</a></li>
         <li class="breadcrumb-item"><a href="{{ route('calon.index') }}">Rekrutmen</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Evaluasi Civitas Auliya</li>
+        <li class="breadcrumb-item active" aria-current="page">Evaluasi Civitas</li>
     </ol>
 </div>
 
@@ -32,7 +32,7 @@ Evaluasi Civitas Auliya
                 <a class="nav-link active" href="{{ route('evaluasi.index', ['status' => 'aktif']) }}">Aktif</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link text-brand-purple" href="{{ route('evaluasi.index', ['status' => 'selesai']) }}">Selesai</a>
+                <a class="nav-link text-brand-green" href="{{ route('evaluasi.index', ['status' => 'selesai']) }}">Selesai</a>
               </li>
             </ul>
         </div>
@@ -43,7 +43,7 @@ Evaluasi Civitas Auliya
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Evaluasi Pegawai Tidak Tetap</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Evaluasi Pegawai Tidak Tetap</h6>
             </div>
             <div class="card-body p-3">
               @if(count($eval) > 0)
@@ -124,7 +124,7 @@ Evaluasi Civitas Auliya
 <div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h5 class="modal-title text-white">Atur Hasil Evaluasi</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>

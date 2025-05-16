@@ -46,7 +46,7 @@ Password Verifikasi
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Password Verifikasi</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Password Verifikasi</h6>
             </div>
             <div class="card-body px-4 pt-4 pb-4">
                 <form action="{{ route('pwkepsek.simpan') }}" id="password-form" enctype="multipart/form-data" method="post" accept-charset="utf-8">
@@ -93,7 +93,7 @@ Password Verifikasi
                     <div class="row">
                         <div class="col-lg-10 col-md-12">
                             <div class="text-right">
-                                <button class="btn btn-brand-purple-dark" type="submit">Simpan</button>
+                                <button class="btn btn-brand-green-dark" type="submit">Simpan</button>
                             </div>
                         </div>
                     </div>

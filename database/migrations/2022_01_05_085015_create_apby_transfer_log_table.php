@@ -16,7 +16,6 @@ class CreateApbyTransferLogTable extends Migration
         Schema::create('apby_transfer_log', function (Blueprint $table) {
             $table->id();
 			$table->bigInteger('apby_id');
-			$table->bigInteger('from_detail_id');
 			$table->bigInteger('from_value')->default(0);
 			$table->bigInteger('from_balance')->default(0);
 			$table->bigInteger('from_detail_id');

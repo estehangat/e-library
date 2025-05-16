@@ -84,7 +84,7 @@ Deskripsi Hafalan
                 <input type="hidden" name="level_id" id="idlevelsubmit" />
                 @endif
                 @csrf
-                <div class="modal-header bg-brand-purple-dark text-white">
+                <div class="modal-header bg-brand-green-dark text-white">
                     <h5 class="modal-title" id="exampleModalLongTitle">Tambah Deskripsi</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
@@ -114,7 +114,7 @@ Deskripsi Hafalan
             <form action="{{route('deschafal.ubah')}}" method="POST">
                 @csrf
                 <input type="hidden" name="id" id="ubahid">
-                <div class="modal-header bg-brand-purple-dark text-white">
+                <div class="modal-header bg-brand-green-dark text-white">
                     <h5 class="modal-title" id="exampleModalLongTitle">Ubah Deskripsi</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>

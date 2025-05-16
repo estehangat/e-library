@@ -96,7 +96,7 @@ class SertifikatPelatihanController extends Controller
         if($pelatihan){
 
             $pengaturan = collect([
-                'margin_nomor' => 64.6,
+                'margin_nomor' => 66.6,
                 'font_size_nomor' => 18,
                 'font_size_untuk' => 17,
                 'margin_nama' => 5,
@@ -120,10 +120,10 @@ class SertifikatPelatihanController extends Controller
                 PDF::SetAutoPageBreak(false, 0);
                 PDF::setCellPaddings(0,0,0,0);
                 // set background image
-                $img_file = public_path('img/ecertificate/sertifikat-template.jpg');
+                $img_file = public_path('img/ecertificate/template.png');
                 if(!File::exists($img_file)){
                     // check in server
-                    $img_file = base_path('../sista/img/ecertificate/sertifikat-template.jpg');
+                    $img_file = base_path('../sekolah.digiyok.com/img/ecertificate/template.png');
                 }
                 PDF::Image($img_file, 0, 0, 297, 210, '', '', '', false, 300, '', false, false, 0);
                 // restore auto-page-break status
@@ -161,7 +161,7 @@ class SertifikatPelatihanController extends Controller
             $pdf::SetFont('helvetica', 'B', $pengaturan['font_size_nomor']);
             $pdf::Write(0, 'NO. '.$pelatihan->number, '', 0, 'C', true, 0, false, false, 0);
             $pdf::SetFont('helvetica', '', $pengaturan['font_size_untuk']);
-            $pdf::Write(0, 'Sekolah Islam Terpadu AULIYA memberikan sertifikat kepada:', '', 0, 'C', true, 0, false, false, 0);
+            $pdf::Write(0, 'Digiyok Sekolah memberikan sertifikat kepada:', '', 0, 'C', true, 0, false, false, 0);
             $pdf::Ln((int) $pengaturan['margin_nama']);
             $pdf::SetFont('raleway', '', $pengaturan['font_size_nama']);
             $pdf::Write(0, $pegawai->name, '', 0, 'C', true, 0, false, false, 0);
@@ -174,7 +174,7 @@ class SertifikatPelatihanController extends Controller
             $pdf::Write(0, 'Pada Tanggal '.Date::parse($pelatihan->date)->format('j F Y'), '', 0, 'C', true, 0, false, false, 0);
             $pdf::Write(0, 'Dengan Pembicara '.$pelatihan->speaker_name, '', 0, 'C', true, 0, false, false, 0);
             $pdf::Ln((int) $pengaturan['margin_direktur']);
-            $pdf::Write(0, 'Direktur Sekolah Islam Terpadu AULIYA,', '', 0, 'C', true, 0, false, false, 0);
+            $pdf::Write(0, 'Digiyok Sekolah,', '', 0, 'C', true, 0, false, false, 0);
             $pdf::Ln((int) $pengaturan['margin_nama_direktur']);
             
             // Direktur

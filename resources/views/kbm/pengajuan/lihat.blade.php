@@ -21,16 +21,16 @@ Pengajuan Kelas
     <div class="col-md-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Kelas {{$kelas->level->level}} {{$kelas->namakelases->class_name}} : {{$kelas->walikelas->name}}</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Kelas {{$kelas->level->level}} {{$kelas->namakelases->class_name}} : {{$kelas->walikelas->name}}</h6>
                 <div class="m-0 float-right">
                 @if( in_array((auth()->user()->role_id), array(1,2)))
                 @if($kelas->status == 2)
                     <button class="btn btn-primary btn-sm"  data-toggle="modal" data-target="#SetujuModal">Setujui</i></button>
                     <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#TolakModal">Tolak</i></button>
-                    <button class="btn btn-brand-purple-dark btn-sm" data-toggle="modal" data-target="#TambahModal">Tambah</i></button>
+                    <button class="btn btn-brand-green-dark btn-sm" data-toggle="modal" data-target="#TambahModal">Tambah</i></button>
                     <a class="m-0 float-right btn btn-success btn-sm" href="/kependidikan/kbm/kelas/pengajuan-kelas/unduh/{{$kelas->id}}">Ekspor <i class="fas fa-download"></i></a>
                 @else
-                    <button class="btn btn-brand-purple-dark btn-sm" data-toggle="modal" data-target="#TambahModal">Tambah</i></button>
+                    <button class="btn btn-brand-green-dark btn-sm" data-toggle="modal" data-target="#TambahModal">Tambah</i></button>
                 @endif
                 @endif
                 @if( in_array((auth()->user()->role_id), array(1,2,29,30)))

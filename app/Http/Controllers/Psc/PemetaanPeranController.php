@@ -22,13 +22,13 @@ class PemetaanPeranController extends Controller
      */
     public function index()
     {
-        $mapping = Jabatan::select('id','name','category_id')->has('pscRoleMapping')->aktif()->orderBy('category_id')->orderBy('code')->orderByRaw('LENGTH(code)','ASC')->get();
+        $mapping = Jabatan::select('id','code','name','category_id')->has('pscRoleMapping')->aktif()->orderBy('category_id')->orderBy('code')->get();
 
         $kategori = KategoriJabatan::select('id','name')->get();
 
         $jabatan = null;
         foreach($kategori as $k){
-            $position = $k->jabatan()->select('id','code','name','category_id')->whereDoesntHave('pscRoleMapping')->aktif()->orderBy('code')->orderByRaw('LENGTH(code)','ASC')->get();
+            $position = $k->jabatan()->select('id','code','name','category_id')->whereDoesntHave('pscRoleMapping')->aktif()->orderBy('code')->get();
 
             if($position && count($position) > 0){
                 if(!$jabatan){
@@ -40,7 +40,7 @@ class PemetaanPeranController extends Controller
             }
         }
 
-        $penempatan = Jabatan::select('id','name')->aktif()->orderBy('category_id')->orderBy('code')->orderByRaw('LENGTH(code)','ASC')->get();
+        $penempatan = Jabatan::select('id','name')->aktif()->orderBy('category_id')->orderBy('code')->get();
 
         $struktural = Jabatan::select('id','name')->where(function($q){
             $q->where('placement_id',1)->orWhereNull('placement_id');
@@ -131,8 +131,9 @@ class PemetaanPeranController extends Controller
     {
         $jabatan = $request->id ? Jabatan::find($request->id) : null;
 
-        $penempatan = Jabatan::select('id','name')->aktif()->orderBy('category_id')->orderBy('code')->orderByRaw('LENGTH(code)','ASC')->get();
-
+        // $penempatan = Jabatan::select('id','name')->aktif()->orderBy('category_id')->orderBy('code')->orderByRaw('LENGTH(code)','ASC')->get();
+        $penempatan = Jabatan::select('id','name')->aktif()->orderBy('category_id')->orderBy('code')->get();
+                    
         $struktural = Jabatan::select('id','name')->where(function($q){
             $q->where('placement_id',1)->orWhereNull('placement_id');
         })->aktif()->get();

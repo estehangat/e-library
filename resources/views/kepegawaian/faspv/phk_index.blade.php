@@ -25,7 +25,7 @@ Pengajuan PHK
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Pengajuan Putus Hubungan Kerja</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Pengajuan Putus Hubungan Kerja</h6>
                 <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="{{ route('phk.ekspor') }}">Ekspor <i class="fas fa-file-export ml-1"></i></a>
             </div>
             <div class="card-body p-3">

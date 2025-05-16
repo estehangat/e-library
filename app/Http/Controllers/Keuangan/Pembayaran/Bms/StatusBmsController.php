@@ -322,9 +322,9 @@ class StatusBmsController extends Controller
                     return redirect()->back()->with(['danger' => 'Email orang tua tidak ditemukan.']);
                 }
             
-                $data["title"] = "Informasi Tanggungan BMS Auliya";
+                $data["title"] = "Informasi Tanggungan BMS DIGIYOK";
                 // Override Email for Testing
-                //$data["email"] = 'ihsfwz@information-computer.com';
+                $data["email"] = 'ihsfwz@information-computer.com';
                 //$data["email"] = 'arif@sekolahauliya.sch.id';
                 
                 //$files = [public_path('../img/boy.png')];
@@ -357,7 +357,7 @@ class StatusBmsController extends Controller
                 }
                 
                 Mail::send('email.reminder_bms',compact('data','tahunAktif','semesterAktif','bmsType','kelas','financeAdmin','hm','unit','unitPhone','units','siswa'), function($message)use($data, $file) {
-                    $message->from($address = 'estatement@sekolahauliya.sch.id', $name = 'SIT Auliya e-Statement');
+                    $message->from($address = 'estatement@digiyok.com', $name = 'Sekolah DIGIYOK e-Statement');
                     $message->to($data["email"]);
                     $message->subject($data["title"]);
          
@@ -479,12 +479,12 @@ class StatusBmsController extends Controller
 
 Assalamu’alaikum Ayah Bunda,
 
-Bersama ini kami informasikan Tanggungan ".$bmsType." atas nama *".$identitas->student_name."* ".($siswa == 'siswa' && $kelas && $kelas != '-' ? "(Kelas: ".$kelas.") " : null)."melalui email resmi sekolah estatement@sekolahauliya.sch.id. Mohon Ayah Bunda segera melakukan pembayaran melalui VA BMS ananda di Bank BSI sebagaimana tercantum dalam email Ayah Bunda.
+Bersama ini kami informasikan Tanggungan ".$bmsType." atas nama *".$identitas->student_name."* ".($siswa == 'siswa' && $kelas && $kelas != '-' ? "(Kelas: ".$kelas.") " : null)."melalui email resmi sekolah estatement@digiyok.com. Mohon Ayah Bunda segera melakukan pembayaran melalui VA BMS ananda di Bank BSI sebagaimana tercantum dalam email Ayah Bunda.
 
-Informasi lebih lanjut dapat menghubungi bagian Administrasi Keuangan ".str_replace("Auliya","AULIYA",$unit->desc)." di nomor ".($unitPhone ? $unitPhone." (via _Telephone_)".($financeAdmin ? " atau " : null) : null).($financeAdmin ? $financeAdmin->phoneNumberWithDashId." (via _WhatsApp_)." : ($unitPhone ? "." : null))."
+Informasi lebih lanjut dapat menghubungi bagian Administrasi Keuangan ".str_replace("Digiyok","DIGIYOK",$unit->desc)." di nomor ".($unitPhone ? $unitPhone." (via _Telephone_)".($financeAdmin ? " atau " : null) : null).($financeAdmin ? $financeAdmin->phoneNumberWithDashId." (via _WhatsApp_)." : ($unitPhone ? "." : null))."
 Wassalamu’alaikum Warahmatullahi Wabarakatuh.
 
-Kepala ".str_replace("Auliya","AULIYA",$unit->desc)."
+Kepala ".str_replace("Digiyok","DIGIYOK",$unit->desc)."
 ".($hm ? "*".$hm->name."*" : '...')."
 
 _Notes : Apabila pada saat menerima informasi ini Ayah Bunda sudah membayarkan ".$bmsType." tersebut, kami mengucapkan terima kasih._");

@@ -37,7 +37,7 @@ $role = Auth::user()->role->name;
               @if(Auth::user()->pegawai->gender_id == '1')
               <span class="badge badge-info font-weight-normal">{{ ucwords(Auth::user()->pegawai->jenisKelamin->name) }}</span>
               @elseif(Auth::user()->pegawai->gender_id == '2')
-              <span class="badge badge-brand-purple font-weight-normal">{{ ucwords(Auth::user()->pegawai->jenisKelamin->name) }}</span>
+              <span class="badge badge-brand-green font-weight-normal">{{ ucwords(Auth::user()->pegawai->jenisKelamin->name) }}</span>
               @endif
               @if(Auth::user()->pegawai->statusBaru && Auth::user()->pegawai->statusBaru->status == 'aktif' && !Auth::user()->pegawai->statusPhk)
               <span class="badge badge-primary font-weight-normal">Baru</span>
@@ -63,7 +63,7 @@ $role = Auth::user()->role->name;
       <div class="card-body p-4">
         <div class="row mb-3">
           <div class="col-12">
-            <h6 class="font-weight-bold text-brand-purple">Info Umum</h6>
+            <h6 class="font-weight-bold text-brand-green">Info Umum</h6>
           </div>
         </div>
         <div class="row">
@@ -195,7 +195,7 @@ $role = Auth::user()->role->name;
         <hr>
         <div class="row mb-3">
           <div class="col-12">
-            <h6 class="font-weight-bold text-brand-purple">Info Alamat dan Kontak</h6>
+            <h6 class="font-weight-bold text-brand-green">Info Alamat dan Kontak</h6>
           </div>
         </div>
         <div class="row">
@@ -237,7 +237,7 @@ $role = Auth::user()->role->name;
         <hr>
         <div class="row mb-3">
           <div class="col-12">
-            <h6 class="font-weight-bold text-brand-purple">Pendidikan</h6>
+            <h6 class="font-weight-bold text-brand-green">Pendidikan</h6>
           </div>
         </div>
         <div class="row">
@@ -283,7 +283,7 @@ $role = Auth::user()->role->name;
         <hr>
         <div class="row mb-3">
           <div class="col-12">
-            <h6 class="font-weight-bold text-brand-purple">Kepegawaian</h6>
+            <h6 class="font-weight-bold text-brand-green">Kepegawaian</h6>
           </div>
         </div>
         <div class="row">
@@ -402,7 +402,7 @@ $role = Auth::user()->role->name;
         <hr>
         <div class="row mb-3">
           <div class="col-12">
-            <h6 class="font-weight-bold text-brand-purple">Perjanjian Kerja</h6>
+            <h6 class="font-weight-bold text-brand-green">Perjanjian Kerja</h6>
           </div>
         </div>
         <div class="row">

@@ -7,6 +7,7 @@ use App\Models\Anggaran\Anggaran;
 use App\Models\Anggaran\JenisAnggaran;
 use App\Models\Anggaran\JenisAnggaranAnggaran;
 use App\Models\Anggaran\KategoriAkun;
+use App\Models\Anggaran\KategoriAnggaran;
 use App\Models\Apby\Apby;
 use App\Models\Apby\ApbyDetail;
 use App\Models\Apby\ApbyTransferLog;
@@ -19,6 +20,7 @@ use App\Models\Penempatan\Jabatan;
 use Illuminate\Http\Request;
 
 use Auth;
+use DB;
 use Session;
 use Jenssegers\Date\Date;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -36,13 +38,16 @@ class ApbyController extends Controller
      */
     public function index(Request $request, $jenis = null, $tahun = null, $anggaran = null)
     {
+        // Override Budget Category
+        if(!$jenis) $jenis = 'apby';
+
         $role = $request->user()->role->name;
 
         $jenisAnggaran = JenisAnggaran::all();
         $jenisAnggaranCount = null;
         foreach($jenisAnggaran as $j){
             $anggaranCount = $j->anggaran();
-            if(!in_array($request->user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv'])){
+            if(!in_array($request->user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv','am'])){
                 if($request->user()->pegawai->unit_id == '5'){
                     $anggaranCount = $anggaranCount->whereHas('anggaran',function($q)use($request){$q->where('position_id',$request->user()->pegawai->jabatan->group()->first()->id);});
                 }
@@ -59,7 +64,7 @@ class ApbyController extends Controller
             }
         }
         
-        $jenisAktif = $apby = $years = $academicYears = $latest = $tahunPelajaran = $isYear = $checkApby = null;
+        $jenisAktif = $kategoriAanggaran = $kategori = $apby = $years = $academicYears = $latest = $tahunPelajaran = $isYear = $yearAttr = $checkApby = $anggarans = $accounts = null;
         $yearsCount = $academicYearsCount = 0;
         $perubahan = $changeYear = $nextYear = false;
 
@@ -145,16 +150,31 @@ class ApbyController extends Controller
             }
 
             if($jenisAktif){
-                $apby = clone $queryApby;
-                $apby = $apby->with('jenisAnggaranAnggaran',function($q){$q->select('id','number','budgeting_type_id','budgeting_id')->with('anggaran:id,name');})->aktif()->get();
+                $kategoriAnggaran = KategoriAnggaran::select('id','name')->whereHas('anggarans.jenisAnggaran',function($q)use($jenisAktif){
+                    $q->where('budgeting_type_id',$jenisAktif->id);
+                })->get();
 
-                $checkApby = Apby::whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
-                    $query->where('budgeting_type_id',$jenisAktif->id);
-                });
-                $checkPpa = Ppa::whereIn('budgeting_budgeting_type_id',$jenisAktif->anggaran()->pluck('id'));
-                $checkBbk = Bbk::where('budgeting_type_id',$jenisAktif->id);
+                $kategori = KategoriAkun::all();
 
                 $yearAttr = $isYear ? 'year' : 'academic_year_id';
+
+                $apby = clone $queryApby;
+                $apby = $apby->whereHas('jenisAnggaranAnggaran.tahuns',function($q)use($yearAttr,$tahun){
+                    $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                })->with('jenisAnggaranAnggaran',function($q){$q->select('id','number','budgeting_type_id','budgeting_id')->with('anggaran:id,name');})->aktif()->get();
+
+                $checkApby = Apby::whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif,$yearAttr,$tahun){
+                    $query->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                        $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                    });
+                });
+                $anggaransQuery = $jenisAktif->anggaran()->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                    $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                });
+                $anggaranIds = clone $anggaransQuery;
+                $anggaranIds = $anggaranIds->select('id')->get()->pluck('id')->unique();
+                $checkPpa = Ppa::whereIn('budgeting_budgeting_type_id',$anggaranIds)->submitted();
+                $checkBbk = Bbk::where('budgeting_type_id',$jenisAktif->id);
 
                 if($isKso){
                     $checkApby = $checkApby->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
@@ -202,6 +222,191 @@ class ApbyController extends Controller
                     }
                 }
 
+                $sumExportable = false;
+                $sumApby = clone $checkApby;
+                $countSumApby = $sumApby->whereHas('detail.akun',function($q){
+                    $q->selectRaw("LENGTH(code)-LENGTH(REPLACE(code, '.', '')) as dots")->having('dots',1);
+                })->count();
+                if($countSumApby > 0) $sumExportable = true;
+
+                // Sum Dataset
+                $isShowTotal = true;
+                if($isShowTotal){
+                    $totalPenerimaan = $totalBelanja = $saldoOperasional = $saldoPembiayaan = $totalAkhir = 0;
+                }
+                
+                foreach($kategori as $k){
+                    $kategoriValue = 0;
+                    $children = $k->children();
+                    
+                    if($children->count() > 0){
+                        if($isShowTotal){
+                            $firstChildren = clone $children;
+                            $firstChildren = $firstChildren->first();
+    
+                            if($firstChildren->name != $k->name){
+                                $apbyDetail = ApbyDetail::whereHas('apby',function($q)use($yearAttr,$tahun,$jenisAktif){
+                                    $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->whereHas('jenisAnggaranAnggaran',function($q)use($jenisAktif){
+                                        $q->where('budgeting_type_id',$jenisAktif->id);
+                                    })->latest()->aktif();
+                                })->whereHas('akun.kategori.parent',function($q)use($k){$q->where('name',$k->name);});
+                                if($apbyDetail->count() > 0){
+                                    $kategoriValue = $apbyDetail->whereHas('akun',function($q){$q->where('is_fillable',1);})->sum('value');
+    
+                                    if($k->name == 'Pendapatan'){
+                                        $totalPenerimaan = $kategoriValue;
+                                        $saldoOperasional += $totalPenerimaan;
+                                    }
+                                    if($k->name == 'Belanja'){
+                                        $totalBelanja = $kategoriValue;
+                                        $saldoOperasional -= $totalBelanja;
+                                    }
+                                    if($k->name == 'Pembiayaan'){
+                                        $saldoPembiayaan = $kategoriValue;
+                                        $totalAkhir = $saldoOperasional+$saldoPembiayaan;
+                                    }
+                                }
+                            }
+                        }
+
+                        $childrens = $children->get();
+
+                        foreach($childrens as $c){
+                            $subAnggarans = clone $anggaransQuery;
+                            $subAnggarans = $subAnggarans->whereHas('apby',function($q)use($yearAttr,$tahun,$c,$isShowTotal){
+                                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->when(!$isShowTotal,function($q){
+                                    return $q->whereHas('detail.akun',function($q){
+                                        $q->selectRaw("LENGTH(code)-LENGTH(REPLACE(code, '.', '')) as dots")->having('dots',1);
+                                    });
+                                })->whereHas('detail.akun.kategori',function($q)use($c){
+                                    $q->where('name',$c->name);
+                                })->aktif();
+                            });
+                            if($subAnggarans->count() > 0){
+                                foreach($subAnggarans->get() as $a){
+                                    $latestActiveApby = $a->apby()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->when(!$isShowTotal,function($q){
+                                        return $q->whereHas('detail.akun',function($q){
+                                            $q->selectRaw("LENGTH(code)-LENGTH(REPLACE(code, '.', '')) as dots")->having('dots',1);
+                                        });
+                                    })->whereHas('detail.akun.kategori',function($q)use($c){
+                                        $q->where('name',$c->name);
+                                    })->latest()->aktif()->first();
+
+                                    if($latestActiveApby){
+                                        $apbyDetail = $latestActiveApby->detail()->whereHas('akun',function($q){
+                                            $q->selectRaw("LENGTH(code)-LENGTH(REPLACE(code, '.', '')) as dots")->having('dots',1);
+                                        })->whereHas('akun.kategori',function($q)use($c){
+                                            $q->where('name',$c->name);
+                                        });
+                                            
+                                        if($apbyDetail->count() > 0){
+                                            foreach($apbyDetail->with('akun:id,code,name,sort_order')->get()->sortBy('akun.sort_order')->all() as $d){
+                                                $account = collect([
+                                                    [
+                                                        'id' => $d->akun->id,
+                                                        'code' => $d->akun->code,
+                                                        'name' => $d->akun->name,
+                                                        'value' => $d->value,
+                                                        'valueWithSeparator' => $d->valueWithSeparator 
+                                                    ]
+                                                ]);
+                                                if($accounts){
+                                                    $accounts = $accounts->concat($account);
+                                                }
+                                                else{
+                                                    $accounts = $account;
+                                                }
+                                            }
+                                        }
+                                        
+                                        if(in_array($c->name,['Penerimaan Pembiayaan','Pengeluaran Pembiayaan'])){
+                                            $sumApbyDetails = $latestActiveApby->detail()->whereHas('akun.kategori',function($q)use($c){
+                                                $q->where('name',$c->name);
+                                            })->whereHas('akun',function($q){$q->where('is_fillable',1);})->sum('value');
+                                            $account = collect([
+                                                [
+                                                    'id' => 'c-'.$c->id,
+                                                    'code' => null,
+                                                    'name' => 'JUMLAH '.strtoupper($c->name),
+                                                    'value' => $sumApbyDetails,
+                                                    'valueWithSeparator' => number_format($sumApbyDetails, 0, ',', '.')
+                                                ]
+                                            ]);
+                                            if($accounts){
+                                                $accounts = $accounts->concat($account);
+                                            }
+                                            else{
+                                                $accounts = $account;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    if($isShowTotal && in_array($k->name,['Pendapatan','Belanja','Pembiayaan'])){
+                        $account = collect([
+                            [
+                                'id' => 'k-'.$k->id,
+                                'code' => null,
+                                'name' => ($k->name == "Pembiayaan" ? 'SALDO ' : 'TOTAL ').strtoupper($k->name),
+                                'value' => $kategoriValue,
+                                'valueWithSeparator' => number_format($kategoriValue, 0, ',', '.')
+                            ]
+                        ]);
+                        if($accounts){
+                            $accounts = $accounts->concat($account);
+                        }
+                        else{
+                            $accounts = $account;
+                        }
+
+                        if($k->name == "Belanja"){
+                            $account = collect([
+                                [
+                                    'id' => 's-'.$k->id,
+                                    'code' => null,
+                                    'name' => 'SALDO OPERASIONAL',
+                                    'value' => $saldoOperasional,
+                                    'valueWithSeparator' => number_format($saldoOperasional, 0, ',', '.')
+                                ]
+                            ]);
+                            if($accounts){
+                                $accounts = $accounts->concat($account);
+                            }
+                            else{
+                                $accounts = $account;
+                            }
+                        }
+                    }
+                }
+                
+                if($isShowTotal){
+                    $account = collect([
+                        [
+                            'id' => 'sum',
+                            'code' => null,
+                            'name' => 'TOTAL SALDO OPERASIONAL DAN PEMBIAYAAN',
+                            'value' => $totalAkhir,
+                            'valueWithSeparator' => number_format($totalAkhir, 0, ',', '.')
+                        ]
+                    ]);
+                    if($accounts){
+                        $accounts = $accounts->concat($account);
+                    }
+                    else{
+                        $accounts = $account;
+                    }
+                }
+                
+                $anggarans = clone $anggaransQuery;
+                $anggarans = $anggaransQuery->whereHas('apby',function($q)use($yearAttr,$tahun){
+                    $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->whereHas('detail.akun',function($q){
+                        $q->selectRaw("LENGTH(code)-LENGTH(REPLACE(code, '.', '')) as dots")->having('dots',1);
+                    })->aktif();
+                })->get();
+
                 if($anggaran){
                     $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$apby->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
                     if($anggaranAktif){
@@ -211,8 +416,6 @@ class ApbyController extends Controller
                         //if($apbyAktif || (!$apbyAktif && (!$isYear && $tahun->is_finance_year == 1) || ($isYear && $tahun == date('Y')))){
                         if($apbyAktif){
                             // Inti controller
-
-                            $kategori = KategoriAkun::all();
 
                             $totalAnggaran = 0;
 
@@ -257,7 +460,7 @@ class ApbyController extends Controller
                                 'operasionalPembiayaan' => $totalPendapatan - $totalBelanja + $totalPembiayaan
                             ]);
 
-                            if(in_array($role,['ketuayys','direktur','fam','faspv']))
+                            if(in_array($role,['ketuayys','direktur','fam','faspv','am']))
                                 $folder = $role;
                             else $folder = 'read-only';
 
@@ -273,10 +476,10 @@ class ApbyController extends Controller
             }
         }
 
-        if($jenis && $isKso)
-            return view('keuangan.read-only.apb_kso_index', compact('jenisAnggaran','jenisAktif','tahun','tahunPelajaran','isYear','checkApby','apby','years','academicYears','perubahan','changeYear','nextYear'));
-        else
-            return view('keuangan.read-only.apby_index', compact('jenisAnggaran','jenisAktif','tahun','tahunPelajaran','isYear','checkApby','apby','years','academicYears','perubahan','changeYear','nextYear'));
+        // if($jenis && $isKso)
+        //     return view('keuangan.read-only.apb_kso_index', compact('jenisAnggaran','jenisAktif','kategori','tahun','tahunPelajaran','isYear','checkApby','apby','years','academicYears','perubahan','changeYear','nextYear'));
+        // else
+            return view('keuangan.read-only.apby_index', compact('jenisAnggaran','jenisAktif','kategoriAnggaran','kategori','tahun','tahunPelajaran','yearAttr','isYear','checkApby','apby','years','academicYears','perubahan','changeYear','nextYear','sumExportable','anggaransQuery','anggarans','accounts'));
     }
 
     /**
@@ -322,7 +525,6 @@ class ApbyController extends Controller
         $role = $request->user()->role->name;
         
         $jenisAktif = JenisAnggaran::where('link',$jenis)->first();
-        $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->first();
 
         if($jenisAktif){
             $explodeJenis = explode('-',$jenis);
@@ -333,10 +535,14 @@ class ApbyController extends Controller
                 $tahun = TahunAjaran::where('academic_year',$tahun)->first();
                 if(!$tahun) return redirect()->route('apby.index', ['jenis' => $jenisAktif->link]);
             }
+            $yearAttr = $isYear ? 'year' : 'academic_year_id';
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                    $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                });
+            })->first();
             if($anggaranAktif){
                 $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
-
-                $yearAttr = $isYear ? 'year' : 'academic_year_id';
 
                 $apbyAktif = $anggaranAktif->apby()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->latest()->aktif();
                 $apbyAktif = $isKso ? $apbyAktif->where('director_acc_status_id', 1) : $apbyAktif->where('president_acc_status_id', 1);
@@ -350,7 +556,7 @@ class ApbyController extends Controller
                     $apbyAktifDetailFilter = clone $apbyAktifDetail;
                     $apbyAktifDetailFilter = $apbyAktifDetailFilter->where('id',$request->id)->where('balance','>',0);
                     if($apbyAktifDetailFilter->count() > 0){
-                        if($role == 'fam'){
+                        if($role == 'am'){
                             // Inti function
                             $details = clone $apbyAktifDetail;
                             $details = $details->get();
@@ -381,7 +587,6 @@ class ApbyController extends Controller
         $role = $request->user()->role->name;
         
         $jenisAktif = JenisAnggaran::where('link',$jenis)->first();
-        $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->first();
 
         if($jenisAktif){
             $explodeJenis = explode('-',$jenis);
@@ -392,10 +597,14 @@ class ApbyController extends Controller
                 $tahun = TahunAjaran::where('academic_year',$tahun)->first();
                 if(!$tahun) return redirect()->route('apby.index', ['jenis' => $jenisAktif->link]);
             }
+            $yearAttr = $isYear ? 'year' : 'academic_year_id';
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                    $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                });
+            })->first();
             if($anggaranAktif){
                 $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
-
-                $yearAttr = $isYear ? 'year' : 'academic_year_id';
 
                 $apbyAktif = $anggaranAktif->apby()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->latest()->aktif();
                 $apbyAktif = $isKso ? $apbyAktif->where('director_acc_status_id', 1) : $apbyAktif->where('president_acc_status_id', 1);
@@ -409,7 +618,7 @@ class ApbyController extends Controller
                     $apbyAktifDetailFilter = clone $apbyAktifDetail;
                     $apbyAktifDetailFilter = $apbyAktifDetailFilter->where('id',$request->id)->where('balance','>',0);
                     if($apbyAktifDetailFilter->count() > 0){
-                        if($role == 'fam'){
+                        if($role == 'am'){
                             // Inti function
                             $messages = [
                                 'account.required' => 'Mohon pilih salah satu akun anggaran tujuan',
@@ -485,7 +694,6 @@ class ApbyController extends Controller
         $role = $request->user()->role->name;
         
         $jenisAktif = JenisAnggaran::where('link',$jenis)->first();
-        $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->first();
 
         if($jenisAktif){
             $explodeJenis = explode('-',$jenis);
@@ -496,10 +704,14 @@ class ApbyController extends Controller
                 $tahun = TahunAjaran::where('academic_year',$tahun)->first();
                 if(!$tahun) return redirect()->route('apby.index', ['jenis' => $jenisAktif->link]);
             }
+            $yearAttr = $isYear ? 'year' : 'academic_year_id';
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                    $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                });
+            })->first();
             if($anggaranAktif){
                 $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
-
-                $yearAttr = $isYear ? 'year' : 'academic_year_id';
 
                 $apbyAktif = $anggaranAktif->apby()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->latest()->aktif()->first();
 
@@ -515,9 +727,9 @@ class ApbyController extends Controller
                             // Get last revision
                             if($apbyAktif->revision > 1){
                                 $apbyLastRevision = $anggaranAktif->apby()->where([
-                                    'revision' => ($apbyAktif->revision-1),
-                                    'is_active' => 0,
-                                    $yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id)
+                                    ['revision', '<', $apbyAktif->revision],
+                                    ['is_active', '=', 0],
+                                    [$yearAttr, '=', ($yearAttr == 'year' ? $tahun : $tahun->id)]
                                 ])->latest()->first();
                             }
 
@@ -596,9 +808,9 @@ class ApbyController extends Controller
                                 // Get last revision
                                 if($apbyAktif->revision > 1){
                                     $apbyLastRevision = $anggaranAktif->apby()->where([
-                                        'revision' => ($apbyAktif->revision-1),
-                                        'is_active' => 0,
-                                        $yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id)
+                                        ['revision', '<', $apbyAktif->revision],
+                                        ['is_active', '=', 0],
+                                        [$yearAttr, '=', ($yearAttr == 'year' ? $tahun : $tahun->id)]
                                     ])->latest()->first();
                                 }
 
@@ -704,7 +916,7 @@ class ApbyController extends Controller
                                 }
                             }
                         }
-                        elseif($role == 'fam'){
+                        elseif($role == 'am'){
                             // Inti function
                             $apbyAktifDetailFilter = $apbyAktifDetail->where(function($query){
                                 $query->where('director_acc_status_id','!=',1)->orWhereNull('director_acc_status_id');
@@ -749,7 +961,7 @@ class ApbyController extends Controller
                                 $apbyAktif->save();
                             }
                         }
-                        elseif($role == 'faspv'){
+                        elseif(in_array($role,['fam','faspv'])){
                             // Inti function
                             // $apbyAktifDetailFilter = $apbyAktifDetail->where(function($query){
                             //     $query->where('finance_acc_status_id','!=',1)->orWhereNull('finance_acc_status_id');
@@ -814,7 +1026,6 @@ class ApbyController extends Controller
         $role = $request->user()->role->name;
         
         $jenisAktif = JenisAnggaran::where('link',$jenis)->first();
-        $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->first();
 
         if($jenisAktif){
             $explodeJenis = explode('-',$jenis);
@@ -825,10 +1036,14 @@ class ApbyController extends Controller
                 $tahun = TahunAjaran::where('academic_year',$tahun)->first();
                 if(!$tahun) return redirect()->route('apby.index', ['jenis' => $jenisAktif->link]);
             }
+            $yearAttr = $isYear ? 'year' : 'academic_year_id';
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                    $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                });
+            })->first();
             if($anggaranAktif){
                 $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
-
-                $yearAttr = $isYear ? 'year' : 'academic_year_id';
 
                 $apbyAktif = $anggaranAktif->apby()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->latest()->aktif()->first();
 
@@ -844,9 +1059,9 @@ class ApbyController extends Controller
                             // Get last revision
                             if($apbyAktif->revision > 1){
                                 $apbyLastRevision = $anggaranAktif->apby()->where([
-                                    'revision' => ($apbyAktif->revision-1),
-                                    'is_active' => 0,
-                                    $yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id)
+                                    ['revision', '<', $apbyAktif->revision],
+                                    ['is_active', '=', 0],
+                                    [$yearAttr, '=', ($yearAttr == 'year' ? $tahun : $tahun->id)]
                                 ])->latest()->first();
                             }
 
@@ -906,9 +1121,9 @@ class ApbyController extends Controller
                                 // Get last revision
                                 if($apbyAktif->revision > 1){
                                     $apbyLastRevision = $anggaranAktif->apby()->where([
-                                        'revision' => ($apbyAktif->revision-1),
-                                        'is_active' => 0,
-                                        $yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id)
+                                        ['revision', '<', $apbyAktif->revision],
+                                        ['is_active', '=', 0],
+                                        [$yearAttr, '=', ($yearAttr == 'year' ? $tahun : $tahun->id)]
                                     ])->latest()->first();
                                 }
 
@@ -981,7 +1196,7 @@ class ApbyController extends Controller
                                 ]);
                             }
                         }
-                        elseif($role == 'faspv'){
+                        elseif($role == 'am'){
                             // Inti function
                             $apbyAktifDetailClone = clone $apbyAktifDetail;
                             $apbyAktifDetailFilter = $apbyAktifDetailClone->where(function($query){
@@ -1057,15 +1272,23 @@ class ApbyController extends Controller
                 $tahun = TahunAjaran::where('academic_year',$tahun)->first();
                 if(!$tahun) return redirect()->route('apby.index', ['jenis' => $jenisAktif->link]);
             }
+            $yearAttr = $isYear ? 'year' : 'academic_year_id';
 
             // Inti Controller
-            $checkRkat = Rkat::whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
-                $query->where('budgeting_type_id',$jenisAktif->id);
+            $checkRkat = Rkat::whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif,$yearAttr,$tahun){
+                $query->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                    $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                });
             });
-            $checkApby = Apby::whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
-                $query->where('budgeting_type_id',$jenisAktif->id);
+            $checkApby = Apby::whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif,$yearAttr,$tahun){
+                $query->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                    $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                });
             });
-            $checkPpa = Ppa::whereIn('budgeting_budgeting_type_id',$jenisAktif->anggaran()->pluck('id'));
+            $anggaranIds = $jenisAktif->anggaran()->select('id')->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+            })->get()->pluck('id')->unique();
+            $checkPpa = Ppa::whereIn('budgeting_budgeting_type_id',$anggaranIds)->submitted();
             $checkBbk = Bbk::where('budgeting_type_id',$jenisAktif->id);
 
             $yearAttr = $isYear ? 'year' : 'academic_year_id';
@@ -1110,6 +1333,8 @@ class ApbyController extends Controller
                 $checkRkat->update(['is_active' => 0]);
                 $checkApby->update(['is_active' => 0]);
 
+                DB::table('tm_settings')->where('name','budgeting_account_lock_status')->update(['value' => 0]);
+
                 Session::flash('success', $jenisAktif->name.' perubahan berhasil dilakukan');
 
                 return redirect()->route('rkat.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
@@ -1145,15 +1370,23 @@ class ApbyController extends Controller
                 $tahun = TahunAjaran::where('academic_year',$tahun)->first();
                 if(!$tahun) return redirect()->route('apby.index', ['jenis' => $jenisAktif->link]);
             }
+            $yearAttr = $isYear ? 'year' : 'academic_year_id';
 
             // Inti Controller
-            $checkRkat = Rkat::whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
-                $query->where('budgeting_type_id',$jenisAktif->id);
+            $checkRkat = Rkat::whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif,$yearAttr,$tahun){
+                $query->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                    $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                });
             });
-            $checkApby = Apby::whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
-                $query->where('budgeting_type_id',$jenisAktif->id);
+            $checkApby = Apby::whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif,$yearAttr,$tahun){
+                $query->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                    $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                });
             });
-            $checkPpa = Ppa::whereIn('budgeting_budgeting_type_id',$jenisAktif->anggaran()->pluck('id'));
+            $anggaranIds = $jenisAktif->anggaran()->select('id')->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+            })->get()->pluck('id')->unique();
+            $checkPpa = Ppa::whereIn('budgeting_budgeting_type_id',$anggaranIds)->submitted();
             $checkBbk = Bbk::where('budgeting_type_id',$jenisAktif->id);
 
             $yearAttr = $isYear ? 'year' : 'academic_year_id';
@@ -1224,7 +1457,7 @@ class ApbyController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function export(Request $request, $jenis, $tahun)
+    public function export(Request $request, $jenis, $tahun, $status = null)
     {
         // Pre-defined formats
         $FORMAT_CURRENCY_IDR_SIMPLE = '"Rp"#,##0.00_-';
@@ -1252,15 +1485,15 @@ class ApbyController extends Controller
 
             $spreadsheet = new Spreadsheet();
 
-            $spreadsheet->getProperties()->setCreator('SIT Auliya')
+            $spreadsheet->getProperties()->setCreator('Sekolah MUDA')
             ->setLastModifiedBy($request->user()->pegawai->name)
-            ->setTitle("Data ".$jenisAktif->name." Auliya ".$tahunTitle)
-            ->setSubject($jenisAktif->name." Auliya ".$tahunTitle)
-            ->setDescription("Rekapitulasi Data ".$jenisAktif->name."  Auliya ".$tahunTitle)
-            ->setKeywords("APB, ".$jenisAktif->name.", Auliya");
+            ->setTitle("Data ".$jenisAktif->name." MUDA ".$tahunTitle)
+            ->setSubject($jenisAktif->name." MUDA ".$tahunTitle)
+            ->setDescription("Rekapitulasi Data ".$jenisAktif->name."  MUDA ".$tahunTitle)
+            ->setKeywords("APB, ".$jenisAktif->name.", MUDA");
 
             $spreadsheet->setActiveSheetIndex(0)
-            ->setCellValue('A1', 'YAYASAN AULIYA INSAN UTAMA'.($isKso? ' - LETRIS KSO' : null))
+            ->setCellValue('A1', 'YAYASAN MUDA INCOMSO'.($isKso? ' - LETRIS KSO' : null))
             ->setCellValue('A2', strtoupper($jenisAktif->fullname))
             ->setCellValue('A4', strtoupper('No. Akun'))
             ->setCellValue('B4', strtoupper('Nama Akun'))
@@ -1301,162 +1534,369 @@ class ApbyController extends Controller
                 ]
             ];
 
-            foreach($kategori as $k){
-                $kategoriValue = 0;
-                $children = $k->children();
-                
-                if($children->count() > 0){
-                    $firstChildren = clone $children;
-                    $firstChildren = $firstChildren->first();
+            if(!isset($status) || $status != 'sum'){
+                foreach($kategori as $k){
+                    $kategoriValue = 0;
+                    $children = $k->children();
+                    
+                    if($children->count() > 0){
+                        $firstChildren = clone $children;
+                        $firstChildren = $firstChildren->first();
 
-                    if($firstChildren->name != $k->name){
-                        $apbyDetail = ApbyDetail::whereHas('apby',function($q)use($yearAttr,$tahun,$jenisAktif){
-                            $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->whereHas('jenisAnggaranAnggaran',function($q)use($jenisAktif){
-                                $q->where('budgeting_type_id',$jenisAktif->id);
-                            })->latest()->aktif();
-                        })->whereHas('akun.kategori.parent',function($q)use($k){$q->where('name',$k->name);});
-                        if($apbyDetail->count() > 0){
-                            if($k->name == "Belanja"){
-                                $spreadsheet->getActiveSheet()->setCellValue('A'.$kolom, '5');
-                            }
+                        if($firstChildren->name != $k->name){
+                            $apbyDetail = ApbyDetail::whereHas('apby',function($q)use($yearAttr,$tahun,$jenisAktif){
+                                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->whereHas('jenisAnggaranAnggaran',function($q)use($jenisAktif){
+                                    $q->where('budgeting_type_id',$jenisAktif->id);
+                                })->latest()->aktif();
+                            })->whereHas('akun.kategori.parent',function($q)use($k){$q->where('name',$k->name);});
+                            if($apbyDetail->count() > 0){
+                                if($k->name == "Belanja"){
+                                    $spreadsheet->getActiveSheet()->setCellValue('A'.$kolom, '5');
+                                }
 
-                            $spreadsheet->getActiveSheet()->setCellValue('B'.$kolom, strtoupper($k->name));
+                                $spreadsheet->getActiveSheet()->setCellValue('B'.$kolom, strtoupper($k->name));
 
-                            $styleArray = [
-                                'font' => [
-                                    'bold' => true
-                                ],
-                                'alignment' => [
-                                    'horizontal' => Alignment::HORIZONTAL_LEFT,
-                                ]
-                            ];
+                                $styleArray = [
+                                    'font' => [
+                                        'bold' => true
+                                    ],
+                                    'alignment' => [
+                                        'horizontal' => Alignment::HORIZONTAL_LEFT,
+                                    ]
+                                ];
 
-                            $spreadsheet->getActiveSheet()->getStyle('B'.$kolom++)->applyFromArray($styleArray);
+                                $spreadsheet->getActiveSheet()->getStyle('B'.$kolom++)->applyFromArray($styleArray);
 
-                            $kategoriValue = $apbyDetail->whereHas('akun',function($q){$q->where('is_fillable',1);})->sum('value');
+                                $kategoriValue = $apbyDetail->whereHas('akun',function($q){$q->where('is_fillable',1);})->sum('value');
 
-                            if($k->name == 'Pendapatan'){
-                                $totalPenerimaan = $kategoriValue;
-                                $saldoOperasional += $totalPenerimaan;
-                            }
-                            if($k->name == 'Belanja'){
-                                $totalBelanja = $kategoriValue;
-                                $saldoOperasional -= $totalBelanja;
-                            }
-                            if($k->name == 'Pembiayaan'){
-                                $saldoPembiayaan = $kategoriValue;
-                                $totalAkhir = $saldoOperasional+$saldoPembiayaan;
-                            }
-                        }
-                    }
-
-                    $childrens = $children->get();
-
-                    foreach($childrens as $c){
-                        $GrandChildren = $c->children();
-
-                        if($GrandChildren->count() > 0){
-                            $firstGrandChildren = clone $GrandChildren;
-                            $firstGrandChildren = $firstChildren->first();
-
-                            if($firstChildren->name != $c->name){
-                                $apbyDetail = ApbyDetail::whereHas('apby',function($q)use($yearAttr,$tahun,$jenisAktif){
-                                    $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->whereHas('jenisAnggaranAnggaran',function($q)use($jenisAktif){
-                                        $q->where('budgeting_type_id',$jenisAktif->id);
-                                    })->latest()->aktif();
-                                })->whereHas('akun.kategori',function($q)use($c){$q->where('name',$c->name);});
-                                if($apbyDetail->count() > 0){
-                                    $spreadsheet->getActiveSheet()->setCellValue('B'.$kolom++, strtoupper($c->name));
+                                if($k->name == 'Pendapatan'){
+                                    $totalPenerimaan = $kategoriValue;
+                                    $saldoOperasional += $totalPenerimaan;
+                                }
+                                if($k->name == 'Belanja'){
+                                    $totalBelanja = $kategoriValue;
+                                    $saldoOperasional -= $totalBelanja;
+                                }
+                                if($k->name == 'Pembiayaan'){
+                                    $saldoPembiayaan = $kategoriValue;
+                                    $totalAkhir = $saldoOperasional+$saldoPembiayaan;
                                 }
                             }
                         }
-                        else{
-                            $anggaran = $jenisAktif->anggaran();
-                            if($anggaran->count() > 0){
-                                $anggaran = $anggaran->get();
-                                foreach($anggaran as $a){
-                                    $apby = $a->apby()->whereHas('detail.akun.kategori',function($q)use($c){
-                                        $q->where('name',$c->name);
-                                    })->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->latest()->aktif()->first();
 
-                                    if($apby){
-                                        $apbyDetail = $apby->detail()->whereHas('akun.kategori',function($q)use($c){$q->where('name',$c->name);});
-                                        $firstApbyDetail = clone $apbyDetail;
-                                        $firstApbyDetail = $firstApbyDetail->first();
+                        $childrens = $children->get();
 
-                                        if($firstApbyDetail->akun->name != strtoupper($c->name) && ($c->name != 'Belanja Anggaran')){
-                                            $spreadsheet->getActiveSheet()->setCellValue('B'.$kolom++, strtoupper($c->name));
-                                        }
+                        foreach($childrens as $c){
+                            $GrandChildren = $c->children();
 
-                                        $parentDetail = $parentRow = null;
-                                        $apbyDetailClone = clone $apbyDetail;
+                            if($GrandChildren->count() > 0){
+                                $firstGrandChildren = clone $GrandChildren;
+                                $firstGrandChildren = $firstGrandChildren->first();
 
-                                        foreach($apbyDetail->with('akun')->get()->sortBy('akun.id')->all() as $d){
-                                            if((count(explode('.',$d->akun->code)) == 2) && $c->name == 'Belanja Anggaran'){
-                                                $parentDetail = $d;
-                                                $apbyDetailCount = clone $apbyDetailClone;
-                                                $parentRow = $kolom+($apbyDetailCount->whereHas('akun',function($q)use($d){$q->where('code','LIKE',$d->akun->code.'.%');})->count())+1;
+                                if($firstChildren->name != $c->name){
+                                    $apbyDetail = ApbyDetail::whereHas('apby',function($q)use($yearAttr,$tahun,$jenisAktif){
+                                        $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->whereHas('jenisAnggaranAnggaran',function($q)use($jenisAktif){
+                                            $q->where('budgeting_type_id',$jenisAktif->id);
+                                        })->latest()->aktif();
+                                    })->whereHas('akun.kategori',function($q)use($c){$q->where('name',$c->name);});
+                                    if($apbyDetail->count() > 0){
+                                        $spreadsheet->getActiveSheet()->setCellValue('B'.$kolom++, strtoupper($c->name));
+                                    }
+                                }
+                            }
+                            else{
+                                $anggaran = $jenisAktif->anggaran();
+                                if($anggaran->count() > 0){
+                                    $anggaran = $anggaran->get();
+                                    foreach($anggaran as $a){
+                                        $apby = $a->apby()->whereHas('detail.akun.kategori',function($q)use($c){
+                                            $q->where('name',$c->name);
+                                        })->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->latest()->aktif()->first();
+
+                                        if($apby){
+                                            $apbyDetail = $apby->detail()->whereHas('akun.kategori',function($q)use($c){$q->where('name',$c->name);});
+                                            $firstApbyDetail = clone $apbyDetail;
+                                            $firstApbyDetail = $firstApbyDetail->first();
+
+                                            if($firstApbyDetail->akun->name != strtoupper($c->name) && ($c->name != 'Belanja Anggaran')){
+                                                $spreadsheet->getActiveSheet()->setCellValue('B'.$kolom++, strtoupper($c->name));
                                             }
 
-                                            $spreadsheet->getActiveSheet()
-                                            ->setCellValueExplicit('A'.$kolom, $d->akun->code, DataType::TYPE_STRING)
-                                            ->setCellValue('B'.$kolom, $d->akun->name)
-                                            ->setCellValue('C'.$kolom++, $d->akun->is_fillable == 1 ? abs($d->value) : null);
+                                            $parentDetail = $parentRow = null;
+                                            $apbyDetailClone = clone $apbyDetail;
 
-                                            if($parentDetail && $parentRow && ($parentRow == $kolom) && ($c->name == 'Belanja Anggaran')){
+                                            foreach($apbyDetail->with('akun')->get()->sortBy('akun.sort_order')->all() as $d){
+                                                if((count(explode('.',$d->akun->code)) == 2) && $c->name == 'Belanja Anggaran'){
+                                                    $parentDetail = $d;
+                                                    $apbyDetailCount = clone $apbyDetailClone;
+                                                    $parentRow = $kolom+($apbyDetailCount->whereHas('akun',function($q)use($d){$q->where('code','LIKE',$d->akun->code.'.%');})->count())+1;
+                                                }
+
                                                 $spreadsheet->getActiveSheet()
-                                                ->setCellValue('B'.$kolom, 'TOTAL '.strtoupper($parentDetail->akun->name))
-                                                ->setCellValue('C'.$kolom,$parentDetail->value);
+                                                ->setCellValueExplicit('A'.$kolom, $d->akun->code, DataType::TYPE_STRING)
+                                                ->setCellValue('B'.$kolom, $d->akun->name)
+                                                ->setCellValue('C'.$kolom++, $d->akun->is_fillable == 1 ? abs($d->value) : null);
+
+                                                if($parentDetail && $parentRow && ($parentRow == $kolom) && ($c->name == 'Belanja Anggaran')){
+                                                    $spreadsheet->getActiveSheet()
+                                                    ->setCellValue('B'.$kolom, 'TOTAL '.strtoupper($parentDetail->akun->name))
+                                                    ->setCellValue('C'.$kolom,$parentDetail->value);
+
+                                                    $spreadsheet->getActiveSheet()->getStyle('B'.$kolom)->applyFromArray($totalTopBottomBold);
+
+                                                    $kolom += 2;
+
+                                                    $parentDetail = $parentRow = null;
+                                                }
+                                            }
+                                            if($c->name != 'Belanja Anggaran'){
+                                                $spreadsheet->getActiveSheet()
+                                                ->setCellValue('B'.$kolom, 'JUMLAH '.strtoupper($c->name))
+                                                ->setCellValue('C'.$kolom,$apbyDetail->whereHas('akun',function($q){$q->where('is_fillable',1);})->sum('value'));
 
                                                 $spreadsheet->getActiveSheet()->getStyle('B'.$kolom)->applyFromArray($totalTopBottomBold);
 
                                                 $kolom += 2;
-
-                                                $parentDetail = $parentRow = null;
                                             }
                                         }
-                                        if($c->name != 'Belanja Anggaran'){
-                                            $spreadsheet->getActiveSheet()
-                                            ->setCellValue('B'.$kolom, 'JUMLAH '.strtoupper($c->name))
-                                            ->setCellValue('C'.$kolom,$apbyDetail->whereHas('akun',function($q){$q->where('is_fillable',1);})->sum('value'));
+                                    }
+                                }
+                            }
+                        }
 
-                                            $spreadsheet->getActiveSheet()->getStyle('B'.$kolom)->applyFromArray($totalTopBottomBold);
+                        $spreadsheet->getActiveSheet()
+                        ->setCellValue('B'.$kolom, ($k->name == "Pembiayaan" ? 'SALDO ' : 'TOTAL ').strtoupper($k->name))
+                        ->setCellValue('C'.$kolom, $kategoriValue);
 
-                                            $kolom += 2;
+                        $spreadsheet->getActiveSheet()->getStyle('A'.$kolom.':B'.$kolom)->applyFromArray($totalTopBottomBold);
+
+                        $kolom += 2;
+
+                        if($k->name == "Belanja"){
+                            $spreadsheet->getActiveSheet()
+                            ->setCellValue('B'.$kolom, 'SALDO OPERASIONAL')
+                            ->setCellValue('C'.$kolom, $saldoOperasional);
+
+                            $spreadsheet->getActiveSheet()->getStyle('A'.$kolom.':B'.$kolom)->applyFromArray($totalTopBottomBold);
+
+                            $kolom += 2;
+                        }
+                    }
+                }
+
+                $maxRow = $kolom;
+
+                $spreadsheet->getActiveSheet()
+                ->setCellValue('B'.$kolom, 'TOTAL SALDO OPERASIONAL DAN PEMBIAYAAN')
+                ->setCellValue('C'.$kolom, $totalAkhir);
+
+                $spreadsheet->getActiveSheet()->getStyle('A'.$kolom.':B'.$kolom)->applyFromArray($totalTopBottomBold);
+            }
+            else{
+                $accounts = null;
+                
+                $anggaransQuery = $jenisAktif->anggaran()->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                    $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                });
+                
+                // Sum Dataset
+                $isShowTotal = true;
+                
+                foreach($kategori as $k){
+                    $kategoriValue = 0;
+                    $children = $k->children();
+                    
+                    if($children->count() > 0){
+                        if($isShowTotal){
+                            $firstChildren = clone $children;
+                            $firstChildren = $firstChildren->first();
+    
+                            if($firstChildren->name != $k->name){
+                                $apbyDetail = ApbyDetail::whereHas('apby',function($q)use($yearAttr,$tahun,$jenisAktif){
+                                    $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->whereHas('jenisAnggaranAnggaran',function($q)use($jenisAktif){
+                                        $q->where('budgeting_type_id',$jenisAktif->id);
+                                    })->latest()->aktif();
+                                })->whereHas('akun.kategori.parent',function($q)use($k){$q->where('name',$k->name);});
+                                if($apbyDetail->count() > 0){
+                                    $kategoriValue = $apbyDetail->whereHas('akun',function($q){$q->where('is_fillable',1);})->sum('value');
+    
+                                    if($k->name == 'Pendapatan'){
+                                        $totalPenerimaan = $kategoriValue;
+                                        $saldoOperasional += $totalPenerimaan;
+                                    }
+                                    if($k->name == 'Belanja'){
+                                        $totalBelanja = $kategoriValue;
+                                        $saldoOperasional -= $totalBelanja;
+                                    }
+                                    if($k->name == 'Pembiayaan'){
+                                        $saldoPembiayaan = $kategoriValue;
+                                        $totalAkhir = $saldoOperasional+$saldoPembiayaan;
+                                    }
+                                }
+                            }
+                        }
+
+                        $childrens = $children->get();
+
+                        foreach($childrens as $c){
+                            $subAnggarans = clone $anggaransQuery;
+                            $subAnggarans = $subAnggarans->whereHas('apby',function($q)use($yearAttr,$tahun,$c,$isShowTotal){
+                                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->when(!$isShowTotal,function($q){
+                                    return $q->whereHas('detail.akun',function($q){
+                                        $q->selectRaw("LENGTH(code)-LENGTH(REPLACE(code, '.', '')) as dots")->having('dots',1);
+                                    });
+                                })->whereHas('detail.akun.kategori',function($q)use($c){
+                                    $q->where('name',$c->name);
+                                })->aktif();
+                            });
+                            if($subAnggarans->count() > 0){
+                                foreach($subAnggarans->get() as $a){
+                                    $latestActiveApby = $a->apby()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->when(!$isShowTotal,function($q){
+                                        return $q->whereHas('detail.akun',function($q){
+                                            $q->selectRaw("LENGTH(code)-LENGTH(REPLACE(code, '.', '')) as dots")->having('dots',1);
+                                        });
+                                    })->whereHas('detail.akun.kategori',function($q)use($c){
+                                        $q->where('name',$c->name);
+                                    })->latest()->aktif()->first();
+
+                                    if($latestActiveApby){
+                                        $apbyDetail = $latestActiveApby->detail()->whereHas('akun',function($q){
+                                            $q->selectRaw("LENGTH(code)-LENGTH(REPLACE(code, '.', '')) as dots")->having('dots',1);
+                                        })->whereHas('akun.kategori',function($q)use($c){
+                                            $q->where('name',$c->name);
+                                        });
+                                            
+                                        if($apbyDetail->count() > 0){
+                                            foreach($apbyDetail->with('akun:id,code,name,sort_order')->get()->sortBy('akun.sort_order')->all() as $d){
+                                                $account = collect([
+                                                    [
+                                                        'id' => $d->akun->id,
+                                                        'code' => $d->akun->code,
+                                                        'name' => $d->akun->name,
+                                                        'value' => $d->value,
+                                                        'valueWithSeparator' => $d->valueWithSeparator 
+                                                    ]
+                                                ]);
+                                                if($accounts){
+                                                    $accounts = $accounts->concat($account);
+                                                }
+                                                else{
+                                                    $accounts = $account;
+                                                }
+                                            }
+                                        }
+                                        
+                                        if(in_array($c->name,['Penerimaan Pembiayaan','Pengeluaran Pembiayaan'])){
+                                            $sumApbyDetails = $latestActiveApby->detail()->whereHas('akun.kategori',function($q)use($c){
+                                                $q->where('name',$c->name);
+                                            })->whereHas('akun',function($q){$q->where('is_fillable',1);})->sum('value');
+                                            $account = collect([
+                                                [
+                                                    'id' => 'c-'.$c->id,
+                                                    'code' => null,
+                                                    'name' => 'JUMLAH '.strtoupper($c->name),
+                                                    'value' => $sumApbyDetails,
+                                                    'valueWithSeparator' => number_format($sumApbyDetails, 0, ',', '.')
+                                                ]
+                                            ]);
+                                            if($accounts){
+                                                $accounts = $accounts->concat($account);
+                                            }
+                                            else{
+                                                $accounts = $account;
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     }
+                    
+                    if($isShowTotal && in_array($k->name,['Pendapatan','Belanja','Pembiayaan'])){
+                        $account = collect([
+                            [
+                                'id' => 'k-'.$k->id,
+                                'code' => null,
+                                'name' => ($k->name == "Pembiayaan" ? 'SALDO ' : 'TOTAL ').strtoupper($k->name),
+                                'value' => $kategoriValue,
+                                'valueWithSeparator' => number_format($kategoriValue, 0, ',', '.')
+                            ]
+                        ]);
+                        if($accounts){
+                            $accounts = $accounts->concat($account);
+                        }
+                        else{
+                            $accounts = $account;
+                        }
 
-                    $spreadsheet->getActiveSheet()
-                    ->setCellValue('B'.$kolom, ($k->name == "Pembiayaan" ? 'SALDO ' : 'TOTAL ').strtoupper($k->name))
-                    ->setCellValue('C'.$kolom, $kategoriValue);
-
-                    $spreadsheet->getActiveSheet()->getStyle('A'.$kolom.':B'.$kolom)->applyFromArray($totalTopBottomBold);
-
-                    $kolom += 2;
-
-                    if($k->name == "Belanja"){
-                        $spreadsheet->getActiveSheet()
-                        ->setCellValue('B'.$kolom, 'SALDO OPERASIONAL')
-                        ->setCellValue('C'.$kolom, $saldoOperasional);
-
-                        $spreadsheet->getActiveSheet()->getStyle('A'.$kolom.':B'.$kolom)->applyFromArray($totalTopBottomBold);
-
-                        $kolom += 2;
+                        if($k->name == "Belanja"){
+                            $account = collect([
+                                [
+                                    'id' => 's-'.$k->id,
+                                    'code' => null,
+                                    'name' => 'SALDO OPERASIONAL',
+                                    'value' => $saldoOperasional,
+                                    'valueWithSeparator' => number_format($saldoOperasional, 0, ',', '.')
+                                ]
+                            ]);
+                            if($accounts){
+                                $accounts = $accounts->concat($account);
+                            }
+                            else{
+                                $accounts = $account;
+                            }
+                        }
                     }
                 }
+                
+                if($isShowTotal){
+                    $account = collect([
+                        [
+                            'id' => 'sum',
+                            'code' => null,
+                            'name' => 'TOTAL SALDO OPERASIONAL DAN PEMBIAYAAN',
+                            'value' => $totalAkhir,
+                            'valueWithSeparator' => number_format($totalAkhir, 0, ',', '.')
+                        ]
+                    ]);
+                    if($accounts){
+                        $accounts = $accounts->concat($account);
+                    }
+                    else{
+                        $accounts = $account;
+                    }
+                }
+                
+                if($accounts && $accounts->count() > 0){
+                    $i = 1;
+                    foreach($accounts->groupBy('id') as $d){
+                        $data = $d->first();
+                        $value = null;
+                        if(count($d) > 0){
+                            $value = $d->sum('value');
+                        }
+                        $spreadsheet->getActiveSheet()
+                            ->setCellValueExplicit('A'.$kolom, $data['code'], DataType::TYPE_STRING)
+                            ->setCellValue('B'.$kolom, $data['name'])
+                            ->setCellValue('C'.$kolom, abs($value ? $value : $data['value']));
+                        if($data['code']){
+                            $kolom++;
+                        }
+                        elseif($i < $accounts->groupBy('id')->count()){
+                            if(in_array($data['name'],['JUMLAH PENERIMAAN PEMBIAYAAN','JUMLAH PENGELUARAN PEMBIAYAAN'])){
+                                $spreadsheet->getActiveSheet()->getStyle('B'.$kolom)->applyFromArray($totalTopBottomBold);
+                            }
+                            else{
+                                $spreadsheet->getActiveSheet()->getStyle('A'.$kolom.':B'.$kolom)->applyFromArray($totalTopBottomBold);
+                            }
+                            $kolom += 2;
+                        }
+                        $i++;
+                    }
+                }
+
+                $maxRow = $kolom;
             }
-
-            $maxRow = $kolom;
-
-            $spreadsheet->getActiveSheet()
-            ->setCellValue('B'.$kolom, 'TOTAL SALDO OPERASIONAL DAN PEMBIAYAAN')
-            ->setCellValue('C'.$kolom, $totalAkhir);
-
-            $spreadsheet->getActiveSheet()->getStyle('A'.$kolom.':B'.$kolom)->applyFromArray($totalTopBottomBold);
 
             $kolom += 2;
 
@@ -1481,7 +1921,7 @@ class ApbyController extends Controller
                 $kolom++;
                 $spreadsheet->getActiveSheet()
                 ->setCellValue('A'.$kolom++, $jabatan->name == 'Ketua Yayasan' ? 'Ketua Pengurus' : 'Direktur')
-                ->setCellValue('A'.$kolom++, 'YAYASAN AULIYA INSAN UTAMA');
+                ->setCellValue('A'.$kolom++, 'YAYASAN MUDA INCOMSO');
                 $kolom+=4;
                 $spreadsheet->getActiveSheet()
                 ->setCellValue('A'.$kolom++, ($apby ? ($isKso ? $apby->accDirektur->name : $apby->accKetua->name) : $pejabat->name));
@@ -1590,7 +2030,7 @@ class ApbyController extends Controller
             $headers = [
                 'Cache-Control' => 'max-age=0',
                 'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'Content-Disposition' => 'attachment;filename="'.strtolower(str_replace(' ', '-', $jenisAktif->name)).'_'.(!$isYear ? $tahun->academicYearLink : $tahun).'.xlsx"',
+                'Content-Disposition' => 'attachment;filename="'.strtolower(str_replace(' ', '-', $jenisAktif->name)).'_'.(!$isYear ? $tahun->academicYearLink : $tahun).(isset($status) && $status == 'sum' ? '_'.$status : null).'.xlsx"',
             ];
 
             return response()->stream(function()use($writer){

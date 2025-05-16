@@ -17,14 +17,7 @@
 @endif
 
 @section('sidebar')
-@php
-$role = Auth::user()->role->name;
-@endphp
-@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','keu','pembinayys','ketuayys','wakasek']))
-@include('template.sidebar.keuangan.'.$role)
-@else
-@include('template.sidebar.keuangan.employee')
-@endif
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -46,7 +39,7 @@ $role = Auth::user()->role->name;
         <div class="card h-100">
             <div class="card-body p-0">
                 <div class="row align-items-center mx-0">
-                    <div class="col-auto px-3 py-2 {{ isset($siswa) && $siswa == $opt ? 'bg-brand-green' : 'bg-brand-purple' }}">
+                    <div class="col-auto px-3 py-2 {{ isset($siswa) && $siswa == $opt ? 'bg-brand-green' : 'bg-brand-green' }}">
                         <i class="mdi mdi-account-outline mdi-24px text-white"></i>
                     </div>
                     <div class="col">
@@ -54,7 +47,7 @@ $role = Auth::user()->role->name;
                     </div>
                     <div class="col-auto">
                         @if(!isset($siswa) || (isset($siswa) && $siswa != $opt))
-                        <a href="{{ route($route.'.index', ['siswa' => $opt])}}" class="btn btn-sm btn-outline-brand-purple">Pilih</a>
+                        <a href="{{ route($route.'.index', ['siswa' => $opt])}}" class="btn btn-sm btn-outline-brand-green">Pilih</a>
                         @else
                         <a href="javascript:void(0)" class="btn btn-sm btn-outline-secondary disabled"role="button" aria-disabled="true">Pilih</a>
                         @endif
@@ -148,12 +141,17 @@ $role = Auth::user()->role->name;
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label for="year" class="col-sm-3 control-label">Tahun</label>
+                        <label for="year" class="col-sm-3 control-label">Tahun Pelajaran</label>
                         <div class="col-sm-5">
-                            <select name="year" class="select2 form-control auto_width" id="year" style="width:100%;">
+                            {{--<select name="year" class="select2 form-control auto_width" id="year" style="width:100%;">
                                 @foreach(yearList() as $index => $year_list)
                                 <option value="{{$year_list}}" {{$index==0?'selected':''}}>{{$year_list}}</option>
                                 @endforeach
+                            </select>--}}
+                            <select aria-label="Tahun" name="year" class="select2 form-control auto_width" id="year" style="width:100%;">
+                              @foreach($tahunPelajaran as $t)
+                              <option value="{{ $t->academicYearLink }}" {{ !$isYear && $year->id == $t->id ? 'selected' : '' }}>{{ $t->academic_year }}</option>
+                              @endforeach
                             </select>
                         </div>
                     </div>
@@ -162,12 +160,12 @@ $role = Auth::user()->role->name;
                         <div class="col-sm-5">
                             <select name="month" class="select2 form-control auto_width" id="month" style="width:100%;">
                                 <option value="">Semua</option>
-                                @foreach(monthList() as $months)
+                                @foreach(academicMonthList() as $months)
                                 <option value="{{$months->id}}">{{$months->name}}</option>
                                 @endforeach
                             </select>
                         </div>
-                        <button id="filter_submit" class="btn btn-brand-purple-dark btn-sm" type="button">Saring</button>
+                        <button id="filter_submit" class="btn btn-brand-green-dark btn-sm" type="button">Saring</button>
                     </div>
                 </form>
             </div>
@@ -181,7 +179,7 @@ $role = Auth::user()->role->name;
   <div class="col-12">
     <div class="card shadow">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">{{ $active }}</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">{{ $active }}</h6>
       </div>
       <div class="card-body">
         @if(Session::has('success'))
@@ -224,7 +222,7 @@ $role = Auth::user()->role->name;
                         @endif
                         <th>BMS Terbayar</th>
                         @if(in_array(Auth::user()->role->name,['fam', 'keu']))
-                        <th>Aksi</th>
+                        <th class='action-col'>Aksi</th>
                         @endif
                     </tr>
                 </thead>

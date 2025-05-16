@@ -204,7 +204,7 @@
                                 Berikut kami informasikan <br>
                                 Jadwal Wawancara & Observasi: {{date('d M Y', strtotime($anak->interview_date))}} {{$anak->interview_time}}   <br>
                                 Bentuk Wawancara & Observasi: {{$anak->interview_type==1?'Online':'Offline'}}  <a href="{{$anak->interview_type==1?$anak->link:''}}"> <strong>{{$anak->interview_type==1?$anak->link:''}}</strong> </a><br><br>
-                                Untuk keperluan Wawancara & Observasi dapat melakukan pembayaran Observasi/Psikotes sebesar Rp 400.000 ke Bank Syariah Indonesia (BSI) dengan nomor rekening {{$anak->unit->va_number}}<br>dan bukti transfer dikirimkan melalui WhatsApp di bawah.Sserta mengisi form untuk upload file foto/scan dokumen melalui <a href="{{$anak->unit->psb_document_link}}">Form Upload Dokumen</a> :<br>
+                                Untuk keperluan Wawancara & Observasi dapat melakukan pembayaran Observasi/Psikotes sebesar Rp 500.000 ke {{ $anak->bank ? $anak->bank->name : 'Bank Digiyok (BD)' }} dengan nomor rekening {{ $anak->account_number ? $anak->account_number : $anak->unit->va_number }}{{ $anak->account_holder ? ' a.n. '.$anak->account_holder : 'Sekolah Digiyok' }}<br>dan bukti transfer dikirimkan melalui WhatsApp di bawah. Serta mengisi form untuk upload file foto/scan dokumen melalui <a href="{{$anak->unit->psb_document_link}}">Form Upload Dokumen</a> :<br>
                                 1. Foto/Scan Akte Kelahiran Anak <br>
                                 2. Foto/Scan Kartu Keluarga <br>
                                 3. Foto/Scan KTP Ayah/Ibu atau Wali <br>
@@ -212,7 +212,7 @@
                                 4. Foto/Scan Rapot dan Ijazah Terakhir<br>
                                 @endif
                             @else
-                            Terima kasih telah melakukan pendaftaran online Penerimaan Siswa Baru di {{$anak->unit->name}} Islam Terpadu AULIYA TA. {{$anak->tahunAjaran->academic_year}}. <br>
+                            Terima kasih telah melakukan pendaftaran online Penerimaan Siswa Baru di {{$anak->unit->name}} Digiyok. {{$anak->tahunAjaran->academic_year}}. <br>
                             Selanjutnya, mohon menunggu informasi untuk jadwal Wawancara & Observasi. <br><br>
                             Adapun dokumen yang harus disiapkan untuk keperluan Wawancara & Observasi adalah sebagai berikut : <br>
                             1. Foto/Scan Akte Kelahiran Anak <br>
@@ -223,13 +223,13 @@
                             @endif
                             @endif
                             <br>
-                            <b>Catatan: Bagi Siswa AULIYA yang melanjutkan ke jenjang berikutnya, tidak mengikuti observasi/psikotes dan tidak dikenakan biayanya.</b><br>
-                            <br>Untuk Informasi lebih lanjut dapat menghubungi Panitia Penerimaan Siswa Baru {{$anak->unit->name}} Islam Terpadu AULIYA. <br>
+                            <b>Catatan: Bagi Siswa Digiyok yang melanjutkan ke jenjang berikutnya, tidak mengikuti observasi/psikotes dan tidak dikenakan biayanya.</b><br>
+                            <br>Untuk Informasi lebih lanjut dapat menghubungi Panitia Penerimaan Siswa Baru {{$anak->unit->name}} Sekolah Digiyok. <br>
                             <br>
                             @if($anak->unit->whatsapp_unit && (substr($anak->unit->whatsapp_unit, 0, 2) == "62" || substr($anak->unit->whatsapp_unit, 0, 1) == "0"))<a href="https://api.whatsapp.com/send?phone={{ substr($anak->unit->whatsapp_unit, 0, 2) == "62" ? $anak->unit->whatsapp_unit : ('62'.substr($anak->unit->whatsapp_unit, 1)) }}&text=Assalamu'alaikum" class="btn btn-sm btn-success mr-1" target="_blank"><i class="fab fa-whatsapp mr-2"></i>Chat via WA</a>@endif Telp {{$anak->unit->phone_unit}} <br>
                         @elseif($anak->status_id == 2)
                             Selamat Datang Ananda {{$anak->student_name}}. <br>
-                            Terima kasih telah melakukan pembayaran Observasi di {{$anak->unit->name}} Islam Terpadu AULIYA TA. {{$anak->tahunAjaran->academic_year}} <br><br>
+                            Terima kasih telah melakukan pembayaran Observasi di {{$anak->unit->name}} Sekolah Digiyok TA. {{$anak->tahunAjaran->academic_year}} <br><br>
                             Berikut kami mengingatkan kembali <br>
                             Jadwal Wawancara & Observasi: {{date('d M Y', strtotime($anak->interview_date))}} {{$anak->interview_time}}   <br>
                             Bentuk Wawancara & Observasi: {{$anak->interview_type==1?'Online':'Offline'}}  <a href="{{$anak->interview_type==1?$anak->link:''}}"> <strong>{{$anak->interview_type==1?$anak->link:''}}</strong> </a><br><br>
@@ -242,20 +242,21 @@
                             4. Foto/Scan Rapot dan Ijazah Terakhir<br>
                             @endif
                             <br>
-                            <b>Catatan: Bagi Siswa AULIYA yang melanjutkan ke jenjang berikutnya, tidak mengikuti observasi/psikotes dan tidak dikenakan biayanya.</b><br>
-                            <br>Untuk Informasi lebih lanjut dapat menghubungi Panitia Penerimaan Siswa Baru {{$anak->unit->name}} Islam Terpadu AULIYA. <br>
+                            <b>Catatan: Bagi Siswa Digiyok yang melanjutkan ke jenjang berikutnya, tidak mengikuti observasi/psikotes dan tidak dikenakan biayanya.</b><br>
+                            <br>Untuk Informasi lebih lanjut dapat menghubungi Panitia Penerimaan Siswa Baru {{$anak->unit->name}} Sekolah Digiyok. <br>
                             <br>
                             @if($anak->unit->whatsapp_unit && (substr($anak->unit->whatsapp_unit, 0, 2) == "62" || substr($anak->unit->whatsapp_unit, 0, 1) == "0"))<a href="https://api.whatsapp.com/send?phone={{ substr($anak->unit->whatsapp_unit, 0, 2) == "62" ? $anak->unit->whatsapp_unit : ('62'.substr($anak->unit->whatsapp_unit, 1)) }}&text=Assalamu'alaikum" class="btn btn-sm btn-success mr-1" target="_blank"><i class="fab fa-whatsapp mr-2"></i>Chat via WA</a>@endif Telp {{$anak->unit->phone_unit}} <br>
+                       
                         @elseif($anak->status_id == 3)
-                        Terima kasih ananda {{$anak->student_name}} telah mengikuti Wawancara dan Observasi Penerimaan Siswa Baru di {{$anak->unit->name}} Islam Terpadu AULIYA TA. {{$anak->tahunAjaran->academic_year}} <br>
+                        Terima kasih ananda {{$anak->student_name}} telah mengikuti Wawancara dan Observasi Penerimaan Siswa Baru di {{$anak->unit->name}} Sekolah Digiyok TA. {{$anak->tahunAjaran->academic_year}} <br>
                         Selanjutnya, mohon menunggu pengumuman hasil Wawancara dan Observasi. <br>
-                        <br>Untuk Informasi lebih lanjut dapat menghubungi Panitia Penerimaan Siswa Baru {{$anak->unit->name}} Islam Terpadu AULIYA. <br>
+                        <br>Untuk Informasi lebih lanjut dapat menghubungi Panitia Penerimaan Siswa Baru {{$anak->unit->name}} Sekolah Digiyok. <br>
                         <br>
                         @if($anak->unit->whatsapp_unit && (substr($anak->unit->whatsapp_unit, 0, 2) == "62" || substr($anak->unit->whatsapp_unit, 0, 1) == "0"))<a href="https://api.whatsapp.com/send?phone={{ substr($anak->unit->whatsapp_unit, 0, 2) == "62" ? $anak->unit->whatsapp_unit : ('62'.substr($anak->unit->whatsapp_unit, 1)) }}&text=Assalamu'alaikum" class="btn btn-sm btn-success mr-1" target="_blank"><i class="fab fa-whatsapp mr-2"></i>Chat via WA</a>@endif Telp {{$anak->unit->phone_unit}} <br>
                         
                         @elseif($anak->status_id == 4)
                         @if($anak->bms->register_remain > 0)
-                        Selamat kepada ananda {{$anak->student_name}} telah berhasil lulus Wawancara & Observasi Penerimaan Siswa Baru di {{$anak->unit->name}} Islam Terpadu AULIYA TA. {{$anak->tahunAjaran->academic_year}} <br>
+                        Selamat kepada ananda {{$anak->student_name}} telah berhasil lulus Wawancara & Observasi Penerimaan Siswa Baru di {{$anak->unit->name}} Sekolah Digiyok TA. {{$anak->tahunAjaran->academic_year}} <br>
                         <br>
                         Berdasarkan Wawancara Keuangan pada tanggal {{ $anak->interview_date ? $anak->interviewDateId : '-' }}, diinformasikan bahwa :<br>
                             @php
@@ -272,41 +273,43 @@
                             @endif
                          <br>Selanjutnya Ayah Bunda dapat melakukan pembayaran Daftar Ulang dengan rincian sebagai berikut :<br>
                             Nominal Daftar Ulang : Rp {{number_format($anak->bms->register_nominal,0,",",".")}}<br>
-                            Nomor Virtual Account BSI : @if($anak->virtualAccount->bms_va)<span id="vaNumber" class="font-weight-bold mr-2">{{$anak->virtualAccount->bms_va}}</span><a href="javascript:void(0)" id="btnCopy" class="text-dark text-decoration-none" onclick="CopyToClipboard('vaNumber');return false;" onmouseout="outButton()"><i class="far fa-clone mr-1"></i>Salin</a>@endif<br>
+                            Nomor Virtual Account BD : @if($anak->virtualAccount->bms_va)<span id="vaNumber" class="font-weight-bold mr-2">{{$anak->virtualAccount->bms_va}}</span><a href="javascript:void(0)" id="btnCopy" class="text-dark text-decoration-none" onclick="CopyToClipboard('vaNumber');return false;" onmouseout="outButton()"><i class="far fa-clone mr-1"></i>Salin</a>@endif<br>
                          Pembayaran dilakukan paling lambat tanggal <b>{{ $anak->paymentDeadlineDateId }}</b><br>
-                         Link panduan pembayaran VA BSI: <a href="https://bit.ly/Panduan_PembayaranBMS_SPP">Panduan Pembayaran</a> <br>
+                         <!--Link panduan pembayaran VA BD: <a href="https://bit.ly/Panduan_PembayaranBMS_SPP">Panduan Pembayaran</a> <br>-->
                         <br>
                         Adapun nominal sisa BMS telah tercantum dalam surat komitmen keuangan.
                         <br>
-                        <br>Untuk Informasi lebih lanjut dapat menghubungi Panitia Penerimaan Siswa Baru {{$anak->unit->name}} Islam Terpadu AULIYA. <br>
-                        Terima kasih sudah mendaftar di {{$anak->unit->name}} Islam Terpadu Auliya. <br>
+                        <br>Untuk Informasi lebih lanjut dapat menghubungi Panitia Penerimaan Siswa Baru {{$anak->unit->name}} Sekolah Digiyok. <br>
+                        Terima kasih sudah mendaftar di {{$anak->unit->name}} Sekolah Digiyok. <br>
                         <br>
                         @if($anak->unit->whatsapp_unit && (substr($anak->unit->whatsapp_unit, 0, 2) == "62" || substr($anak->unit->whatsapp_unit, 0, 1) == "0"))<a href="https://api.whatsapp.com/send?phone={{ substr($anak->unit->whatsapp_unit, 0, 2) == "62" ? $anak->unit->whatsapp_unit : ('62'.substr($anak->unit->whatsapp_unit, 1)) }}&text=Assalamu'alaikum" class="btn btn-sm btn-success mr-1" target="_blank"><i class="fab fa-whatsapp mr-2"></i>Chat via WA</a>@endif Telp {{$anak->unit->phone_unit}} <br>
                         @else
                         Terima kasih atas pelunasan pembayaran daftar ulang ananda {{$anak->student_name}}. <br>
                         <br>
-                        Kami ucapkan selamat bergabung di {{$anak->unit->name}} Islam Terpadu AULIYA TA. {{$anak->tahunAjaran->academic_year}} <br>
+                        Kami ucapkan selamat bergabung di {{$anak->unit->name}} Sekolah Digiyok TA. {{$anak->tahunAjaran->academic_year}} <br>
                         Untuk kemudahan informasi antar orangtua dan sekolah, nomor handphone Ayah/Bunda akan dimasukkan dalam WA group siswa baru.<br>Mohon informasi apabila ada perubahan pada nomor handphone yang tercantum dalam formulir pendaftaran. <br>
                         <br>
                         Adapun nominal sisa BMS yang tercantum dalam surat komitmen keuangan dapat segera dilunasi.
                         <br>
-                        <br>Untuk Informasi lebih lanjut dapat menghubungi Panitia Penerimaan Siswa Baru {{$anak->unit->name}} Islam Terpadu AULIYA. <br>
+                        <br>Untuk Informasi lebih lanjut dapat menghubungi Panitia Penerimaan Siswa Baru {{$anak->unit->name}} Sekolah Digiyok. <br>
                         <br>
                         @if($anak->unit->whatsapp_unit && (substr($anak->unit->whatsapp_unit, 0, 2) == "62" || substr($anak->unit->whatsapp_unit, 0, 1) == "0"))<a href="https://api.whatsapp.com/send?phone={{ substr($anak->unit->whatsapp_unit, 0, 2) == "62" ? $anak->unit->whatsapp_unit : ('62'.substr($anak->unit->whatsapp_unit, 1)) }}&text=Assalamu'alaikum" class="btn btn-sm btn-success mr-1" target="_blank"><i class="fab fa-whatsapp mr-2"></i>Chat via WA</a>@endif Telp {{$anak->unit->phone_unit}} <br>
                         @endif
+                       
                         @elseif($anak->status_id == 5)
                         Terima kasih atas pelunasan pembayaran daftar ulang ananda {{$anak->student_name}}. <br>
                         <br>
-                        Kami ucapkan selamat bergabung di {{$anak->unit->name}} Islam Terpadu AULIYA TA. {{$anak->tahunAjaran->academic_year}} <br>
+                        Kami ucapkan selamat bergabung di {{$anak->unit->name}} Sekolah Digiyok TA. {{$anak->tahunAjaran->academic_year}} <br>
                         Untuk kemudahan informasi antar orangtua dan sekolah, nomor handphone Ayah/Bunda akan dimasukkan dalam WA group siswa baru.<br>Mohon informasi apabila ada perubahan pada nomor handphone yang tercantum dalam formulir pendaftaran. <br>
                         <br>
                         Adapun nominal sisa BMS yang tercantum dalam surat komitmen keuangan dapat segera dilunasi.
                         <br>
-                        <br>Untuk Informasi lebih lanjut dapat menghubungi Panitia Penerimaan Siswa Baru {{$anak->unit->name}} Islam Terpadu AULIYA. <br>
+                        <br>Untuk Informasi lebih lanjut dapat menghubungi Panitia Penerimaan Siswa Baru {{$anak->unit->name}} Sekolah Digiyok. <br>
                         <br>
                         @if($anak->unit->whatsapp_unit && (substr($anak->unit->whatsapp_unit, 0, 2) == "62" || substr($anak->unit->whatsapp_unit, 0, 1) == "0"))<a href="https://api.whatsapp.com/send?phone={{ substr($anak->unit->whatsapp_unit, 0, 2) == "62" ? $anak->unit->whatsapp_unit : ('62'.substr($anak->unit->whatsapp_unit, 1)) }}&text=Assalamu'alaikum" class="btn btn-sm btn-success mr-1" target="_blank"><i class="fab fa-whatsapp mr-2"></i>Chat via WA</a>@endif Telp {{$anak->unit->phone_unit}} <br>
+                      
                         @elseif($anak->status_id == 6)
-                            Mohon maaf Ananda <strong>{{$anak->student_name}}</strong> saat ini sedang masuk kursi cadangan di {{$anak->unit->name}} Islam Terpadu Auliya. <br>
+                            Mohon maaf Ananda <strong>{{$anak->student_name}}</strong> saat ini sedang masuk kursi cadangan di {{$anak->unit->name}} Sekolah Digiyok. <br>
                         @elseif($anak->status_id == 7)
                         @elseif($anak->status_id == 8)
                         @endif

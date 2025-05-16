@@ -26,8 +26,8 @@ Rentang Nilai
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Rentang Nilai</h6>
-                <button type="button" class="m-0 float-right btn btn-brand-purple-dark btn-sm" data-toggle="modal" data-target="#add-form">Tambah <i class="fas fa-plus-circle ml-1"></i></button>
+                <h6 class="m-0 font-weight-bold text-brand-green">Rentang Nilai</h6>
+                <button type="button" class="m-0 float-right btn btn-brand-green-dark btn-sm" data-toggle="modal" data-target="#add-form">Tambah <i class="fas fa-plus-circle ml-1"></i></button>
             </div>
             <div class="card-body p-3">
               @if(Session::has('success'))
@@ -64,7 +64,7 @@ Rentang Nilai
                         </div>
                         <small>{{ implode(", ",$p->gradeSorted->toArray()) }}</small>
                         <div class="mt-2">
-                          <a href="javascript:void(0)" class="font-weight-bold text-brand-purple-dark text-decoration-none" data-toggle="modal" data-target="#edit-form" onclick="editModal('{{ route('psc.rentang.ubah') }}','{{ $p->id }}')">Ubah</a>
+                          <a href="javascript:void(0)" class="font-weight-bold text-brand-green-dark text-decoration-none" data-toggle="modal" data-target="#edit-form" onclick="editModal('{{ route('psc.rentang.ubah') }}','{{ $p->id }}')">Ubah</a>
                         </div>
                       </div>
                     </div>
@@ -91,16 +91,16 @@ Rentang Nilai
             						</div>
             						<small>{{ implode(", ",$p->gradeSorted->toArray()) }}</small>
             						<div class="mt-2">
-            							<a href="javascript:void(0)" class="font-weight-bold text-brand-purple-dark text-decoration-none" data-toggle="modal" data-target="#edit-form" onclick="editModal('{{ route('psc.rentang.ubah') }}','{{ $p->id }}')">Ubah</a>
+            							<a href="javascript:void(0)" class="font-weight-bold text-brand-green-dark text-decoration-none" data-toggle="modal" data-target="#edit-form" onclick="editModal('{{ route('psc.rentang.ubah') }}','{{ $p->id }}')">Ubah</a>
                           @if($p->isEditable)
             							<span class="text-gray-200 mx-2">|</span>
-            							<a href="javascript:void(0)" class="font-weight-bold text-brand-purple-dark text-decoration-none" data-target="#delete-confirm" onclick="deleteModal('Rentang Nilai', '{{ addslashes(htmlspecialchars($p->name)) }}', '{{ route('psc.rentang.hapus', $p->id) }}')">Hapus</a>
+            							<a href="javascript:void(0)" class="font-weight-bold text-brand-green-dark text-decoration-none" data-target="#delete-confirm" onclick="deleteModal('Rentang Nilai', '{{ addslashes(htmlspecialchars($p->name)) }}', '{{ route('psc.rentang.hapus', $p->id) }}')">Hapus</a>
                           @endif
             						</div>
                       </div>
                     </div>
                     <div class="col-4 d-flex justify-content-end align-items-center">
-                      <a href="{{ route('psc.rentang.aktif', $p->id) }}" class="btn btn-sm btn-outline-brand-purple-dark px-3">Pilih</a>
+                      <a href="{{ route('psc.rentang.aktif', $p->id) }}" class="btn btn-sm btn-outline-brand-green-dark px-3">Pilih</a>
                     </div>
                   </div>
                 </div>
@@ -121,7 +121,7 @@ Rentang Nilai
 <div class="modal fade" id="add-form" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h5 class="modal-title text-white">Tambah Rentang Nilai</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>
@@ -179,7 +179,7 @@ Rentang Nilai
               <button type="button" class="btn btn-light" data-dismiss="modal">Kembali</button>
             </div>
             <div class="col-6 text-right">
-              <input id="save-grade-set" type="submit" class="btn btn-brand-purple-dark" value="Tambah">
+              <input id="save-grade-set" type="submit" class="btn btn-brand-green-dark" value="Tambah">
             </div>
           </div>
         </form>
@@ -191,7 +191,7 @@ Rentang Nilai
 <div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h5 class="modal-title text-white">Ubah Rentang Nilai</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>

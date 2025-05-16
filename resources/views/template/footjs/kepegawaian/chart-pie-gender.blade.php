@@ -11,8 +11,8 @@ var genderPieChart = new Chart(ctx, {
     labels: ["Laki-laki", "Perempuan"],
     datasets: [{
       data: [{{ $count['laki'] }}, {{ $count['perempuan'] }}],
-      backgroundColor: ['#8dc73f', '#a7248c'],
-      hoverBackgroundColor: ['#72a32f', '#7d1a68'],
+      backgroundColor: ['#0cb9f9', '#fc544b'],
+      hoverBackgroundColor: ['#0cb9f9', '#fc544b'],
       hoverBorderColor: "rgba(234, 236, 244, 1)",
     }],
   },

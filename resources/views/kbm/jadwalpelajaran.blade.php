@@ -46,8 +46,8 @@
                     </div>
                     <div class="col-md-12">
                         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                            <h6 class="m-0 font-weight-bold text-brand-purple">Jadwal Pelajaran</h6>
-                            <a class="m-0 float-right btn btn-brand-purple-dark btn-sm" href="/kependidikan/kbm/jadwal-pelajaran">Ekspor Semua <i class="fas fa-file-export"></i></a>
+                            <h6 class="m-0 font-weight-bold text-brand-green">Jadwal Pelajaran</h6>
+                            <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="/kependidikan/kbm/jadwal-pelajaran">Ekspor Semua <i class="fas fa-file-export"></i></a>
                         </div>
                         <table class="table align-items-center table-flush">
                             <thead class="thead-light">

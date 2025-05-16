@@ -15,14 +15,7 @@
 @endsection
 
 @section('sidebar')
-@php
-$role = Auth::user()->role->name;
-@endphp
-@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','keu','pembinayys','ketuayys','wakasek']))
-@include('template.sidebar.keuangan.'.$role)
-@else
-@include('template.sidebar.keuangan.employee')
-@endif
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -45,12 +38,17 @@ $role = Auth::user()->role->name;
                 <form action="{{ route($route.'.index') }}" method="post">
                     @csrf
                     <div class="form-group row">
-                        <label for="year" class="col-sm-3 control-label">Tahun</label>
+                        <label for="year" class="col-sm-3 control-label">Tahun Pelajaran</label>
                         <div class="col-sm-5">
-                            <select name="year" class="select2 form-control auto_width" id="year" style="width:100%;">
+                            {{-- <select name="year" class="select2 form-control auto_width" id="year" style="width:100%;">
                                 @foreach(yearList() as $index => $year_list)
                                 <option value="{{$year_list}}" {{$index==0?'selected':''}}>{{$year_list}}</option>
                                 @endforeach
+                            </select> --}}
+                            <select aria-label="Tahun" name="year" class="form-control" id="year">
+                              @foreach($tahunPelajaran as $t)
+                              <option value="{{ $t->academicYearLink }}" {{ !$isYear && $year->id == $t->id ? 'selected' : '' }}>{{ $t->academic_year }}</option>
+                              @endforeach
                             </select>
                         </div>
                     </div>
@@ -59,7 +57,7 @@ $role = Auth::user()->role->name;
                         <div class="col-sm-5">
                             <select name="month" class="select2 form-control auto_width" id="month" style="width:100%;">
                                 <option value="">Semua</option>
-                                @foreach(monthList() as $months)
+                                @foreach(academicMonthList() as $months)
                                 <option value="{{$months->id}}">{{$months->name}}</option>
                                 @endforeach
                             </select>
@@ -82,7 +80,7 @@ $role = Auth::user()->role->name;
                                 <option value="">Semua</option>
                             </select>
                         </div>
-                        <button id="filter_submit" class="btn btn-brand-purple-dark btn-sm" type="button">Saring</button>
+                        <button id="filter_submit" class="btn btn-brand-green-dark btn-sm" type="button">Saring</button>
                     </div>
                 </form>
             </div>
@@ -96,9 +94,9 @@ $role = Auth::user()->role->name;
   <div class="col-12">
     <div class="card shadow">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">{{ $active }}</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">{{ $active }}</h6>
         <div class="float-right">
-            <button class="m-0 btn btn-brand-purple-dark btn-sm" data-toggle="modal" id="atur_sekaligus" style="display: none" data-target="#AturModal">Atur Sekaligus <i class="fas fa-cogs ml-1"></i></button>
+            <button class="m-0 btn btn-brand-green-dark btn-sm" data-toggle="modal" id="atur_sekaligus" style="display: none" data-target="#AturModal">Atur Sekaligus <i class="fas fa-cogs ml-1"></i></button>
         </div>
       </div>
       <div class="card-body">
@@ -190,7 +188,7 @@ $role = Auth::user()->role->name;
                   <input type="hidden" name="year" id="atur_year" value="">
                   <input type="hidden" name="month" id="atur_month" value="">
                   <input type="hidden" name="level" id="atur_level" value="">
-                  <button type="submit" class="btn btn-brand-purple-dark">Atur</button>
+                  <button type="submit" class="btn btn-brand-green-dark">Atur</button>
               </div>
           </form>
       </div>
@@ -239,12 +237,16 @@ $role = Auth::user()->role->name;
               <div class="modal-footer">
                   <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
                   <input type="hidden" id="id" name="id" value="">
-                  <button type="submit" class="btn btn-brand-purple-dark"  {{ $deductions && count($deductions) < 1 ? 'disabled="disabled"' : null }}>Atur</button>
+                  <button type="submit" class="btn btn-brand-green-dark"  {{ $deductions && count($deductions) < 1 ? 'disabled="disabled"' : null }}>Atur</button>
               </div>
           </form>
       </div>
     </div>
 </div>
+
+@if(Auth::user()->role->name == 'faspv' || in_array(Auth::user()->pegawai->position_id,[57]))
+@include('template.modal.konfirmasi_hapus')
+@endif
 
 <!--Row-->
 @endsection
@@ -372,4 +374,7 @@ function getData(){
     });
 }
 </script>
+@if(Auth::user()->role->name == 'faspv' || in_array(Auth::user()->pegawai->position_id,[57]))
+@include('template.footjs.modal.get_delete')
+@endif
 @endsection

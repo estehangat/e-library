@@ -21,51 +21,52 @@ Kelompok Mata Pelajaran
     <div class="col-md-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Kelompok Mata Pelajaran</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Kelompok Mata Pelajaran</h6>
                 @if( in_array((auth()->user()->role_id), array(1,2)))
-                <a class="m-0 float-right btn btn-brand-purple-dark btn-sm" href="kelompok-mata-pelajaran/tambah">Tambah <i class="fas fa-plus"></i></a>
+                <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="kelompok-mata-pelajaran/tambah">Tambah<i class="fas fa-plus-circle ml-2"></i></a>
                 @endif
             </div>
-            @if(Session::has('sukses'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <strong>Sukses!</strong> {{ Session::get('sukses') }}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-                </button>
+            <div class="card-body">
+                @if(Session::has('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <strong>Sukses!</strong> {{ Session::get('success') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                @endif
+                <div class="table-responsive">
+                    <table class="table align-items-center table-flush">
+                        <thead class="thead-light">
+                            <tr>
+                                <th style="width: 15px">#</th>
+                                <th>Kelompok</th>
+                                @if( in_array((auth()->user()->role_id), array(1,2)))
+                                <th style="width: 120px">Aksi</th>
+                                @endif
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach( $lists as $indexKey => $list)
+                            <tr>
+                                <td>{{ $indexKey+1 }}</td>
+                                <td>{{ $list->group_subject_name }} {{ $list->major_id==null?'':$list->jurusan->major_name }}</td>
+                                @if( in_array((auth()->user()->role_id), array(1,2)))
+                                <td>
+                                    <button href="#" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#UbahModal{{ $list->id }}"><i class="fas fa-pen"></i></button>
+                                    @if($list->matapelajarans()->count() < 1)
+                                    <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#HapusModal{{ $list->id }}"><i class="fas fa-trash"></i></a>
+                                    @else
+                                    <button type="button" class="btn btn-sm btn-secondary" disabled="disabled"><i class="fas fa-trash"></i></button>
+                                    @endif
+                                </td>
+                                @endif
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            @endif
-            <div class="table-responsive">
-                <table class="table align-items-center table-flush">
-                    <thead class="thead-light">
-                        <tr>
-                            <th>No</th>
-                            <th>Kelompok</th>
-                            @if( in_array((auth()->user()->role_id), array(1,2)))
-                            <th>Aksi</th>
-                            @endif
-                        </tr>
-                    </thead>
-                    <tbody>
-                    @foreach( $lists as $indexKey => $list)
-                        <tr>
-                            <td>{{ $indexKey+1 }}</td>
-                            <td>{{ $list->group_subject_name }} {{ $list->major_id==null?'':$list->jurusan->major_name }}</td>
-                            @if( in_array((auth()->user()->role_id), array(1,2)))
-                            <td>
-                                <button href="#" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#UbahModal{{ $list->id }}"><i class="fas fa-pen"></i></button>&nbsp;
-                            @if($list->matapelajarans()->count()>0)
-                                <button href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#HapusModal{{ $list->id }}" disabled><i class="fas fa-trash"></i></button>
-                            @else
-                                <button href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#HapusModal{{ $list->id }}"><i class="fas fa-trash"></i></button>
-                            @endif
-                            </td>
-                            @endif
-                        </tr>
-                    @endforeach
-                    </tbody>
-                </table>
-            </div>
-            <div class="card-footer"></div>
         </div>
     </div>
 </div>
@@ -157,7 +158,5 @@ Kelompok Mata Pelajaran
 
 @section('footjs')
 <!-- Plugins and scripts required by this view-->
-<script src="{{asset('vendor/chart.js/Chart.min.js')}}"></script>
-<script src="{{asset('js/demo/chart-area-demo.js')}}"></script>
 @include('template.footjs.kbm.datatables')
 @endsection

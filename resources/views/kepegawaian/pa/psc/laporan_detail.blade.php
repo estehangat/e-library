@@ -56,7 +56,7 @@ $role = Auth::user()->role->name;
                       @endif
                       @endforeach
                     </select>
-                    <a href="{{ route('psc.penilaian.index') }}" id="btn-select-year" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('psc.penilaian.index') }}">Pilih</a>
+                    <a href="{{ route('psc.penilaian.index') }}" id="btn-select-year" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('psc.penilaian.index') }}">Pilih</a>
                   </div>
                 </div>
               </div>
@@ -92,7 +92,7 @@ $role = Auth::user()->role->name;
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Daftar Pegawai</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Daftar Pegawai</h6>
                 @if($nilai && count($nilai) > 0)
                 <div class="m-0 float-right">
                   <a href="{{ route('psc.laporan.pegawai.ekspor', ['tahun' => $tahun->academicYearLink, 'unit' => $unitAktif->name]) }}" class="btn btn-brand-green-dark btn-sm">Ekspor <i class="fas fa-file-export ml-1"></i></a>
@@ -140,7 +140,7 @@ $role = Auth::user()->role->name;
                       <td>{{ $n->total_score }}</td>
                       <td>{{ $n->grade_name }}</td>
                       <td>
-                        <a href="{{ route('psc.laporan.pegawai.show', ['tahun' => $tahun->academicYearLink, 'unit' => $unitAktif->name, 'pegawai' => $p->nip]) }}" class="btn btn-sm btn-brand-purple-dark"><i class="fas fa-eye"></i></a>
+                        <a href="{{ route('psc.laporan.pegawai.show', ['tahun' => $tahun->academicYearLink, 'unit' => $unitAktif->name, 'pegawai' => $p->nip]) }}" class="btn btn-sm btn-brand-green-dark"><i class="fas fa-eye"></i></a>
                         <a href="{{ route('psc.laporan.pegawai.unduh', ['tahun' => $tahun->academicYearLink, 'unit' => $unitAktif->name, 'pegawai' => $p->nip]) }}" class="btn btn-sm btn-brand-green-dark"><i class="fas fa-file-download" style="padding: 0 2.75px 0 2.75px"></i></a>
                       </td>
                     </tr>

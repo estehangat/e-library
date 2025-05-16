@@ -62,6 +62,11 @@ class Siswa extends Model
         return $this->belongsTo(Unit::class, 'unit_id');
     }
 
+    public function tahunLulus()
+    {
+        return $this->belongsTo('App\Models\Kbm\TahunAjaran','graduate_year');
+    }
+
     public function nilaiRapor()
     {
         return $this->hasMany('App\Models\Penilaian\NilaiRapor', 'student_id');
@@ -92,7 +97,7 @@ class Siswa extends Model
         return $this->hasOne('App\Models\Pembayaran\Spp','student_id');
     }
 
-public function bms()
+    public function bms()
     {
         return $this->hasOne(BMS::class,'student_id');
     }
@@ -105,5 +110,25 @@ public function bms()
     public function sppBill()
     {
         return $this->hasMany(SppBill::class,'student_id');
+    }
+
+    public function riwayatKelas()
+    {
+        return $this->hasMany('App\Models\Kbm\HistoryKelas', 'student_id');
+    }
+
+    public function getStudentNisLinkAttribute()
+    {
+        return str_replace("/","-",$this->student_nis);
+    }
+    
+    public function scopeLuius($query)
+    {
+        return $query->where('is_lulus',1);
+    }
+
+    public function scopeAktif($query)
+    {
+        return $query->where('is_lulus',0);
     }
 }

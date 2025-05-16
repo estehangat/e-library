@@ -9,7 +9,7 @@ PPA
 @endsection
 
 @section('sidebar')
-@include('template.sidebar.keuangan.'.Auth::user()->role->name)
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -24,36 +24,22 @@ PPA
     <li class="breadcrumb-item active" aria-current="page">{{ $ppaAktif->firstNumber }}</li>
   </ol>
 </div>
-
+{{--
 <div class="row">
     @foreach($jenisAnggaran as $j)
     @php
-    if(!in_array(Auth::user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv','fas'])){
+    $checkAccAttr = $j->isKso ? 'director_acc_status_id' : 'president_acc_status_id';
+    if(!in_array(Auth::user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv','fas','am','akunspv'])){
         if(Auth::user()->pegawai->unit_id == '5'){
-            if($j->isKso){
-                $anggaranCount = $j->anggaran()->whereHas('anggaran',function($q){$q->where('position_id',Auth::user()->pegawai->jabatan->group()->first()->id);})->whereHas('apby',function($q){$q->where('director_acc_status_id',1);})->count();
-            }
-            else{
-                $anggaranCount = $j->anggaran()->whereHas('anggaran',function($q){$q->where('position_id',Auth::user()->pegawai->jabatan->group()->first()->id);})->whereHas('apby',function($q){$q->where('president_acc_status_id',1);})->count();
-            }
+            $anggaranCount = $j->anggaran()->whereHas('anggaran',function($q)use($checkAccAttr){$q->where('position_id',Auth::user()->pegawai->jabatan->group()->first()->id);})->whereHas('apby',function($q)use($checkAccAttr){$q->where($checkAccAttr,1);})->count();
         }
         else{
-            if($j->isKso){
-                $anggaranCount = $j->anggaran()->whereHas('anggaran',function($q){$q->where('unit_id',Auth::user()->pegawai->unit_id);})->whereHas('apby',function($q){$q->where('director_acc_status_id',1);})->count();
-            }
-            else{
-                $anggaranCount = $j->anggaran()->whereHas('anggaran',function($q){$q->where('unit_id',Auth::user()->pegawai->unit_id);})->whereHas('apby',function($q){$q->where('president_acc_status_id',1);})->count();
-            }
+            $anggaranCount = $j->anggaran()->whereHas('anggaran',function($q)use($checkAccAttr){$q->where('unit_id',Auth::user()->pegawai->unit_id);})->whereHas('apby',function($q)use($checkAccAttr){$q->where($checkAccAttr,1);})->count();
             
         }
     }
     else{
-        if($j->isKso){
-            $anggaranCount = $j->anggaran()->whereHas('apby',function($q){$q->where('director_acc_status_id',1);})->count();
-        }
-        else{
-            $anggaranCount = $j->anggaran()->whereHas('apby',function($q){$q->where('president_acc_status_id',1);})->count();
-        }
+        $anggaranCount = $j->anggaran()->whereHas('apby',function($q)use($checkAccAttr){$q->where($checkAccAttr,1);})->count();
     }
     @endphp
     @if($jenisAktif == $j)
@@ -80,14 +66,14 @@ PPA
         <div class="card h-100">
             <div class="card-body p-0">
                 <div class="row align-items-center mx-0">
-                    <div class="col-auto px-3 py-2 bg-brand-purple">
+                    <div class="col-auto px-3 py-2 bg-brand-green">
                         <i class="mdi mdi-file-document-outline mdi-24px text-white"></i>
                     </div>
                     <div class="col">
                         <div class="h6 mb-0 font-weight-bold text-gray-800">{{ $j->name }}</div>
                     </div>
                     <div class="col-auto">
-                        <a href="{{ route('ppa.index', ['jenis' => $j->link])}}" class="btn btn-sm btn-outline-brand-purple">Pilih</a>
+                        <a href="{{ route('ppa.index', ['jenis' => $j->link])}}" class="btn btn-sm btn-outline-brand-green">Pilih</a>
                     </div>
                 </div>
             </div>
@@ -115,7 +101,7 @@ PPA
     @endif
     @endforeach
 </div>
-
+--}}
 @if($jenisAktif)
 <div class="row mb-4">
   <div class="col-12">
@@ -158,6 +144,28 @@ PPA
                 </div>
                 <div class="col-lg-9 col-md-8 col-12">
                   {{ $ppaAktif->number ? $ppaAktif->number : '-' }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mb-0">
+          <div class="col-lg-8 col-md-10 col-12">
+            <div class="form-group mb-0">
+              <div class="row">
+                <div class="col-lg-3 col-md-4 col-12">
+                  <label class="form-control-label">Tahap</label>
+                </div>
+                <div class="col-lg-9 col-md-8 col-12">
+                  @if($ppaAktif->is_draft == 1)
+                  <span class="badge badge-secondary">Draf</span>
+                  @else
+                  @if(!$ppaAktif->lppa)
+                  <span class="badge badge-info">Diajukan</span>
+                  @else
+                  <span class="badge badge-success">Disetujui</span>
+                  @endif
+                  @endif
                 </div>
               </div>
             </div>
@@ -242,7 +250,18 @@ PPA
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">{{ $anggaranAktif->anggaran->name }}</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">{{ $anggaranAktif->anggaran->name }}</h6>
+				@if(in_array(Auth::user()->role->name, ['fam','faspv','am','akunspv']))
+                @if($ppaAktif && ((!$isKso && $ppaAktif->bbk && $ppaAktif->bbk->bbk->president_acc_status_id == 1) || ($isKso && $ppaAktif->pa_acc_status_id == 1)))
+                <div class="m-0 float-right">
+                @if($apbyAktif && $apbyAktif->is_active == 1)
+                <a href="{{ route('ppa.ekspor', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]) }}" class="btn btn-brand-green-dark btn-sm">Ekspor <i class="fas fa-file-export ml-1"></i></a>
+                @else
+                <button type="button" class="btn btn-secondary btn-sm" disabled="disabled">Ekspor <i class="fas fa-file-export ml-1"></i></a>
+                @endif
+                </div>
+                @endif
+                @endif
             </div>
             @if(Session::has('success'))
             <div class="alert alert-success alert-dismissible fade show mx-3" role="alert">
@@ -268,8 +287,14 @@ PPA
                             <th>#</th>
                             <th>Akun Anggaran</th>
                             <th>Keterangan</th>
+                            @if(in_array(Auth::user()->role->name, ['fam','faspv','am','akunspv']) && ($apbyAktif && $apbyAktif->is_active == 1 && $apbyAktif->is_final != 1) && $ppaAktif->director_acc_status_id != 1)
+                            <th>Sisa Saldo</th>
+                            @endif
                             <th>Status</th>
                             <th>Jumlah</th>
+							@if($ppaAktif->type_id == 2 && ((in_array(Auth::user()->role->name, ['ketuayys','direktur','fam','faspv','akunspv','am'])) || (($isAnggotaPa || in_array(Auth::user()->role->name, ['fas'])) && !$ppaAktif->bbk)))
+                            <th>Aksi</th>
+							@endif
                         </tr>
                     </thead>
                     <tbody>
@@ -281,15 +306,21 @@ PPA
                             <td>{{ $i++ }}</td>
                             <td class="detail-account">{{ $p->akun->codeName }}</td>
                             <td class="detail-note">{{ $p->note }}</td>
+                            @if(in_array(Auth::user()->role->name, ['fam','faspv','am','akunspv']) && ($apbyAktif && $apbyAktif->is_active == 1 && $apbyAktif->is_final != 1) && $ppaAktif->director_acc_status_id != 1)
+                            @php
+                            $apbyDetail = $p->akun->apby()->whereHas('apby',function($q)use($yearAttr,$tahun,$anggaranAktif,$accAttr){$q->where([$yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id),$accAttr => 1])->whereHas('jenisAnggaranAnggaran',function($q)use($anggaranAktif){$q->where('id',$anggaranAktif->id);})->aktif()->latest();})->where('account_id',$p->account_id)->first();
+                            @endphp
+                            <td>{{ $apbyDetail ? $apbyDetail->balanceWithSeparator : '-' }}</td>
+                            @endif
                             <td>
                                 @if(!$p->pa_acc_status_id)
-                                <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Persetujuan {{ Auth::user()->pegawai->position_id == $anggaranAktif->anggaran->acc_position_id ? 'Anda' : $anggaranAktif->anggaran->accJabatan->name }}"></i>
+                                <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Pemeriksaan {{ Auth::user()->pegawai->position_id == $anggaranAktif->anggaran->acc_position_id ? 'Anda' : $anggaranAktif->anggaran->accJabatan->name }}"></i>
                                 @elseif(!$ppaAktif->pa_acc_status_id && $p->pa_acc_status_id == 1)
-                                <i class="fa fa-lg fa-check-circle text-secondary mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disetujui oleh {{ Auth::user()->pegawai->is($p->accPa) ? 'Anda' : $p->accPa->name }}<br>{{ date('d M Y H.i.s', strtotime($p->pa_acc_time)) }}"></i>
+                                <i class="fa fa-lg fa-check-circle text-secondary mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disimpan oleh {{ Auth::user()->pegawai->is($p->accPa) ? 'Anda' : $p->accPa->name }}<br>{{ date('d M Y H.i.s', strtotime($p->pa_acc_time)) }}"></i>
                                 @elseif($ppaAktif->pa_acc_status_id == 1 && !$p->finance_acc_status_id)
-                                <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Persetujuan {{ Auth::user()->pegawai->position_id == 30 ? 'Anda' : 'Finance & Accounting Supervisor' }}"></i>
+                                <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Pemeriksaan {{ Auth::user()->pegawai->position_id == 33 ? 'Anda' : 'Kepala Divisi Umum' }}"></i>
                                 @elseif($p->finance_acc_status_id == 1 && !$p->director_acc_status_id)
-                                <i class="fa fa-lg fa-check-circle text-warning mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disetujui oleh {{ Auth::user()->pegawai->is($p->accKeuangan) ? 'Anda' : $p->accKeuangan->name }}<br>{{ date('d M Y H.i.s', strtotime($p->finance_acc_time)) }}"></i>
+                                <i class="fa fa-lg fa-check-circle text-warning mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disimpan oleh {{ Auth::user()->pegawai->is($p->accKeuangan) ? 'Anda' : $p->accKeuangan->name }}<br>{{ date('d M Y H.i.s', strtotime($p->finance_acc_time)) }}"></i>
                                 @elseif($p->director_acc_status_id == 1)
                                 <i class="fa fa-lg fa-check-circle text-success mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disetujui oleh {{ Auth::user()->pegawai->is($p->accDirektur) ? 'Anda' : $p->accDirektur->name }}<br>{{ date('d M Y H.i.s', strtotime($p->director_acc_time)) }}"></i>
                                 @else
@@ -297,6 +328,9 @@ PPA
                                 @endif
                             </td>
                             <td class="detail-value">{{ $p->valueWithSeparator }}</td>
+							@if($ppaAktif->type_id == 2 && ((in_array(Auth::user()->role->name, ['ketuayys','direktur','fam','faspv','akunspv','am'])) || (($isAnggotaPa || in_array(Auth::user()->role->name, ['fas'])) && !$ppaAktif->bbk)))
+                            <td><a href="{{ route('ppa.'.($ppaAktif->is_draft == 1 ? 'draft.' : null).'ubah.proposal', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber, 'id' => $p->id]) }}" class="btn btn-sm btn-brand-green-dark"><i class="fas fa-list-ul"></i></a></td>
+							@endif
                         </tr>
                         @endforeach
                     </tbody>

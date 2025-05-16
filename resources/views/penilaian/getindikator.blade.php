@@ -1,4 +1,4 @@
-    <a class="m-0 float-right btn btn-brand-purple-dark btn-sm mb-2" href="javascript:void(0)" data-toggle="modal" data-target="#TambahModal">Tambah <i class="fas fa-plus"></i></a>
+    <a class="m-0 float-right btn btn-brand-green-dark btn-sm mb-2" href="javascript:void(0)" data-toggle="modal" data-target="#TambahModal">Tambah <i class="fas fa-plus"></i></a>
     <div class="table-responsive">
         <table class="table align-items-center table-flush">
             <thead class="thead-light">

@@ -53,7 +53,7 @@ $role = Auth::user()->role->name;
                         @endif
                         @endforeach
                       </select>
-                      <a href="{{ route('iku.'.$category->nameLc.'.index') }}" id="btn-select-year" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('iku.'.$category->nameLc.'.index') }}">Pilih</a>
+                      <a href="{{ route('iku.'.$category->nameLc.'.index') }}" id="btn-select-year" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('iku.'.$category->nameLc.'.index') }}">Pilih</a>
                     </div>
                   </div>
                 </div>
@@ -89,7 +89,7 @@ $role = Auth::user()->role->name;
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">IKU {{ $category->name }}</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">IKU {{ $category->name }}</h6>
             </div>
             <div class="card-body p-3">
               @if($aspectUnits && count($aspectUnits) > 0)

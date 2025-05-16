@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Anggaran\Anggaran;
 use App\Models\Anggaran\AnggaranAkun;
 use App\Models\Anggaran\JenisAnggaran;
+use App\Models\Anggaran\KategoriAnggaran;
 use App\Models\Bbk\Bbk;
 use App\Models\Bbk\BbkDetail;
 use App\Models\Lppa\Lppa;
@@ -39,6 +40,9 @@ class PpaController extends Controller
      */
     public function index(Request $request, $jenis = null, $tahun = null, $anggaran = null)
     {
+        // Override Budget Category
+        if(!$jenis) $jenis = 'apby';
+
         $role = $request->user()->role->name;
 
         $jenisAnggaran = JenisAnggaran::all();
@@ -46,7 +50,7 @@ class PpaController extends Controller
         foreach($jenisAnggaran as $j){
             $checkAccAttr = $j->isKso ? 'director_acc_status_id' : 'president_acc_status_id';
             $anggaranCount = $j->anggaran();
-            if(!in_array($request->user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv','fas'])){
+            if(!in_array($request->user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv','fas','am','akunspv'])){
                 if($request->user()->pegawai->unit_id == '5'){
                     $anggaranCount = $anggaranCount->whereHas('anggaran',function($q)use($request){$q->where('position_id',$request->user()->pegawai->jabatan->group()->first()->id);});
                 }
@@ -64,14 +68,19 @@ class PpaController extends Controller
             }
         }
         
-        $jenisAktif = $allPpa = $years = $academicYears = $latest = $tahunPelajaran = $isYear = $yearAttr = $accAttr = null;
+        $jenisAktif = $kategori = $allPpa = $years = $academicYears = $latest = $tahunPelajaran = $isYear = $yearAttr = $accAttr = null;
         $yearsCount = $academicYearsCount = 0;
 
         if($jenis){
             $explodeJenis = explode('-',$jenis);
             $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
             $jenisAktif = JenisAnggaran::where('link',$jenis)->whereIn('id',$jenisAnggaranCount->collect()->where('anggaranCount','>',0)->pluck('id'))->first();
-            if(!$jenisAktif) return redirect()->route('ppa.index');
+            if(!$jenisAktif){
+                if($jenisAnggaranCount->where('id',1)->first()['anggaranCount'] < 1){
+                    return view('keuangan.read-only.ppa_index', compact('jenisAnggaran','jenisAktif','kategori','tahun','tahunPelajaran','isYear','yearAttr','allPpa','years','academicYears','accAttr'));
+                }
+                else return redirect()->route('ppa.index');
+            }
 
             $anggaranCount = 0;
 
@@ -85,11 +94,11 @@ class PpaController extends Controller
                 $query->where('budgeting_type_id',$jenisAktif->id);
             });
             
-            if($role == 'am'){
-                $queryPpa = $queryPpa->whereHas('jenisAnggaranAnggaran.anggaran',function($q)use($request){
-                    $q->where('acc_position_id',$request->user()->pegawai->position_id);
-                });
-            }
+            // if(in_array($role,['etl','ctl'])){
+            //     $queryPpa = $queryPpa->whereHas('jenisAnggaranAnggaran.anggaran',function($q)use($request){
+            //         $q->where('acc_position_id',$request->user()->pegawai->position_id);
+            //     });
+            // }
 
             if($queryPpa->count() > 0){
                 $years = clone $queryPpa;
@@ -164,49 +173,107 @@ class PpaController extends Controller
             }
 
             if($anggaranCount > 0){
+                $kategori = KategoriAnggaran::select('id','name')->whereHas('anggarans.jenisAnggaran',function($q)use($jenisAktif){
+                    $q->where('budgeting_type_id',$jenisAktif->id);
+                })->get();
                 $allPpa = clone $queryPpa;
                 $allPpa = $allPpa->with('jenisAnggaranAnggaran',function($q){$q->select('id','number','budgeting_type_id','budgeting_id')->with('anggaran:id,name');})->get();
 
                 if($anggaran){
-                    $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+                    $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                        $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                            $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                        });
+                    });
+                    
+                    if($request->user()->pegawai->unit_id == '5'){
+                        $checkAnggaran = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                            $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                            });
+                        })->where('position_id',$request->user()->pegawai->jabatan->group()->first()->id)->first();
+                    }
+                    else{
+                        $checkAnggaran = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                            $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                            });
+                        })->where('unit_id',$request->user()->pegawai->unit_id)->first();
+                    }
+
+                    if(in_array($request->user()->role->name,['pembinayys','ketuayys','direktur']) || (in_array($request->user()->role->name,['fam','faspv','fas','am','akunspv']) && !$checkAnggaran)){
+                        $anggaranAktif = $anggaranAktif->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id')->unique()->values());
+                    }
+                    $anggaranAktif = $anggaranAktif->first();
+
+                    if(!in_array($request->user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv','fas','am','akunspv']) && !$checkAnggaran){
+                        $anggaranAktif = null;
+                    }
+
                     if($anggaranAktif){
                         $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
-                        $apbyAktif = !$isYear ? $anggaranAktif->apby()->where('academic_year_id', $tahun->id) : $anggaranAktif->apby()->where('year', $tahun);
-                        $apbyAktif = $apbyAktif->where($accAttr, 1)->latest()->first();
+                        $apbyAktif = $anggaranAktif->apby()->where($yearAttr, ($yearAttr == 'year' ? $tahun : $tahun->id))->where($accAttr, 1)->latest()->first();
                         $ppaCount = !$isYear ? $anggaranAktif->ppa()->where('academic_year_id',$tahun->id)->count() : $anggaranAktif->ppa()->where('year',$tahun)->count();
 
                         if(($apbyAktif && (($isYear && (($tahun != date('Y') && $ppaCount > 0) || $tahun == date('Y'))) || (!$isYear && (($tahun->is_finance_year != 1 && $ppaCount > 0) || $tahun->is_finance_year == 1))))
-                        || (!in_array($role,['pembinayys','ketuayys','direktur','fam','faspv','fas']) && !$apbyAktif && ($isYear && $tahun == date('Y')) || (!$isYear && $tahun->is_finance_year == 1))){
-                            $exceptionRoles = ['pembinayys','ketuayys','direktur','fam','faspv','fas'];
+                        || (!in_array($role,['pembinayys','ketuayys','direktur','fam','faspv','fas','am','akunspv']) && !$apbyAktif && ($isYear && $tahun == date('Y')) || (!$isYear && $tahun->is_finance_year == 1))){
+                            $exceptionRoles = ['pembinayys','ketuayys','direktur','fam','faspv','fas','am','akunspv'];
                             $isAnggotaPa = $this->checkRole($anggaranAktif->anggaran,$role);
                             if(in_array($role,$exceptionRoles) || (!in_array($role,$exceptionRoles) && $isAnggotaPa)){
-                                $ppa = !$isYear ? $anggaranAktif->ppa()->where('academic_year_id',$tahun->id)->get() : $anggaranAktif->ppa()->where('year',$tahun)->get();
-
                                 $isPa = $anggaranAktif->anggaran->acc_position_id == $request->user()->pegawai->position_id ? true : false;
 
-                                if(in_array($role,['fam','faspv','fas']))
+                                $budgetingHistory = $anggaranAktif->tahuns()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->latest()->first();
+                                $creatable = isset($budgetingHistory) && $budgetingHistory->ppa_active == 1 ? true : false;
+
+                                $ppa = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                                if((!$isPa && $request->user()->pegawai->unit_id == 5) || (!$isAnggotaPa && $request->user()->pegawai->unit_id != 5))
+                                    $ppa = $ppa->submitted();
+                                $ppa = $ppa->get();
+
+                                if(in_array($role,['fam','faspv','am']))
                                     $folder = $role;
+                                elseif(in_array($role,['akunspv'])) $folder = 'faspv';
                                 elseif($isPa) $folder = 'pa';
                                 elseif($isAnggotaPa) $folder = 'anggota-pa';
                                 else $folder = 'read-only';
 
-                                return view('keuangan.'.$folder.'.ppa_detail', compact('jenisAnggaran','jenisAktif','tahun','tahunPelajaran','isYear','allPpa','anggaranAktif','apbyAktif','ppa','years','academicYears','isAnggotaPa','isKso','accAttr'));
+                                return view('keuangan.'.$folder.'.ppa_detail', compact('jenisAnggaran','jenisAktif','tahun','tahunPelajaran','isYear','allPpa','anggaranAktif','apbyAktif','isPa','ppa','years','academicYears','isAnggotaPa','isKso','accAttr','creatable'));
                             }
                         }
                         else return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
                     }
                     else return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
                 }
-                if(!in_array($role,['pembinayys','ketuayys','direktur','fam','faspv','fas','am'])){
+                if(!in_array($role,['pembinayys','ketuayys','direktur','fam','faspv','fas','am','akunspv'])){
                     $anggaranAktif = null;
                     if($request->user()->pegawai->unit_id == '5'){
-                        $anggaranAktif = Anggaran::where('position_id',$request->user()->pegawai->jabatan->group()->first()->id)->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+                        $anggaranAktif = Anggaran::where('position_id',$request->user()->pegawai->jabatan->group()->first()->id)->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                            $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                            });
+                        })->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id')->unique()->values())->first();
+                        $checkAnggaran = Anggaran::where('position_id',$request->user()->pegawai->jabatan->group()->first()->id)->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                            $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                            });
+                        })->first();
                     }
                     else{
-                        $anggaranAktif = Anggaran::where('unit_id',$request->user()->pegawai->unit_id)->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+                        $anggaranAktif = Anggaran::where('unit_id',$request->user()->pegawai->unit_id)->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                            $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                            });
+                        })->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id')->unique()->values())->first();
+                        $checkAnggaran = Anggaran::where('unit_id',$request->user()->pegawai->unit_id)->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                            $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                            });
+                        })->first();
                     }
                     if($anggaranAktif){
-                        $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
+                        $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                            })->first();
                         $apbyAktif = !$isYear ? $anggaranAktif->apby()->where('academic_year_id',$tahun->id)->latest()->first() : $anggaranAktif->apby()->where('year',$tahun)->latest()->first();
 
                         if(!$apbyAktif){
@@ -215,12 +282,19 @@ class PpaController extends Controller
                         
                         return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link]);
                     }
+                    elseif($checkAnggaran){
+                        $anggaranAktif = $checkAnggaran->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                            })->first();
+                        $tahun = !$isYear ? TahunAjaran::where('is_finance_year',1)->latest()->first() : Date::now('Asia/Jakarta')->format('Y');
+                        return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link]);
+                    }
                 }
             }
 
             else return redirect()->route('ppa.index');
         }
-        elseif(!in_array($role,['pembinayys','ketuayys','direktur','fam','faspv','fas'])){
+        elseif(!in_array($role,['pembinayys','ketuayys','direktur','fam','faspv','fas','am','akunspv'])){
             $jenisAktif = JenisAnggaran::whereIn('id',$jenisAnggaranCount->collect()->where('anggaranCount','>',0)->pluck('id'))->first();
             if($jenisAktif){
                 return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link]);
@@ -230,7 +304,7 @@ class PpaController extends Controller
             }
         }
 
-        return view('keuangan.read-only.ppa_index', compact('jenisAnggaran','jenisAktif','tahun','tahunPelajaran','isYear','yearAttr','allPpa','years','academicYears','accAttr'));
+        return view('keuangan.read-only.ppa_index', compact('jenisAnggaran','jenisAktif','kategori','tahun','tahunPelajaran','isYear','yearAttr','allPpa','years','academicYears','accAttr'));
     }
 
     /**
@@ -248,7 +322,6 @@ class PpaController extends Controller
             $allPpa = Ppa::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
                 $query->where('budgeting_type_id',$jenisAktif->id);
             })->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
-            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
             $explodeJenis = explode('-',$jenis);
             $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
             $isYear = strlen($tahun) == 4 ? true : false;
@@ -257,15 +330,44 @@ class PpaController extends Controller
                 $tahun = TahunAjaran::where('academic_year',$tahun)->first();
                 if(!$tahun) return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link]);
             }
+            $yearAttr = $isYear ? 'year' : 'academic_year_id';
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                    $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                });
+            });
+            if($request->user()->pegawai->unit_id == '5'){
+                $checkAnggaran = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                    $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                        $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                    });
+                })->where('position_id',$request->user()->pegawai->jabatan->group()->first()->id)->first();
+            }
+            else{
+                $checkAnggaran = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                    $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                        $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                    });
+                })->where('unit_id',$request->user()->pegawai->unit_id)->first();
+            }
+            if(in_array($request->user()->role->name,['pembinayys','ketuayys','direktur']) || (in_array($request->user()->role->name,['fam','faspv','am','akunspv']) && !$checkAnggaran)){
+                $anggaranAktif = $anggaranAktif->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id')->unique()->values());
+            }
+            $anggaranAktif = $anggaranAktif->first();
+
+            if(!in_array($request->user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv','am','akunspv']) && !$checkAnggaran){
+                $anggaranAktif = null;
+            }
+
             if($anggaranAktif){
                 $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
-
-                $yearAttr = $isYear ? 'year' : 'academic_year_id';
                 $accAttr = $isKso ? 'director_acc_status_id' : 'president_acc_status_id';
 
                 $apbyAktif = $anggaranAktif->apby()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->latest()->aktif()->unfinal()->where($accAttr,1)->first();
+                $budgetingHistory = $anggaranAktif->tahuns()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->latest()->first();
+                $creatable = isset($budgetingHistory) && $budgetingHistory->ppa_active == 1 ? true : false;
 
-                if($apbyAktif && $this->checkRole($anggaranAktif->anggaran,$role)){
+                if($apbyAktif && $this->checkRole($anggaranAktif->anggaran,$role) && $creatable){
                     // Inti function
                     $ppa = new Ppa();
                     if($type == 'proposal'){
@@ -280,22 +382,27 @@ class PpaController extends Controller
 
                     // Number Generator
                     if(!$isYear)
-                        $lastPpa = $anggaranAktif->ppa()->where('academic_year_id',$tahun->id)->latest()->first();
+                        $lastPpa = $anggaranAktif->ppa()->where('academic_year_id',$tahun->id)->draft()->latest()->first();
                     else
-                        $lastPpa = $anggaranAktif->ppa()->where('year',$tahun)->latest()->first();
+                        $lastPpa = $anggaranAktif->ppa()->where('year',$tahun)->draft()->latest()->first();
 
                     $lastNumber = $lastPpa && $lastPpa->firstNumber ? $lastPpa->firstNumber+1 : 1;
 
                     $roman_month = $this->romanMonth();
                     $year = Date::now('Asia/Jakarta')->format('y');
 
-                    $ppa->number = $lastNumber.'/PPA/'.$roman_month.'/'.$year.'/'.strtoupper(str_replace(' ','',$anggaranAktif->anggaran->name));
+                    $ppa->number = $lastNumber.'/DRAFT/'.$roman_month.'/'.$year.'/'.strtoupper(str_replace(' ','',$anggaranAktif->anggaran->name));
                     $ppa->employee_id = $request->user()->pegawai->id;
+                    $ppa->is_draft = 1;
                     $ppa->save();
 
                     $ppa->fresh();
 
-                    return redirect()->route('ppa.show', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppa->firstNumber]);
+                    return redirect()->route('ppa.draft', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppa->firstNumber]);
+                }
+                elseif($apbyAktif && $this->checkRole($anggaranAktif->anggaran,$role) && !$creatable){
+                    Session::flash('danger','Mohon maaf, sementara Anda tidak dapat membuat PPA baru');
+                    return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link,]);
                 }
                 else return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
             }
@@ -321,7 +428,6 @@ class PpaController extends Controller
             $allPpa = Ppa::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
                 $query->where('budgeting_type_id',$jenisAktif->id);
             })->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
-            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
             $explodeJenis = explode('-',$jenis);
             $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
             $isYear = strlen($tahun) == 4 ? true : false;
@@ -330,23 +436,26 @@ class PpaController extends Controller
                 $tahun = TahunAjaran::where('academic_year',$tahun)->first();
                 if(!$tahun) return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link]);
             }
+            $yearAttr = $isYear ? 'year' : 'academic_year_id';
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id')->unique()->values())->first();
             if($anggaranAktif){
                 $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
 
-                $yearAttr = $isYear ? 'year' : 'academic_year_id';
                 $accAttr = $isKso ? 'director_acc_status_id' : 'president_acc_status_id';
 
                 $apbyAktif = $anggaranAktif->apby()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->latest()->aktif()->unfinal()->where($accAttr,1)->first();
 
                 if($apbyAktif){
-                    $exceptionRoles = ['pembinayys','ketuayys','direktur','faspv'];
+                    $exceptionRoles = ['pembinayys','ketuayys','direktur','faspv','am','akunspv'];
                     $isAnggotaPa = $this->checkRole($anggaranAktif->anggaran,$role);
                     if(in_array($role,$exceptionRoles) || (!in_array($role,$exceptionRoles) && $isAnggotaPa)){
                         // Inti function
                         $ppaAktif = null;
                         $isPa = $anggaranAktif->anggaran->acc_position_id == $request->user()->pegawai->position_id ? true : false;
 
-                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'%');
+                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'/%');
+
+                        $ppaAktif = $request->submitted == 1 ? $ppaAktif->submitted() : $ppaAktif->draft();
 
                         if($isPa){
                             $ppaAktif = $ppaAktif->where(function($query){
@@ -527,7 +636,7 @@ class PpaController extends Controller
                             else
                                 Session::flash('success','Data pengajuan berhasil ditambahkan');
 
-                            return redirect()->route('ppa.show', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]);
+                            return redirect()->route(($ppaAktif->is_draft == 1 ? 'ppa.draft' : 'ppa.show'), ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]);
                         }
                     }
                 }
@@ -545,7 +654,7 @@ class PpaController extends Controller
      * @param  \App\Models\Ppa\Ppa  $ppa
      * @return \Illuminate\Http\Response
      */
-    public function show(Request $request, $jenis, $tahun, $anggaran, $nomor)
+    public function draft(Request $request, $jenis, $tahun, $anggaran, $nomor)
     {
         $role = $request->user()->role->name;
         
@@ -556,7 +665,7 @@ class PpaController extends Controller
             $allPpa = Ppa::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
                 $query->where('budgeting_type_id',$jenisAktif->id);
             })->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
-            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id')->unique()->values())->first();
             $explodeJenis = explode('-',$jenis);
             $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
             $isYear = strlen($tahun) == 4 ? true : false;
@@ -577,11 +686,11 @@ class PpaController extends Controller
                 ])->latest()->aktif()->first();
 
                 if($apbyAktif){
-                    $exceptionRoles = ['pembinayys','ketuayys','direktur','fam','faspv','fas'];
+                    $exceptionRoles = ['pembinayys','ketuayys','direktur','fam','faspv','fas','am'];
                     $isAnggotaPa = $this->checkRole($anggaranAktif->anggaran,$role);
                     if(in_array($role,$exceptionRoles) || (!in_array($role,$exceptionRoles) && $isAnggotaPa)){
                         // Inti function
-                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'%')->first();
+                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->draft()->where('number','LIKE',$nomor.'/%')->first();
 
                         if($ppaAktif){
                             $isPa = $anggaranAktif->anggaran->acc_position_id == $request->user()->pegawai->position_id ? true : false;
@@ -630,11 +739,11 @@ class PpaController extends Controller
                             }
 
                             $proposals = null;
-                            if($ppaAktif->type_id == 2){
-                                $units = Unit::select('id')->whereHas('anggaran.jenisAnggaran.jenis',function($q)use($jenisAktif){
-                                    $q->where('id',$jenisAktif->id);
-                                })->pluck('id')->values()->unique();
-                                $proposals = PpaProposal::whereIn('unit_id',$units)->whereNull('ppa_detail_id')->get();
+                            if($ppaAktif->type_id == 2 && ($isPa || ($isAnggotaPa && $request->user()->pegawai->unit_id != 5))){
+                                // $units = Unit::select('id')->whereHas('anggaran.jenisAnggaran.jenis',function($q)use($jenisAktif){
+                                //     $q->where('id',$jenisAktif->id);
+                                // })->pluck('id')->values()->unique();
+                                $proposals = PpaProposal::whereNull('ppa_detail_id')->whereNull('declined_at')->where('budgeting_id',$anggaranAktif->budgeting_id)->has('details')->get();
                             }
 
                             $checkSetting = Setting::where('name','ppa_check_balance')->first();
@@ -646,8 +755,137 @@ class PpaController extends Controller
                                 $notifikasi->update(['is_active' => 0]);
                             }
 
-                            if(in_array($role,['fam','faspv','fas']))
+                            if(in_array($role,['fam','faspv','fas','am'])){
                                 $folder = $role;
+                            }
+                            elseif($isPa) $folder = 'pa';
+                            elseif($isAnggotaPa) $folder = 'anggota-pa';
+                            else $folder = 'read-only';
+
+                            return view('keuangan.'.$folder.'.ppa_show', compact('jenisAnggaran','jenisAktif','tahun','isYear','yearAttr','accAttr','anggaranAktif','apbyAktif','ppaAktif','isPa','isAnggotaPa','akun','checkBalance','proposals','isKso'));
+                        }
+                        else return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
+                    }
+                }
+                else return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
+            }
+            else return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
+        }
+
+        return redirect()->route('ppa.index');
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Models\Ppa\Ppa  $ppa
+     * @return \Illuminate\Http\Response
+     */
+    public function show(Request $request, $jenis, $tahun, $anggaran, $nomor)
+    {
+        $role = $request->user()->role->name;
+        
+        $jenisAnggaran = JenisAnggaran::all();
+        $jenisAktif = $this->hasBudgetingType($jenis, $request->user());
+
+        if($jenisAktif){
+            $allPpa = Ppa::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
+                $query->where('budgeting_type_id',$jenisAktif->id);
+            })->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id')->unique()->values())->first();
+            $explodeJenis = explode('-',$jenis);
+            $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
+            $isYear = strlen($tahun) == 4 ? true : false;
+            if(!$isYear){
+                $tahun = str_replace("-","/",$tahun);
+                $tahun = TahunAjaran::where('academic_year',$tahun)->first();
+                if(!$tahun) return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link]);
+            }
+            if($anggaranAktif){
+                $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
+
+                $yearAttr = $isYear ? 'year' : 'academic_year_id';
+                $accAttr = $isKso ? 'director_acc_status_id' : 'president_acc_status_id';
+
+                $apbyAktif = $anggaranAktif->apby()->where([
+                    $yearAttr => $yearAttr == 'year' ? $tahun : $tahun->id,
+                    $accAttr => 1
+                ])->latest()->aktif()->first();
+
+                if($apbyAktif){
+                    $exceptionRoles = ['pembinayys','ketuayys','direktur','fam','faspv','fas','am','akunspv'];
+                    $isAnggotaPa = $this->checkRole($anggaranAktif->anggaran,$role);
+                    if(in_array($role,$exceptionRoles) || (!in_array($role,$exceptionRoles) && $isAnggotaPa)){
+                        // Inti function
+                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->submitted()->where('number','LIKE',$nomor.'/%')->first();
+
+                        if($ppaAktif){
+                            $isPa = $anggaranAktif->anggaran->acc_position_id == $request->user()->pegawai->position_id ? true : false;
+
+                            //$akun = $apbyAktif->detail()->whereHas('akun.kategori.parent',function($q){$q->where('name','Belanja');})->where('value','>',0)->with('akun')->get()->pluck('akun');
+
+                            if($ppaAktif->detail()->count() > 0){
+                                // Check PPA details
+                                $autodebitCount = $ppaAktif->detail()->whereHas('akun',function($q){
+                                    $q->where('is_autodebit', 1);
+                                })->count();
+                                $exclusiveCount = $ppaAktif->detail()->whereHas('akun',function($q){
+                                    $q->where('is_exclusive', 1);
+                                })->count();
+
+                                if($exclusiveCount > 0){
+                                    $akun = $anggaranAktif->akun()->where('is_exclusive', 1)->orderBy('sort_order')->get();
+                                }
+                                else{
+                                    $akun = $anggaranAktif->akun()->whereHas('apby',function($q)use($apbyAktif){
+                                        $q->whereHas('akun.kategori.parent',function($q){
+                                            $q->where('name','Belanja');
+                                        })->whereHas('apby',function($q)use($apbyAktif){
+                                            $q->where('id',$apbyAktif->id);
+                                        });
+                                        //})->where('value','>',0);
+                                    });
+
+                                    if($autodebitCount > 0) $akun = $akun->where('is_autodebit', 1);
+                                    else $akun = $akun->where('is_autodebit', 0); 
+
+                                    $akun = $akun->get();
+                                }
+                            }
+                            else{
+                                $akun = $anggaranAktif->akun()->where(function($q)use($apbyAktif){
+                                    $q->whereHas('apby',function($q)use($apbyAktif){
+                                        $q->whereHas('akun.kategori.parent',function($q){
+                                            $q->where('name','Belanja');
+                                        })->whereHas('apby',function($q)use($apbyAktif){
+                                            $q->where('id',$apbyAktif->id);
+                                        });
+                                        //})->where('value','>',0);
+                                    })->orWhere('is_exclusive', 1);
+                                })->orderBy('sort_order')->get();
+                            }
+
+                            $proposals = null;
+                            if($ppaAktif->type_id == 2 && ($isPa || ($isAnggotaPa && $request->user()->pegawai->unit_id != 5))){
+                                // $units = Unit::select('id')->whereHas('anggaran.jenisAnggaran.jenis',function($q)use($jenisAktif){
+                                //     $q->where('id',$jenisAktif->id);
+                                // })->pluck('id')->values()->unique();
+                                $proposals = PpaProposal::whereNull('ppa_detail_id')->whereNull('declined_at')->where('budgeting_id',$anggaranAktif->budgeting_id)->has('details')->get();
+                            }
+
+                            $checkSetting = Setting::where('name','ppa_check_balance')->first();
+                            $checkBalance = $checkSetting ? filter_var($checkSetting->value, FILTER_VALIDATE_BOOLEAN) : true;
+
+                            $notifikasi = Notifikasi::where(['id' => $request->notif_id,'user_id' => $request->user()->id])->first();
+
+                            if($notifikasi){
+                                $notifikasi->update(['is_active' => 0]);
+                            }
+
+                            if(in_array($role,['am'])){
+                                $folder = $role;
+                            }
+                            elseif(in_array($role,['keu','fam','faspv','fas']))  $folder = 'read-only';
                             elseif($isPa) $folder = 'pa';
                             elseif($isAnggotaPa) $folder = 'anggota-pa';
                             else $folder = 'read-only';
@@ -681,7 +919,7 @@ class PpaController extends Controller
             $allPpa = Ppa::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
                 $query->where('budgeting_type_id',$jenisAktif->id);
             })->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
-            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id')->unique()->values())->first();
             $explodeJenis = explode('-',$jenis);
             $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
             $isYear = strlen($tahun) == 4 ? true : false;
@@ -700,12 +938,16 @@ class PpaController extends Controller
                 $apbyAktif = $isKso ? $apbyAktif->where('director_acc_status_id',1)->first() : $apbyAktif->where('president_acc_status_id',1)->first();
 
                 if($apbyAktif){
-                    $exceptionRoles = ['pembinayys','ketuayys','direktur','fam','faspv'];
+                    $exceptionRoles = ['pembinayys','ketuayys','direktur','fam','faspv','am'];
                     if(in_array($role,$exceptionRoles) || (!in_array($role,$exceptionRoles) && $this->checkRole($anggaranAktif->anggaran,$role))){
                         // Inti function
-                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'%')->where(function($query){
+                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'/%')->where(function($query){
                             $query->where('finance_acc_status_id','!=',1)->orWhereNull('finance_acc_status_id');
-                        })->first();
+                        });
+
+                        $ppaAktif = $request->submitted == 1 ? $ppaAktif->submitted() : $ppaAktif->draft();
+
+                        $ppaAktif = $ppaAktif->first();
 
                         if($ppaAktif){
                             if(isset($request->id)){
@@ -731,8 +973,10 @@ class PpaController extends Controller
                                 }
 
                                 if($ppaDetail){
-                                    $proposals = PpaProposal::where(function($q)use($ppaDetail){
-                                        $q->whereNull('ppa_detail_id')->orWhere(function($q)use($ppaDetail){
+                                    $proposals = PpaProposal::where(function($q)use($ppaDetail,$anggaranAktif){
+                                        $q->where(function($q)use($anggaranAktif){
+                                            $q->whereNull('ppa_detail_id')->whereNull('declined_at')->where('budgeting_id',$anggaranAktif->budgeting_id)->has('details');
+                                        })->orWhere(function($q)use($ppaDetail){
                                             $q->whereNotNull('ppa_detail_id')->whereIn('id',$ppaDetail->proposals->pluck('id'));
                                         });
                                     })->get();
@@ -743,7 +987,7 @@ class PpaController extends Controller
                             }
                             else Session::flash('danger','Data pengajuan tidak ditemukan');
 
-                            return redirect()->route('ppa.show', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]);
+                            return redirect()->route(($ppaAktif->is_draft == 1 ? 'ppa.draft' : 'ppa.show'), ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]);
                         }
                     }
                 }
@@ -761,7 +1005,7 @@ class PpaController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function editProposal(Request $request, $jenis, $tahun, $anggaran, $nomor, $id)
+    public function editDraftProposal(Request $request, $jenis, $tahun, $anggaran, $nomor, $id)
     {
         $role = $request->user()->role->name;
         
@@ -772,7 +1016,7 @@ class PpaController extends Controller
             $allPpa = Ppa::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
                 $query->where('budgeting_type_id',$jenisAktif->id);
             })->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
-            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id')->unique()->values())->first();
             $explodeJenis = explode('-',$jenis);
             $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
             $isYear = strlen($tahun) == 4 ? true : false;
@@ -793,11 +1037,11 @@ class PpaController extends Controller
                 ])->latest()->aktif()->unfinal()->first();
 
                 if($apbyAktif){
-                    $exceptionRoles = ['fam','faspv','fas'];
+                    $exceptionRoles = ['fam','faspv','fas','am'];
                     $isAnggotaPa = $this->checkRole($anggaranAktif->anggaran,$role);
                     if(in_array($role,$exceptionRoles) || (!in_array($role,$exceptionRoles) && $isAnggotaPa)){
                         // Inti function
-                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'%')->first();
+                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'/%')->draft()->first();
 
                         if($ppaAktif){
                             if(isset($request->id)){
@@ -826,7 +1070,7 @@ class PpaController extends Controller
                                 $ppaDetail = $ppaDetail->first();
 
                                 if($ppaDetail){
-                                    if(in_array($role,['fam','faspv','fas']))
+                                    if(in_array($role,['fam','faspv','fas','am']))
                                         $folder = $role;
                                     elseif($isPa) $folder = 'pa';
                                     elseif($isAnggotaPa) $folder = 'anggota-pa';
@@ -837,7 +1081,202 @@ class PpaController extends Controller
                                 else Session::flash('danger','Data pengajuan tidak ditemukan');
                             }
 
-                            return redirect()->route('ppa.show', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]);
+                            return redirect()->route(($ppaAktif->is_draft == 1 ? 'ppa.draft' : 'ppa.show'), ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]);
+                        }
+                        else return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
+                    }
+                }
+                else return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
+            }
+            else return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
+        }
+
+        return redirect()->route('ppa.index');
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function editProposal(Request $request, $jenis, $tahun, $anggaran, $nomor, $id)
+    {
+        $role = $request->user()->role->name;
+        
+        $jenisAnggaran = JenisAnggaran::all();
+        $jenisAktif = $this->hasBudgetingType($jenis, $request->user());
+
+        if($jenisAktif){
+            $allPpa = Ppa::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
+                $query->where('budgeting_type_id',$jenisAktif->id);
+            })->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id')->unique()->values())->first();
+            $explodeJenis = explode('-',$jenis);
+            $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
+            $isYear = strlen($tahun) == 4 ? true : false;
+            if(!$isYear){
+                $tahun = str_replace("-","/",$tahun);
+                $tahun = TahunAjaran::where('academic_year',$tahun)->first();
+                if(!$tahun) return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link]);
+            }
+            if($anggaranAktif){
+                $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
+
+                $yearAttr = $isYear ? 'year' : 'academic_year_id';
+                $accAttr = $isKso ? 'director_acc_status_id' : 'president_acc_status_id';
+
+                $apbyAktif = $anggaranAktif->apby()->where([
+                    $yearAttr => $yearAttr == 'year' ? $tahun : $tahun->id,
+                    $accAttr => 1
+                ])->latest()->aktif()->unfinal()->first();
+
+                if($apbyAktif){
+                    $exceptionRoles = ['ketuayys','direktur','fam','faspv','fas','am'];
+                    $isAnggotaPa = $this->checkRole($anggaranAktif->anggaran,$role);
+                    if(in_array($role,$exceptionRoles) || (!in_array($role,$exceptionRoles) && $isAnggotaPa)){
+                        // Inti function
+                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'/%')->submitted()->first();
+
+                        if($ppaAktif){
+                            if(isset($request->id)){
+                                $ppaDetail = null;
+                                $isPa = $anggaranAktif->anggaran->acc_position_id == $request->user()->pegawai->position_id ? true : false;
+
+                                $id = $request->id;
+
+                                $ppaDetail = $ppaAktif->detail()->where('id',$id);
+                                if((!in_array($role,$exceptionRoles) && !$isPa) || in_array($role,['fas'])){
+                                    $ppaDetail = $ppaDetail->whereHas('ppa',function($q){
+                                        $q->doesntHave('bbk');
+                                    });
+                                }
+                                $ppaDetail = $ppaDetail->first();
+
+                                if($ppaDetail){
+                                    $isEditable = false;
+
+                                    if((in_array($role,['am']) && $ppaDetail->finance_acc_status_id != 1) || ($isAnggotaPa && $ppaDetail->pa_acc_status_id != 1)){
+                                        $isEditable = true;
+                                    }
+
+                                    if(in_array($role,['am']) && $isEditable)
+                                        $folder = $role;
+                                    elseif(in_array($role,['fam','faspv','fas']) || !$isEditable)  $folder = 'read-only';
+                                    elseif($isPa) $folder = 'pa';
+                                    elseif($isAnggotaPa) $folder = 'anggota-pa';
+                                    else $folder = 'read-only';
+
+                                    return view('keuangan.'.$folder.'.ppa_edit_proposal', compact('jenisAnggaran','jenisAktif','tahun','isYear','yearAttr','accAttr','anggaranAktif','apbyAktif','ppaAktif','isPa','isAnggotaPa','isKso','ppaDetail','isEditable'));
+                                }
+                                else Session::flash('danger','Data pengajuan tidak ditemukan');
+                            }
+
+                            return redirect()->route(($ppaAktif->is_draft == 1 ? 'ppa.draft' : 'ppa.show'), ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]);
+                        }
+                        else return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
+                    }
+                }
+                else return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
+            }
+            else return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
+        }
+
+        return redirect()->route('ppa.index');
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function editProposalDesc(Request $request, $jenis, $tahun, $anggaran, $nomor, $id)
+    {
+        $role = $request->user()->role->name;
+        
+        $jenisAnggaran = JenisAnggaran::all();
+        $jenisAktif = $this->hasBudgetingType($jenis, $request->user());
+
+        if($jenisAktif){
+            $allPpa = Ppa::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
+                $query->where('budgeting_type_id',$jenisAktif->id);
+            })->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id')->unique()->values())->first();
+            $explodeJenis = explode('-',$jenis);
+            $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
+            $isYear = strlen($tahun) == 4 ? true : false;
+            if(!$isYear){
+                $tahun = str_replace("-","/",$tahun);
+                $tahun = TahunAjaran::where('academic_year',$tahun)->first();
+                if(!$tahun) return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link]);
+            }
+            if($anggaranAktif){
+                $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
+
+                $yearAttr = $isYear ? 'year' : 'academic_year_id';
+                $accAttr = $isKso ? 'director_acc_status_id' : 'president_acc_status_id';
+
+                $apbyAktif = $anggaranAktif->apby()->where([
+                    $yearAttr => $yearAttr == 'year' ? $tahun : $tahun->id,
+                    $accAttr => 1
+                ])->latest()->aktif()->unfinal()->first();
+
+                if($apbyAktif){
+                    $exceptionRoles = ['fam','faspv','fas','am'];
+                    $isAnggotaPa = $this->checkRole($anggaranAktif->anggaran,$role);
+                    if(in_array($role,$exceptionRoles) || (!in_array($role,$exceptionRoles) && $isAnggotaPa)){
+                        // Inti function
+                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'/%');
+                        $ppaAktif = $request->submitted == 1 ? $ppaAktif->submitted() : $ppaAktif->draft();
+                        $ppaAktif = $ppaAktif->first();
+
+                        if($ppaAktif){
+                            if(isset($request->id)){
+                                $ppaDetail = null;
+                                $isPa = $anggaranAktif->anggaran->acc_position_id == $request->user()->pegawai->position_id ? true : false;
+
+                                $id = $request->id;
+
+                                $ppaDetail = $ppaAktif->detail()->where('id',$id);
+                                if(!in_array($role,$exceptionRoles) || in_array($role,['fas'])){
+                                    $ppaDetail = $ppaDetail->whereHas('ppa',function($q){
+                                        $q->doesntHave('bbk');
+                                    });
+                                }
+                                $ppaDetail = $ppaDetail->first();
+
+                                if($ppaDetail){
+                                    $isEditable = false;
+
+                                    if((in_array($role,['am']) && $ppaDetail->finance_acc_status_id != 1) || ($isAnggotaPa && $ppaDetail->pa_acc_status_id != 1)){
+                                        $isEditable = true;
+                                    }
+
+                                    if(in_array($role,['am']) && $isEditable)
+                                        $folder = $role;
+                                    elseif(in_array($role,['fam','faspv','fas']) || !$isEditable)  $folder = 'read-only';
+                                    elseif($isPa) $folder = 'pa';
+                                    elseif($isAnggotaPa) $folder = 'anggota-pa';
+                                    else $folder = 'read-only';
+
+                                    // Temp location
+                                    $folder = 'read-only';
+
+                                    // Inti Controller
+                                    $data = $request->proposal ? PpaProposal::where(['id' => $request->proposal])->first() : null;
+                                    
+                                    if($data){
+                                        return view('keuangan.'.$folder.'.ppa_edit_proposal_desc', compact('jenisAnggaran','jenisAktif','tahun','isYear','yearAttr','accAttr','anggaranAktif','apbyAktif','ppaAktif','isPa','isAnggotaPa','isKso','ppaDetail','isEditable','data'));
+                                    }
+                                    else{
+                                        return "Ups, tidak dapat memuat data";
+                                    }
+                                }
+                                else Session::flash('danger','Data pengajuan tidak ditemukan');
+                            }
+
+                            return redirect()->route(($ppaAktif->is_draft == 1 ? 'ppa.draft' : 'ppa.show'), ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]);
                         }
                         else return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
                     }
@@ -867,7 +1306,7 @@ class PpaController extends Controller
             $allPpa = Ppa::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
                 $query->where('budgeting_type_id',$jenisAktif->id);
             })->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
-            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id')->unique()->values())->first();
             $explodeJenis = explode('-',$jenis);
             $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
             $isYear = strlen($tahun) == 4 ? true : false;
@@ -886,13 +1325,17 @@ class PpaController extends Controller
                 $apbyAktif = $isKso ? $apbyAktif->where('director_acc_status_id',1)->first() : $apbyAktif->where('president_acc_status_id',1)->first();
 
                 if($apbyAktif){
-                    $exceptionRoles = ['pembinayys','ketuayys','direktur','fam','faspv'];
+                    $exceptionRoles = ['pembinayys','ketuayys','direktur','fam','faspv','am'];
                     $isAnggotaPa = $this->checkRole($anggaranAktif->anggaran,$role);
                     if(in_array($role,$exceptionRoles) || (!in_array($role,$exceptionRoles) && $isAnggotaPa)){
                         $isPa = $anggaranAktif->anggaran->acc_position_id == $request->user()->pegawai->position_id ? true : false;
-                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'%')->where(function($query){
+                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'/%')->where(function($query){
                             $query->where('finance_acc_status_id','!=',1)->orWhereNull('finance_acc_status_id');
-                        })->first();
+                        });
+                        
+                        $ppaAktif = $request->submitted == 1 ? $ppaAktif->submitted() : $ppaAktif->draft();
+
+                        $ppaAktif = $ppaAktif->first();
 
                         if($ppaAktif){
                             if($ppaAktif->detail()->count() > 0){
@@ -945,7 +1388,7 @@ class PpaController extends Controller
                                             ]);
                                         }
                                     }
-                                }elseif($role == 'fam'){
+                                }elseif(in_array($role,['fam','faspv'])){
                                     // Inti function
                                     // $ppaAktifDetail = $ppaAktif->detail()->where(function($query){
                                     //     $query->where('director_acc_status_id','!=',1)->orWhereNull('director_acc_status_id');
@@ -982,28 +1425,30 @@ class PpaController extends Controller
                                                 $inputName = 'value-'.$detail->id;
                                                 $requestValue = (int)str_replace('.','',$request->{$inputName});
                                             }
-                                            if($isPa){
+                                            if($isAnggotaPa){
                                                 $detail->value = $requestValue;
-                                                $detail->value_pa = $requestValue;
-                                                $detail->value_fam = $requestValue;
+                                                if($isPa) $detail->value_pa = $requestValue;
+                                                //$detail->value_fam = $requestValue;
                                                 if($requestValue > 0){
                                                     if($detail->value != $requestValue && $detail->employee_id != $request->user()->pegawai->id){
                                                         $detail->edited_employee_id = $request->user()->pegawai->id;
                                                         $detail->edited_status_id = 1;
                                                     }
-                                                    $detail->pa_acc_id = $request->user()->pegawai->id;
-                                                    $detail->pa_acc_status_id = 1;
-                                                    $detail->pa_acc_time = Date::now('Asia/Jakarta');
-                                                    $detail->finance_acc_id = $request->user()->pegawai->id;
-                                                    $detail->finance_acc_status_id = 1;
-                                                    $detail->finance_acc_time = Date::now('Asia/Jakarta');
+                                                    if($isPa){
+                                                        $detail->pa_acc_id = $request->user()->pegawai->id;
+                                                        $detail->pa_acc_status_id = 1;
+                                                        $detail->pa_acc_time = Date::now('Asia/Jakarta');
+                                                    }
+                                                    // $detail->finance_acc_id = $request->user()->pegawai->id;
+                                                    // $detail->finance_acc_status_id = 1;
+                                                    // $detail->finance_acc_time = Date::now('Asia/Jakarta');
 
                                                     // Autodebit
-                                                    if($autodebitCount > 0 && !$isKso){
-                                                        $detail->director_acc_id = $direktur ? $direktur->id : $request->user()->pegawai->id;
-                                                        $detail->director_acc_status_id = 1;
-                                                        $detail->director_acc_time = Date::now('Asia/Jakarta');
-                                                    }
+                                                    // if($autodebitCount > 0 && !$isKso){
+                                                    //     $detail->director_acc_id = $direktur ? $direktur->id : $request->user()->pegawai->id;
+                                                    //     $detail->director_acc_status_id = 1;
+                                                    //     $detail->director_acc_time = Date::now('Asia/Jakarta');
+                                                    // }
                                                 }
                                                 $detail->save();
                                             }
@@ -1031,9 +1476,61 @@ class PpaController extends Controller
                                                 $detail->save();
                                             }
                                         }
+                                        if($isPa && isset($request->validate) && $request->validate == 'validate'){
+                                            // Accept unaccepted value
+                                            $ppaAktifDetail->whereNull([
+                                                'pa_acc_id',
+                                                'pa_acc_status_id',
+                                                'pa_acc_time',
+                                            ])->update([
+                                                'pa_acc_id' => $request->user()->pegawai->id,
+                                                'pa_acc_status_id' => 1,
+                                                'pa_acc_time' => Date::now('Asia/Jakarta')
+                                            ]);
+
+                                            // Accept PPA
+                                            $ppaAktif->update([
+                                                'pa_acc_id' => $request->user()->pegawai->id,
+                                                'pa_acc_status_id' => 1,
+                                                'pa_acc_time' => Date::now('Asia/Jakarta')
+                                            ]);
+
+                                            if($ppaAktif->is_draft == 1){
+                                                $ppaAktif->date = Date::now('Asia/Jakarta')->format('Y-m-d');
+                                                // Number Generator
+                                                $lastPpa = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->submitted()->orderBy('submitted_at','DESC')->first();
+
+                                                $lastNumber = $lastPpa && $lastPpa->firstNumber ? $lastPpa->firstNumber+1 : 1;
+
+                                                $roman_month = $this->romanMonth();
+                                                $year = Date::now('Asia/Jakarta')->format('y');
+
+                                                $ppaAktif->number = $lastNumber.'/PPA/'.$roman_month.'/'.$year.'/'.strtoupper(str_replace(' ','',$anggaranAktif->anggaran->name));
+                                                $ppaAktif->is_draft = 0;
+                                                $ppaAktif->submitted_at = Date::now('Asia/Jakarta');
+
+                                                $ppaAktif->save();
+
+                                                $ppaAktif->fresh();
+                                            }
+
+                                            $gadh = Jabatan::where('code','23.11')->first();
+
+                                            if($gadh){
+                                                $user = $gadh->role->loginUsers()->aktif()->first();
+                                                if($user){
+                                                    Notifikasi::create([
+                                                        'user_id' => $user->id,
+                                                        'desc' => $request->user()->pegawai->jabatan->name.' mengajukan PPA baru No. '.$ppaAktif->number,
+                                                        'link' => route('ppa.show', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]),
+                                                        'is_active' => 1
+                                                    ]);
+                                                }
+                                            }
+                                        }
                                     }
                                 }
-                                elseif($role == 'faspv'){
+                                elseif($role == 'am'){
                                     // Inti function
                                     // $ppaAktifDetail = $ppaAktif->detail()->where(function($query){
                                     //     $query->where('director_acc_status_id','!=',1)->orWhereNull('director_acc_status_id');
@@ -1141,6 +1638,25 @@ class PpaController extends Controller
                                                     'pa_acc_status_id' => 1,
                                                     'pa_acc_time' => Date::now('Asia/Jakarta')
                                                 ]);
+
+                                                if($ppaAktif->is_draft == 1){
+                                                    $ppaAktif->date = Date::now('Asia/Jakarta')->format('Y-m-d');
+                                                    // Number Generator
+                                                    $lastPpa = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->submitted()->orderBy('submitted_at','DESC')->first();
+
+                                                    $lastNumber = $lastPpa && $lastPpa->firstNumber ? $lastPpa->firstNumber+1 : 1;
+
+                                                    $roman_month = $this->romanMonth();
+                                                    $year = Date::now('Asia/Jakarta')->format('y');
+
+                                                    $ppaAktif->number = $lastNumber.'/PPA/'.$roman_month.'/'.$year.'/'.strtoupper(str_replace(' ','',$anggaranAktif->anggaran->name));
+                                                    $ppaAktif->is_draft = 0;
+                                                    $ppaAktif->submitted_at = Date::now('Asia/Jakarta');
+
+                                                    $ppaAktif->save();
+
+                                                    $ppaAktif->fresh();
+                                                }
                                             }
                                             
                                             // Accept unaccepted value
@@ -1340,10 +1856,29 @@ class PpaController extends Controller
                                                 'pa_acc_time' => Date::now('Asia/Jakarta')
                                             ]);
 
-                                            $faspv = Jabatan::where('code','22.12')->first();
+                                            if($ppaAktif->is_draft == 1){
+                                                $ppaAktif->date = Date::now('Asia/Jakarta')->format('Y-m-d');
+                                                // Number Generator
+                                                $lastPpa = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->submitted()->orderBy('submitted_at','DESC')->first();
 
-                                            if($faspv){
-                                                $user = $faspv->role->loginUsers()->aktif()->first();
+                                                $lastNumber = $lastPpa && $lastPpa->firstNumber ? $lastPpa->firstNumber+1 : 1;
+
+                                                $roman_month = $this->romanMonth();
+                                                $year = Date::now('Asia/Jakarta')->format('y');
+
+                                                $ppaAktif->number = $lastNumber.'/PPA/'.$roman_month.'/'.$year.'/'.strtoupper(str_replace(' ','',$anggaranAktif->anggaran->name));
+                                                $ppaAktif->is_draft = 0;
+                                                $ppaAktif->submitted_at = Date::now('Asia/Jakarta');
+
+                                                $ppaAktif->save();
+
+                                                $ppaAktif->fresh();
+                                            }
+
+                                            $gadh = Jabatan::where('code','23.11')->first();
+
+                                            if($gadh){
+                                                $user = $gadh->role->loginUsers()->aktif()->first();
                                                 if($user){
                                                     Notifikasi::create([
                                                         'user_id' => $user->id,
@@ -1388,7 +1923,7 @@ class PpaController extends Controller
                                 }
                             }
 
-                            return redirect()->route('ppa.show', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]);
+                            return redirect()->route(($ppaAktif->is_draft == 1 ? 'ppa.draft' : 'ppa.show'), ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]);
                         }
                     }
                 }
@@ -1416,7 +1951,7 @@ class PpaController extends Controller
             $allPpa = Ppa::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
                 $query->where('budgeting_type_id',$jenisAktif->id);
             })->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
-            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id')->unique()->values())->first();
             $explodeJenis = explode('-',$jenis);
             $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
             $isYear = strlen($tahun) == 4 ? true : false;
@@ -1435,12 +1970,16 @@ class PpaController extends Controller
                 $apbyAktif = $isKso ? $apbyAktif->where('director_acc_status_id',1)->first() : $apbyAktif->where('president_acc_status_id',1)->first();
 
                 if($apbyAktif){
-                    $exceptionRoles = ['pembinayys','ketuayys','direktur','fam','faspv'];
+                    $exceptionRoles = ['pembinayys','ketuayys','direktur','fam','faspv','am'];
                     if(in_array($role,$exceptionRoles) || (!in_array($role,$exceptionRoles) && $this->checkRole($anggaranAktif->anggaran,$role))){
                         // Inti function
-                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'%')->where(function($query){
+                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'/%')->where(function($query){
                             $query->where('finance_acc_status_id','!=',1)->orWhereNull('finance_acc_status_id');
-                        })->first();
+                        });
+                        
+                        $ppaAktif = $request->submitted == 1 ? $ppaAktif->submitted() : $ppaAktif->draft();
+
+                        $ppaAktif = $ppaAktif->first();
 
                         if($ppaAktif){
                             if(isset($request->editId)){
@@ -1537,7 +2076,7 @@ class PpaController extends Controller
                             }
                             else Session::flash('danger','Data pengajuan tidak ditemukan');
 
-                            return redirect()->route('ppa.show', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]);
+                            return redirect()->route(($ppaAktif->is_draft == 1 ? 'ppa.draft' : 'ppa.show'), ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]);
                         }
                     }
                 }
@@ -1565,7 +2104,7 @@ class PpaController extends Controller
             $allPpa = Ppa::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
                 $query->where('budgeting_type_id',$jenisAktif->id);
             })->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
-            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id')->unique()->values())->first();
             $explodeJenis = explode('-',$jenis);
             $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
             $isYear = strlen($tahun) == 4 ? true : false;
@@ -1586,11 +2125,15 @@ class PpaController extends Controller
                 ])->latest()->aktif()->unfinal()->first();
 
                 if($apbyAktif){
-                    $exceptionRoles = ['fam','faspv','fas'];
+                    $exceptionRoles = ['fam','faspv','fas','am'];
                     $isAnggotaPa = $this->checkRole($anggaranAktif->anggaran,$role);
                     if(in_array($role,$exceptionRoles) || (!in_array($role,$exceptionRoles) && $isAnggotaPa)){
                         // Inti function
-                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'%')->first();
+                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'/%');
+                        
+                        $ppaAktif = $request->submitted == 1 ? $ppaAktif->submitted() : $ppaAktif->draft();
+
+                        $ppaAktif = $ppaAktif->first();
 
                         if($ppaAktif){
                             if(isset($request->id)){
@@ -1626,8 +2169,13 @@ class PpaController extends Controller
                                         })->first();
 
                                         if($proposalDetail){
+                                            $descEdited = false;
                                             $edited = 0;
-                                            if(in_array($role,['fam','faspv'])){
+                                            if(isset($request->editDesc)){
+                                                $proposalDetail->desc = $request->editDesc;
+                                                $descEdited = true;
+                                            }
+                                            if(in_array($role,['fam','faspv','am'])){
                                                 if($isPa){
                                                     if(isset($request->editPrice)){
                                                         $requestPrice = (int)str_replace('.','',$request->editPrice);
@@ -1686,28 +2234,33 @@ class PpaController extends Controller
                                                 }
                                             }
 
-                                            if($edited > 0){
-                                                if($proposalDetail->employee_id != $request->user()->pegawai->id){
-                                                    $proposalDetail->edited_employee_id = $request->user()->pegawai->id;
-                                                    $proposalDetail->edited_status_id = 1;
-                                                    $ppaDetail->edited_employee_id = $request->user()->pegawai->id;
-                                                    $ppaDetail->edited_status_id = 1;
-                                                    $ppaDetail->save();
+                                            if($descEdited || $edited > 0){
+                                                if($edited > 0){
+                                                    if($proposalDetail->employee_id != $request->user()->pegawai->id){
+                                                        $proposalDetail->edited_employee_id = $request->user()->pegawai->id;
+                                                        $proposalDetail->edited_status_id = 1;
+                                                        $ppaDetail->edited_employee_id = $request->user()->pegawai->id;
+                                                        $ppaDetail->edited_status_id = 1;
+                                                        $ppaDetail->save();
+                                                    }
+
+                                                    $proposalDetail->value = ($proposalDetail->price)*($proposalDetail->quantity);
                                                 }
 
-                                                $proposalDetail->value = ($proposalDetail->price)*($proposalDetail->quantity);
                                                 $proposalDetail->save();
 
-                                                $data = $proposalDetail->proposal;
+                                                if($edited > 0){
+                                                    $data = $proposalDetail->proposal;
 
-                                                $data->update(['total_value' => $data->details()->sum('value')]);
+                                                    $data->update(['total_value' => $data->details()->sum('value')]);
 
-                                                $ppaDetail->update(['value' => $ppaDetail->proposals()->sum('total_value')]);
-                                                if(in_array($role,['fam','faspv'])){
-                                                    if($isPa) $ppaDetail->update(['value_pa' => $ppaDetail->proposals()->sum('total_value')]);
-                                                    $ppaDetail->update(['value_fam' => $ppaDetail->proposals()->sum('total_value')]);
+                                                    $ppaDetail->update(['value' => $ppaDetail->proposals()->sum('total_value')]);
+                                                    if(in_array($role,['fam','faspv','am'])){
+                                                        if($isPa) $ppaDetail->update(['value_pa' => $ppaDetail->proposals()->sum('total_value')]);
+                                                        $ppaDetail->update(['value_fam' => $ppaDetail->proposals()->sum('total_value')]);
+                                                    }
+                                                    elseif($isAnggotaPa) $ppaDetail->update(['value_pa' => $ppaDetail->proposals()->sum('total_value')]);
                                                 }
-                                                elseif($isAnggotaPa) $ppaDetail->update(['value_pa' => $ppaDetail->proposals()->sum('total_value')]);
 
                                                 Session::flash('success','Data pengajuan berhasil diubah');
                                             }
@@ -1716,12 +2269,126 @@ class PpaController extends Controller
                                     }
                                     else Session::flash('danger','Data pengajuan tidak ditemukan');
 
-                                    return redirect()->route('ppa.ubah.proposal', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber, 'id' => $ppaDetail->id]);
+                                    return redirect()->route('ppa.'.($ppaAktif->is_draft == 1 ? 'draft.' : null).'ubah.proposal', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber, 'id' => $ppaDetail->id]);
                                 }
                                 else Session::flash('danger','Data pengajuan tidak ditemukan');
                             }
 
-                            return redirect()->route('ppa.show', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]);
+                            return redirect()->route(($ppaAktif->is_draft == 1 ? 'ppa.draft' : 'ppa.show'), ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]);
+                        }
+                        else return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
+                    }
+                }
+                return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link]);
+            }
+            else return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
+        }
+
+        return redirect()->route('ppa.index');
+    }
+    
+    /**
+     * Update the specified resources in storage.
+     *
+     * @param  \App\Models\Ppa\Ppa  $ppa
+     * @return \Illuminate\Http\Response
+     */
+    public function updateProposalDesc(Request $request, $jenis, $tahun, $anggaran, $nomor, $id)
+    {
+        $role = $request->user()->role->name;
+        
+        $jenisAktif = $this->hasBudgetingType($jenis, $request->user());
+
+        if($jenisAktif){
+            $allPpa = Ppa::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
+                $query->where('budgeting_type_id',$jenisAktif->id);
+            })->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id')->unique()->values())->first();
+            $explodeJenis = explode('-',$jenis);
+            $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
+            $isYear = strlen($tahun) == 4 ? true : false;
+            if(!$isYear){
+                $tahun = str_replace("-","/",$tahun);
+                $tahun = TahunAjaran::where('academic_year',$tahun)->first();
+                if(!$tahun) return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link]);
+            }
+            if($anggaranAktif){
+                $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
+
+                $yearAttr = $isYear ? 'year' : 'academic_year_id';
+                $accAttr = $isKso ? 'director_acc_status_id' : 'president_acc_status_id';
+
+                $apbyAktif = $anggaranAktif->apby()->where([
+                    $yearAttr => $yearAttr == 'year' ? $tahun : $tahun->id,
+                    $accAttr => 1
+                ])->latest()->aktif()->unfinal()->first();
+
+                if($apbyAktif){
+                    $exceptionRoles = ['fam','faspv','fas','am'];
+                    $isAnggotaPa = $this->checkRole($anggaranAktif->anggaran,$role);
+                    if(in_array($role,$exceptionRoles) || (!in_array($role,$exceptionRoles) && $isAnggotaPa)){
+                        // Inti function
+                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'/%');
+                        
+                        $ppaAktif = $request->submitted == 1 ? $ppaAktif->submitted() : $ppaAktif->draft();
+
+                        $ppaAktif = $ppaAktif->first();
+
+                        if($ppaAktif){
+                            $ppaDetail = null;
+                            $isPa = $anggaranAktif->anggaran->acc_position_id == $request->user()->pegawai->position_id ? true : false;
+
+                            $ppaDetail = $ppaAktif->detail()->where('id',$id)->whereHas('ppa',function($q){
+                                $q->where(function($query){
+                                    $query->where('finance_acc_status_id','!=',1)->orWhereNull('finance_acc_status_id');
+                                })->where('type_id',2);
+                            });
+                            if(!in_array($role,$exceptionRoles)){
+                                if($isPa){
+                                    $ppaDetail = $ppaDetail->where(function($query){
+                                        $query->where('finance_acc_status_id','!=',1)->orWhereNull('finance_acc_status_id');
+                                    });
+                                }
+                                else{
+                                    $ppaDetail = $ppaDetail->where(function($query){
+                                        $query->where('pa_acc_status_id','!=',1)->orWhereNull('pa_acc_status_id');
+                                    });
+                                }
+                            }
+                            $ppaDetail = $ppaDetail->first();
+
+                            if($ppaDetail){
+                                if(isset($request->editId)){
+                                    $proposal = $ppaDetail->proposals()->where('id',explode('-',$request->editId)[1])->first();
+
+                                    if($proposal){
+                                        $messages = [
+                                            'editTitle.required' => 'Mohon tuliskan nama proposal yang diajukan',
+                                        ];
+                                    
+                                        $this->validate($request, [
+                                            'editTitle' => 'required',
+                                        ], $messages);
+                                        
+                                        $old = $proposal->title;
+                                        $proposal->title = $request->editTitle;
+                                        $proposal->desc = isset($request->editDesc) ? $request->editDesc : null;
+                                        $proposal->save();
+                                        
+                                        if($old != $proposal->title)
+                                            Session::flash('success','Data '.$old.' berhasil diubah menjadi '.$proposal->title);
+                                        else
+                                            Session::flash('success','Perubahan deskripsi data pengajuan berhasil disimpan');
+                                    }
+                                    else Session::flash('danger','Data pengajuan gagal diubah');
+                                }
+                                else Session::flash('danger','Data pengajuan tidak ditemukan');
+
+                                return redirect()->route('ppa.'.($ppaAktif->is_draft == 1 ? 'draft.' : null).'ubah.proposal', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber, 'id' => $ppaDetail->id]);
+                            }
+                            else Session::flash('danger','Data pengajuan tidak ditemukan');
+
+                            return redirect()->route(($ppaAktif->is_draft == 1 ? 'ppa.draft' : 'ppa.show'), ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]);
                         }
                         else return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
                     }
@@ -1750,7 +2417,7 @@ class PpaController extends Controller
             $allPpa = Ppa::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
                 $query->where('budgeting_type_id',$jenisAktif->id);
             })->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
-            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id')->unique()->values())->first();
             $explodeJenis = explode('-',$jenis);
             $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
             $isYear = strlen($tahun) == 4 ? true : false;
@@ -1771,11 +2438,15 @@ class PpaController extends Controller
                 ])->latest()->aktif()->unfinal()->first();
 
                 if($apbyAktif){
-                    $exceptionRoles = ['fam','faspv','fas'];
+                    $exceptionRoles = ['fam','faspv','fas','am'];
                     $isAnggotaPa = $this->checkRole($anggaranAktif->anggaran,$role);
                     if(in_array($role,$exceptionRoles) || (!in_array($role,$exceptionRoles) && $isAnggotaPa)){
                         // Inti function
-                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'%')->first();
+                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'/%');
+                        
+                        $ppaAktif = $request->submitted == 1 ? $ppaAktif->submitted() : $ppaAktif->draft();
+
+                        $ppaAktif = $ppaAktif->first();
 
                         if($ppaAktif){
                             if(isset($request->id)){
@@ -1806,16 +2477,23 @@ class PpaController extends Controller
                                 if($ppaDetail){
                                     if($ppaDetail->proposals()->count() > 0){
                                         foreach($ppaDetail->proposals as $proposal){
+                                            $inputTitleName = 'title-'.$proposal->id;
+                                            if(isset($request->{$inputTitleName})){
+                                                $proposal->title = $request->{$inputTitleName};
+                                                $proposal->save();
+                                            }
                                             foreach($proposal->details as $detail){
                                                 $edited = 0;
+                                                $inputDescName = 'desc-'.$detail->id;
                                                 $inputPriceName = 'price-'.$detail->id;
                                                 $inputQtyName = 'qty-'.$detail->id;
                                                 $requestPrice = (int)str_replace('.','',$request->{$inputPriceName});
                                                 $requestQuantity = (int)str_replace('.','',$request->{$inputQtyName});
+                                                if(isset($request->{$inputDescName})) $detail->desc = $request->{$inputDescName};
                                                 $detail->price = $requestPrice;
                                                 $detail->quantity = $requestQuantity;
 
-                                                if(in_array($role,['fam','faspv'])){
+                                                if(in_array($role,['fam','faspv','am'])){
                                                     if($isPa){
                                                         $detail->price_pa = $requestPrice;
                                                         $detail->quantity_pa = $requestQuantity;
@@ -1848,6 +2526,12 @@ class PpaController extends Controller
                                                             $edited++;
                                                         }
                                                     }
+                                                    // Checked Bypass
+                                                    if(!$isPa && $request->user()->pegawai->unit_id != '5'){
+                                                        $ppaDetail->edited_employee_id = $request->user()->pegawai->id;
+                                                        $ppaDetail->edited_status_id = 1;
+                                                        $ppaDetail->save();
+                                                    }
                                                 }
 
                                                 $detail->value = $requestPrice*$requestQuantity;
@@ -1866,7 +2550,7 @@ class PpaController extends Controller
                                             $proposal->update(['total_value' => $proposal->details()->sum('value')]);
                                         }
                                         $ppaDetail->update(['value' => $ppaDetail->proposals()->sum('total_value')]);
-                                        if(in_array($role,['fam','faspv'])){
+                                        if(in_array($role,['fam','faspv','am'])){
                                             if($isPa) $ppaDetail->update(['value_pa' => $ppaDetail->proposals()->sum('total_value')]);
                                             $ppaDetail->update(['value_fam' => $ppaDetail->proposals()->sum('total_value')]);
                                         }
@@ -1876,12 +2560,12 @@ class PpaController extends Controller
                                     }
                                     else Session::flash('danger','Data pengajuan tidak ditemukan');
 
-                                    return redirect()->route('ppa.ubah.proposal', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber, 'id' => $ppaDetail->id]);
+                                    return redirect()->route('ppa.'.($ppaAktif->is_draft == 1 ? 'draft.' : null).'ubah.proposal', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber, 'id' => $ppaDetail->id]);
                                 }
                                 else Session::flash('danger','Data pengajuan tidak ditemukan');
                             }
 
-                            return redirect()->route('ppa.show', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]);
+                            return redirect()->route(($ppaAktif->is_draft == 1 ? 'ppa.draft' : 'ppa.show'), ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]);
                         }
                         else return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
                     }
@@ -1900,7 +2584,7 @@ class PpaController extends Controller
      * @param  \App\Models\Ppa\Ppa  $ppa
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request, $jenis, $tahun, $anggaran, $nomor, $id)
+    public function destroyDetail(Request $request, $jenis, $tahun, $anggaran, $nomor, $id)
     {
         $role = $request->user()->role->name;
         
@@ -1910,7 +2594,7 @@ class PpaController extends Controller
             $allPpa = Ppa::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
                 $query->where('budgeting_type_id',$jenisAktif->id);
             })->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
-            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id')->unique()->values())->first();
             $explodeJenis = explode('-',$jenis);
             $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
             $isYear = strlen($tahun) == 4 ? true : false;
@@ -1929,18 +2613,22 @@ class PpaController extends Controller
                 $apbyAktif = $isKso ? $apbyAktif->where('director_acc_status_id',1)->first() : $apbyAktif->where('president_acc_status_id',1)->first();
 
                 if($apbyAktif){
-                    $exceptionRoles = ['pembinayys','ketuayys','direktur','fam','faspv'];
+                    $exceptionRoles = ['pembinayys','ketuayys','direktur','fam','faspv','am'];
                     if(in_array($role,$exceptionRoles) || (!in_array($role,$exceptionRoles) && $this->checkRole($anggaranAktif->anggaran,$role))){
                         // Inti function
-                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'%')->first();
+                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'/%');
+                        
+                        $ppaAktif = $request->submitted == 1 ? $ppaAktif->submitted() : $ppaAktif->draft();
+
+                        $ppaAktif = $ppaAktif->first();
 
                         if($ppaAktif){
                             $ppa = null;
                             $isPa = $anggaranAktif->anggaran->acc_position_id == $request->user()->pegawai->position_id ? true : false;
                             $zeroAccount = false;
 
-                            if(in_array($role,['fam']) && $ppaAktif->detail()->where('value','<=',0)->count() > 0){
-                                $ppa = $ppaAktif->detail()->where('id',$id)->where('value','<=',0)->first();
+                            if(in_array($role,['fam','am']) && $ppaAktif->detail()->where('value','<=',0)->whereDoesntHave('ppa.lppa')->count() > 0){
+                                $ppa = $ppaAktif->detail()->where('id',$id)->where('value','<=',0)->whereDoesntHave('ppa.lppa')->first();
                                 $zeroAccount = true;
                             }
                             if($this->checkRole($anggaranAktif->anggaran,$role) && !$ppa){
@@ -1968,7 +2656,7 @@ class PpaController extends Controller
                             }
                             else Session::flash('danger','Data pengajuan gagal dihapus');
 
-                            return redirect()->route('ppa.show', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]);
+                            return redirect()->route(($ppaAktif->is_draft == 1 ? 'ppa.draft' : 'ppa.show'), ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]);
                         }
                         else return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link]);
                     }
@@ -1987,7 +2675,7 @@ class PpaController extends Controller
      * @param  \App\Models\Ppa\Ppa  $ppa
      * @return \Illuminate\Http\Response
      */
-    public function destroyProposal(Request $request, $jenis, $tahun, $anggaran, $nomor, $id, $item)
+    public function destroyProposalItem(Request $request, $jenis, $tahun, $anggaran, $nomor, $id, $item)
     {
         $role = $request->user()->role->name;
         
@@ -1997,7 +2685,7 @@ class PpaController extends Controller
             $allPpa = Ppa::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
                 $query->where('budgeting_type_id',$jenisAktif->id);
             })->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
-            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id')->unique()->values())->first();
             $explodeJenis = explode('-',$jenis);
             $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
             $isYear = strlen($tahun) == 4 ? true : false;
@@ -2018,11 +2706,15 @@ class PpaController extends Controller
                 ])->latest()->aktif()->unfinal()->first();
 
                 if($apbyAktif){
-                    $exceptionRoles = ['fam','faspv','fas'];
+                    $exceptionRoles = ['fam','faspv','fas','am'];
                     $isAnggotaPa = $this->checkRole($anggaranAktif->anggaran,$role);
                     if(in_array($role,$exceptionRoles) || (!in_array($role,$exceptionRoles) && $isAnggotaPa)){
                         // Inti function
-                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'%')->first();
+                        $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'/%');
+                        
+                        $ppaAktif = $request->submitted == 1 ? $ppaAktif->submitted() : $ppaAktif->draft();
+
+                        $ppaAktif = $ppaAktif->first();
 
                         if($ppaAktif){
                             $isPa = $anggaranAktif->anggaran->acc_position_id == $request->user()->pegawai->position_id ? true : false;
@@ -2066,7 +2758,7 @@ class PpaController extends Controller
                                     $data->update(['total_value' => $data->details()->sum('value')]);
 
                                     $ppaDetail->update(['value' => $ppaDetail->proposals()->sum('total_value')]);
-                                    if(in_array($role,['fam','faspv'])){
+                                    if(in_array($role,['fam','faspv','am'])){
                                         if($isPa) $ppaDetail->update(['value_pa' => $ppaDetail->proposals()->sum('total_value')]);
                                         $ppaDetail->update(['value_fam' => $ppaDetail->proposals()->sum('total_value')]);
                                     }
@@ -2076,11 +2768,11 @@ class PpaController extends Controller
                                 }
                                 else Session::flash('danger','Data pengajuan gagal dihapus');
 
-                                return redirect()->route('ppa.ubah.proposal', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber, 'id' => $ppaDetail->id]);
+                                return redirect()->route('ppa.'.($ppaAktif->is_draft == 1 ? 'draft.' : null).'ubah.proposal', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber, 'id' => $ppaDetail->id]);
                             }
                             else Session::flash('danger','Data pengajuan tidak ditemukan');
 
-                            return redirect()->route('ppa.show', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]);
+                            return redirect()->route(($ppaAktif->is_draft == 1 ? 'ppa.draft' : 'ppa.show'), ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]);
                         }
                         else return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
                     }
@@ -2109,7 +2801,7 @@ class PpaController extends Controller
             $allPpa = Ppa::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
                 $query->where('budgeting_type_id',$jenisAktif->id);
             })->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
-            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id')->unique()->values())->first();
             $explodeJenis = explode('-',$jenis);
             $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
             $isYear = strlen($tahun) == 4 ? true : false;
@@ -2129,7 +2821,11 @@ class PpaController extends Controller
 
                 if($apbyAktif){
                     // Inti function
-                    $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'%')->where('total_value','<=',0)->first();
+                    $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'/%')->where('total_value','<=',0)->whereDoesntHave('lppa');
+                        
+                    $ppaAktif = $request->submitted == 1 ? $ppaAktif->submitted() : $ppaAktif->draft();
+
+                    $ppaAktif = $ppaAktif->first();
 
                     if($ppaAktif){
                         if(!$ppaAktif->eksklusi) PpaExclude::create(['ppa_id'=>$ppaAktif->id]);
@@ -2138,6 +2834,68 @@ class PpaController extends Controller
                         Session::flash('success','Data PPA No. '.$ppaAktif->number.' berhasil dikecualikan');
                     }
                     else Session::flash('danger','PPA gagal dikecualikan');
+
+                    return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link]);
+                }
+                else return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
+            }
+            else return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
+        }
+
+        return redirect()->route('ppa.index');
+    }
+
+    /**
+     * Destroy the specified resource from storage.
+     *
+     * @param  \App\Models\Ppa\Ppa  $ppa
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(Request $request, $jenis, $tahun, $anggaran, $nomor)
+    {
+        $role = $request->user()->role->name;
+        
+        $jenisAktif = $this->hasBudgetingType($jenis, $request->user());
+
+        if($jenisAktif){
+            $allPpa = Ppa::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
+                $query->where('budgeting_type_id',$jenisAktif->id);
+            })->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id')->unique()->values())->first();
+            $explodeJenis = explode('-',$jenis);
+            $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
+            $isYear = strlen($tahun) == 4 ? true : false;
+            if(!$isYear){
+                $tahun = str_replace("-","/",$tahun);
+                $tahun = TahunAjaran::where('academic_year',$tahun)->first();
+                if(!$tahun) return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link]);
+            }
+            if($anggaranAktif){
+                $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
+
+                $yearAttr = $isYear ? 'year' : 'academic_year_id';
+
+                $apbyAktif = $anggaranAktif->apby()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->latest()->aktif()->unfinal();
+
+                $apbyAktif = $isKso ? $apbyAktif->where('director_acc_status_id',1)->first() : $apbyAktif->where('president_acc_status_id',1)->first();
+
+                if($apbyAktif){
+                    // Inti function
+                    $ppaAktif = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'/%')->draft()->first();
+
+                    $isPa = $anggaranAktif->anggaran->acc_position_id == $request->user()->pegawai->position_id ? true : false;
+
+                    if($ppaAktif && $isPa){
+                        $number = $ppaAktif->number;
+                        foreach($ppaAktif->detail as $d){
+                            $d->proposals()->update(['ppa_detail_id' => null]);
+                        }
+                        $ppaAktif->detail()->delete();
+                        $ppaAktif->delete();
+
+                        Session::flash('success','Data Draf PPA No. '.$number.' berhasil dihapus');
+                    }
+                    else Session::flash('danger','Draf PPA gagal dihapus');
 
                     return redirect()->route('ppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link]);
                 }
@@ -2173,7 +2931,7 @@ class PpaController extends Controller
             $allPpa = Ppa::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
                 $query->where('budgeting_type_id',$jenisAktif->id);
             })->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
-            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id')->unique()->values())->first();
             $explodeJenis = explode('-',$jenis);
             $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
             $isYear = strlen($tahun) == 4 ? true : false;
@@ -2202,7 +2960,7 @@ class PpaController extends Controller
                             $q->where('president_acc_status_id',1);
                         });
 
-                    $ppaAktif = $ppaAktif->where('number','LIKE',$nomor.'%')->first();
+                    $ppaAktif = $ppaAktif->submitted()->where('number','LIKE',$nomor.'/%')->first();
 
                     if($ppaAktif && $ppaAktif->detail()->count() > 0){
                         $ppaKsoCair = ($isKso && $ppaAktif->bbk && $ppaAktif->bbk->bbk->director_acc_status_id == 1) ? true : false;
@@ -2210,16 +2968,16 @@ class PpaController extends Controller
                         $spreadsheet = new Spreadsheet();
 
                         if($isKso && !$ppaKsoCair){
-                            $spreadsheet->getProperties()->setCreator('SIT Auliya')
+                            $spreadsheet->getProperties()->setCreator('Sekolah MUDA')
                             ->setLastModifiedBy($request->user()->pegawai->name)
-                            ->setTitle("Data Pengajuan Penggunaan Anggaran KSO Auliya Nomor ".$ppaAktif->number)
-                            ->setSubject("Pengajuan Penggunaan Anggaran Auliya KSO Nomor ".$ppaAktif->number)
-                            ->setDescription("Rekapitulasi Data Pengajuan Penggunaan Anggaran KSO Auliya Nomor ".$ppaAktif->number)
-                            ->setKeywords("Pengajuan, Penggunaan, Anggaran, PPA, KSO, Auliya");
+                            ->setTitle("Data Pengajuan Penggunaan Anggaran KSO MUDA Nomor ".$ppaAktif->number)
+                            ->setSubject("Pengajuan Penggunaan Anggaran MUDA KSO Nomor ".$ppaAktif->number)
+                            ->setDescription("Rekapitulasi Data Pengajuan Penggunaan Anggaran KSO MUDA Nomor ".$ppaAktif->number)
+                            ->setKeywords("Pengajuan, Penggunaan, Anggaran, PPA, KSO, MUDA");
 
                             $spreadsheet->setActiveSheetIndex(0)
                             ->setCellValue('C1', 'PENGAJUAN PENGGUNAAN ANGGARAN - KSO')
-                            ->setCellValue('C2', 'YAYASAN AULIYA INSAN UTAMA DAN YAYASAN LETRIS INDONESIA');
+                            ->setCellValue('C2', 'YAYASAN MUDA INCOMSO DAN YAYASAN LETRIS LUMINTOO');
 
                             // Logo
                             $logo = new Drawing;
@@ -2235,16 +2993,16 @@ class PpaController extends Controller
                             $spreadsheet->getActiveSheet()->mergeCells('H1:H2');
                         }
                         else{
-                            $spreadsheet->getProperties()->setCreator('SIT Auliya')
+                            $spreadsheet->getProperties()->setCreator('Sekolah MUDA')
                             ->setLastModifiedBy($request->user()->pegawai->name)
-                            ->setTitle("Data Referensi Penjurnalan Auliya Nomor ".$ppaAktif->number)
-                            ->setSubject("Referensi Penjurnalan Auliya KSO Nomor ".$ppaAktif->number)
-                            ->setDescription("Rekapitulasi Data Referensi Penjurnalan Auliya Nomor ".$ppaAktif->number)
-                            ->setKeywords("Referensi, Jurnal, Penjurnalan, PPA, Auliya");
+                            ->setTitle("Data Referensi Penjurnalan MUDA Nomor ".$ppaAktif->number)
+                            ->setSubject("Referensi Penjurnalan MUDA KSO Nomor ".$ppaAktif->number)
+                            ->setDescription("Rekapitulasi Data Referensi Penjurnalan MUDA Nomor ".$ppaAktif->number)
+                            ->setKeywords("Referensi, Jurnal, Penjurnalan, PPA, MUDA");
 
                             $spreadsheet->setActiveSheetIndex(0)
                             ->setCellValue('C1', 'REFERENSI PENJURNALAN')
-                            ->setCellValue('C2', 'YAYASAN AULIYA INSAN UTAMA');
+                            ->setCellValue('C2', 'YAYASAN MUDA INCOMSO');
                         }
 
                         $spreadsheet->getActiveSheet()
@@ -2263,7 +3021,7 @@ class PpaController extends Controller
 
                         if($isKso && !$ppaKsoCair){
                             $spreadsheet->getActiveSheet()
-                            ->setCellValue('F8', 'Jumlah Auliya')
+                            ->setCellValue('F8', 'Jumlah MUDA')
                             ->setCellValue('H8', 'Jumlah Letris');
                         }
                         else{
@@ -2272,8 +3030,8 @@ class PpaController extends Controller
 
                         // Logo
                         $logo = new Drawing;
-                        $logo->setName('Logo Auliya');
-                        $logo->setDescription('Logo Auliya');
+                        $logo->setName('Logo MUDA');
+                        $logo->setDescription('Logo MUDA');
                         $logo->setPath('./img/logo/logo-vertical.png');
                         $logo->setHeight(76);
                         $logo->setOffsetX(9);
@@ -2480,7 +3238,7 @@ class PpaController extends Controller
 
                         // Director Signature Row
                         $spreadsheet->getActiveSheet()
-                        ->setCellValue($firstColumn.$kolom, 'Direktur SIT Auliya');
+                        ->setCellValue($firstColumn.$kolom, 'Direktur Sekolah MUDA');
                         $spreadsheet->getActiveSheet()->mergeCells($firstColumn.$kolom.':'.$lastColumn.$kolom);
 
                         $styleArray = [
@@ -2633,7 +3391,7 @@ class PpaController extends Controller
 
         return $returnValue;
     }
-    
+
     /**
      * Check whether specified resource from storage has access.
      *
@@ -2647,7 +3405,7 @@ class PpaController extends Controller
         $jenisAnggaranCount = null;
         foreach($jenisAnggaran as $j){
             $anggaranCount = $j->anggaran();
-            if(!in_array($user->role->name,['pembinayys','ketuayys','direktur','fam','faspv'])){
+            if(!in_array($user->role->name,['pembinayys','ketuayys','direktur','fam','faspv','fas','am','akunspv'])){
                 if($user->pegawai->unit_id == '5'){
                     $anggaranCount = $anggaranCount->whereHas('anggaran',function($q)use($user){$q->where('position_id',$user->pegawai->jabatan->group()->first()->id);});
                 }
@@ -2680,15 +3438,18 @@ class PpaController extends Controller
      */
     public function checkRole($anggaran,$role){
         $rolesCollection = collect([
-            ['unit' => 1, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
-            ['unit' => 2, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
-            ['unit' => 3, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
-            ['unit' => 4, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
-            ['unit' => 5, 'position' => 18, 'roles' => ['etl','etm']],
-            ['unit' => 5, 'position' => 23, 'roles' => ['ctl','ctm']],
-            ['unit' => 5, 'position' => 28, 'roles' => ['fam','faspv','fas']],
-            ['unit' => 5, 'position' => 32, 'roles' => ['am','aspv']],
-            ['unit' => 5, 'position' => 36, 'roles' => ['am','ftm','ftspv','fts']]
+            ['name' => 'TKIT', 'unit' => 1, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
+            ['name' => 'SDIT', 'unit' => 2, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
+            ['name' => 'SMPIT', 'unit' => 3, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
+            ['name' => 'SMAIT', 'unit' => 4, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
+            ['name' => 'Education Team', 'unit' => 5, 'position' => 18, 'roles' => ['etl','etm']],
+            ['name' => 'Customer Team', 'unit' => 5, 'position' => 23, 'roles' => ['ctl','ctm']],
+            ['name' => 'Finance and Accounting', 'unit' => 5, 'position' => 28, 'roles' => ['am','fam','faspv','fas']],
+            ['name' => 'Administration, Legal, and IT', 'unit' => 5, 'position' => 32, 'roles' => ['am','aspv']],
+            ['name' => 'Facilities', 'unit' => 5, 'position' => 36, 'roles' => ['am','ftm','ftspv','fts']],
+            ['name' => 'Divisi Edukasi', 'unit' => 5, 'position' => 18, 'roles' => ['etl']],
+            ['name' => 'Divisi Layanan', 'unit' => 5, 'position' => 23, 'roles' => ['ctl']],
+            ['name' => 'Divisi Umum', 'unit' => 5, 'position' => 32, 'roles' => ['am']]
         ]);
 
         if($anggaran->unit_id == 5){

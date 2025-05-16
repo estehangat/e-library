@@ -121,7 +121,7 @@ class KepegawaianController extends Controller
             $folder = 'kepsek';
         else $folder = 'read-only';
 
-        return view('kepegawaian.'.$folder.'.dasbor_index', compact('viewYayasan','pegawai','count'));
+        return view('kepegawaian.'.$folder.'.dasbor_index', compact('viewYayasan','pejabat','pegawai','count'));
         //return view('kepegawaian.'.$folder.'.dasbor_index');
     }
 }

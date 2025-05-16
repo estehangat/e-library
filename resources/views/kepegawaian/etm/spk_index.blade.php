@@ -32,7 +32,7 @@ Perjanjian Kerja
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Perjanjian Kerja</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Perjanjian Kerja</h6>
                 <div class="float-right">
                   @if($counter->value > 0)
                   <button type="button" class="m-0 btn btn-danger btn-sm" data-toggle="modal" data-target="#reset-number">Reset Nomor SPK <i class="fas fa-sync-alt  fa-flip-horizontal ml-1"></i></button>
@@ -117,7 +117,7 @@ Perjanjian Kerja
 <div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h5 class="modal-title text-white">Atur Perjanjian Kerja</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>

@@ -4,17 +4,14 @@
 Refund
 @endsection
 
-@section('sidebar')
-@php
-$role = Auth::user()->role->name;
-@endphp
-@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','keu','pembinayys','ketuayys','wakasek']))
-@include('template.sidebar.keuangan.'.$role)
-@else
-@include('template.sidebar.keuangan.employee')
-@endif
+@section('headmeta')
 <!-- Select2 -->
-<link href="{{url('/vendor/select2/dist/css/select2.min.css')}}" rel="stylesheet" type="text/css">
+<link href="{{ asset('vendor/select2/dist/css/select2.min.css') }}" rel="stylesheet">
+<link href="{{ asset('vendor/select2/dist/css/select2-bootstrap4.min.css') }}" rel="stylesheet">
+@endsection
+
+@section('sidebar')
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -33,7 +30,7 @@ $role = Auth::user()->role->name;
                 <div class="row">
                     <div class="table-responsive">
                         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                            <h6 class="m-0 font-weight-bold text-brand-purple">Refund</h6>
+                            <h6 class="m-0 font-weight-bold text-brand-green">Refund</h6>
                         </div>
                         @if(Session::has('sukses'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">

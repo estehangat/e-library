@@ -66,7 +66,7 @@ Materi Pelatihan
                 <a class="nav-link active" href="{{ route('pelatihan.materi.index', ['tahunajaran' => $aktif->academicYearLink, 'status' => 'aktif']) }}">Aktif</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link text-brand-purple" href="{{ route('pelatihan.materi.index', ['tahunajaran' => $aktif->academicYearLink, 'status' => 'selesai']) }}">Selesai</a>
+                <a class="nav-link text-brand-green" href="{{ route('pelatihan.materi.index', ['tahunajaran' => $aktif->academicYearLink, 'status' => 'selesai']) }}">Selesai</a>
               </li>
             </ul>
         </div>
@@ -77,7 +77,7 @@ Materi Pelatihan
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Kurikulum Materi Pelatihan</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Kurikulum Materi Pelatihan</h6>
             </div>
             <div class="card-body p-3">
               @if(Session::has('success'))
@@ -149,7 +149,7 @@ Materi Pelatihan
                         @endif
                       </td>
                       <td>
-                        <a href="{{ route('pelatihan.materi.detail', ['id' => $p->id]) }}" class="btn btn-sm btn-primary" target="_blank"><i class="fas fa-eye"></i></a>
+                        <a href="{{ route('pelatihan.materi.detail', ['id' => $p->id]) }}" class="btn btn-sm btn-brand-green-dark" target="_blank"><i class="fas fa-eye"></i></a>
                         @if($p->active_status_id != 2)
                         @if($p->education_acc_status_id != 1)
                         <a href="#" class="btn btn-sm btn-success" data-toggle="modal" data-target="#validate-form" onclick="editModal('{{ route('pelatihan.materi.ubah') }}','{{ $p->id }}','#validate-form')"><i class="fas fa-check"></i></a>
@@ -205,7 +205,7 @@ Materi Pelatihan
 <div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h5 class="modal-title text-white">Ubah Materi Pelatihan</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>

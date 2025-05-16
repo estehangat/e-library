@@ -41,8 +41,8 @@ Deskripsi Indikator
     <div class="col-md-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Predikat & Deskripsi Indikator Aspek Perkembangan</h6>
-                <a class="m-0 float-right btn btn-brand-purple-dark btn-sm" href="javascript:void(0)" data-toggle="modal" data-target="#TambahModal">Tambah <i class="fas fa-plus"></i></a>
+                <h6 class="m-0 font-weight-bold text-brand-green">Predikat & Deskripsi Indikator Aspek Perkembangan</h6>
+                <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="javascript:void(0)" data-toggle="modal" data-target="#TambahModal">Tambah <i class="fas fa-plus"></i></a>
             </div>
             <div class="table-responsive">
                 <table class="table align-items-center table-flush">
@@ -93,7 +93,7 @@ Deskripsi Indikator
 
             <form action="{{route('descindikator.tambah')}}" method="POST">
                 @csrf
-                <div class="modal-header bg-brand-purple-dark text-white">
+                <div class="modal-header bg-brand-green-dark text-white">
                     <h5 class="modal-title" id="exampleModalLongTitle">Tambah Predikat - Deskripsi</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
@@ -135,7 +135,7 @@ Deskripsi Indikator
             <form action="{{route('descindikator.ubah')}}" method="POST">
                 @csrf
                 <input type="hidden" name="id" id="ubahid">
-                <div class="modal-header bg-brand-purple-dark text-white">
+                <div class="modal-header bg-brand-green-dark text-white">
                     <h5 class="modal-title" id="exampleModalLongTitle">Ubah Predikat - Deskripsi</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>

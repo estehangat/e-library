@@ -15,7 +15,7 @@
                 <form action="{{route('sertifiklaskepsek.print')}}" target="_blank" method="POST">
                     @csrf
                     <input type="hidden" name="id" value="{{$s->id}}">
-                    <button type="submit" class="btn btn-brand-purple btn-sm"><i class="fa fas fa-print"></i> Cetak Sertifikat</button>&nbsp;
+                    <button type="submit" class="btn btn-brand-green btn-sm"><i class="fa fas fa-print"></i> Cetak Sertifikat</button>&nbsp;
                 </form>
                 @else
                 Menunggu Semester Genap

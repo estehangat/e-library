@@ -61,7 +61,7 @@ Materi Pelatihan
         <div class="card">
             <ul class="nav nav-pills p-3">
               <li class="nav-item">
-                <a class="nav-link text-brand-purple" href="{{ route('pelatihan.materi.index', ['tahunajaran' => $aktif->academicYearLink, 'status' => 'aktif']) }}">Aktif</a>
+                <a class="nav-link text-brand-green" href="{{ route('pelatihan.materi.index', ['tahunajaran' => $aktif->academicYearLink, 'status' => 'aktif']) }}">Aktif</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link active" href="{{ route('pelatihan.materi.index', ['tahunajaran' => $aktif->academicYearLink, 'status' => 'selesai']) }}">Selesai</a>
@@ -76,7 +76,7 @@ Materi Pelatihan
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Kurikulum Materi Pelatihan</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Kurikulum Materi Pelatihan</h6>
             </div>
             <div class="card-body p-3">
               @if(count($pelatihan) > 0)

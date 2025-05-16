@@ -54,32 +54,94 @@ class PembayaranBmsController extends Controller
         }
         $unit = 'Semua';
 
-        $year = isset($request->tahun) ? $request->tahun : date("Y");
+        // $year = isset($request->tahun) ? $request->tahun : date("Y");
 
-        $bmsTransaction = $siswa == 'calon' ? BmsTransactionCalonSiswa::orderBy('created_at','desc') : BmsTransaction::orderBy('created_at','desc');
-        if($request->bulan){
-            $month = $request->bulan;
-            if($unit_id == 5){
-                $lists = $bmsTransaction->where('month',$month)->where('year',$year)->get();
-                $units = Unit::all();
-            }else{
-                $lists = $bmsTransaction->where('unit_id',$unit_id)->where('year',$year)->where('month',$month)->get();
-                $units = Unit::find(auth()->user()->pegawai->unit_id);
+        // $bmsTransaction = $siswa == 'calon' ? BmsTransactionCalonSiswa::orderBy('created_at','desc') : BmsTransaction::orderBy('created_at','desc');
+        // if($request->bulan){
+        //     $month = $request->bulan;
+        //     if($unit_id == 5){
+        //         $lists = $bmsTransaction->where('month',$month)->where('year',$year)->get();
+        //         $units = Unit::all();
+        //     }else{
+        //         $lists = $bmsTransaction->where('unit_id',$unit_id)->where('year',$year)->where('month',$month)->get();
+        //         $units = Unit::find(auth()->user()->pegawai->unit_id);
+        //     }
+        // }else{
+        //     $month = null;
+        //     if($unit_id == 5){
+        //         $lists = $bmsTransaction->where('year',$year)->get();
+        //         $units = Unit::all();
+        //     }else{
+        //         $lists = $bmsTransaction->where('unit_id',$unit_id)->where('year',$year)->get();
+        //         $units = Unit::find(auth()->user()->pegawai->unit_id);
+        //     }
+        // }
+        // dd($lists[0]->unit_id);
+
+        // Use Academic Year
+        $year = $request->year;
+        $years = $academicYears = null;
+        $isYear = false;
+
+        $queryData = SppTransaction::query();
+
+        if($queryData->count() > 0){
+            $years = clone $queryData;
+            $yearsCount = $years->whereNotNull('year')->count();
+            $years = $years->whereNotNull('year')->orderBy('year')->pluck('year')->unique();
+
+            $academicYears = TahunAjaran::select('id','academic_year','academic_year_start','academic_year_end')->where('academic_year_start','>=',$years->min())->where('academic_year_end','<=',$years->max())->orderBy('academic_year')->get();
+        }
+
+        $tahunPelajaran = TahunAjaran::where('is_active',1)->latest()->take(1)->get();
+
+        if($academicYears && $academicYears->count() > 0){
+            $tahunPelajaran = TahunAjaran::where(function($q)use($academicYears){
+                $q->where(function($q){
+                    $q->where('is_active',1);
+                })->orWhere(function($q)use($academicYears){
+                    $q->whereIn('id',$academicYears);
+                });
+            })->orderBy('created_at')->get();
+        }
+
+        if(!$isYear){
+            if($year){
+                $year = str_replace("-","/",$year);
+                $year = TahunAjaran::where('academic_year',$year)->first();
             }
-        }else{
-            $month = null;
-            if($unit_id == 5){
-                $lists = $bmsTransaction->where('year',$year)->get();
-                $units = Unit::all();
-            }else{
-                $lists = $bmsTransaction->where('unit_id',$unit_id)->where('year',$year)->get();
-                $units = Unit::find(auth()->user()->pegawai->unit_id);
+            else{
+                // Default Value
+                $year = TahunAjaran::where('is_active',1)->latest()->first();
+            }
+            if(!$year) return redirect()->route($this->route.'.index');
+        }
+        else{
+            // Default Value
+            if(!$year){
+                if($yearsCount > 0){
+                    $year = $years->last();
+                }
+                else{
+                    $year = Date::now('Asia/Jakarta')->format('Y');
+                }
+            }
+            else{
+                if($yearsCount > 0){
+                    if(!in_array($year,$years->toArray())) $year = null;
+                }
+                else{
+                    if($year != Date::now('Asia/Jakarta')->format('Y')) $year = null;
+                }
+            }
+            if(!$year){
+                return redirect()->route($this->route.'.index');
             }
         }
-        // dd($lists[0]->unit_id);
-        $tahun_akademik_aktif = TahunAjaran::where('is_active',1)->first();
+
+        //$tahun_akademik_aktif = TahunAjaran::where('is_active',1)->first();
         if($unit_id == 5){
-            $plan_list = BmsPlan::where('academic_year_id',$tahun_akademik_aktif->id)->get();
+            $plan_list = BmsPlan::where('academic_year_id',$year->id)->get();
             $plan = new stdClass;
             $plan->total_plan = 0;
             $plan->total_get = 0;
@@ -96,24 +158,22 @@ class PembayaranBmsController extends Controller
                 $plan->percent = ($plan->student_remain / $plan->total_student)*100;
             }
         }else{
-            $plan = BmsPlan::where('academic_year_id',$tahun_akademik_aktif->id)->where('unit_id',$unit_id)->first();
+            $plan = BmsPlan::where('academic_year_id',$year->id)->where('unit_id',$unit_id)->first();
         }
-        $year_now = date("Y");
-        $years = array();
-        $year_increment = 2019;
-        while($year_increment <= $year_now){
-            $year_obj = new stdClass();
-            $year_obj->year=$year_increment;
-            array_push($years,$year_obj);
-            $year_increment+=1;
-        }
-
-        $academic_year = TahunAjaran::orderBy('academic_year_start','desc')->get();
+        // $year_now = date("Y");
+        // $years = array();
+        // $year_increment = 2019;
+        // while($year_increment <= $year_now){
+        //     $year_obj = new stdClass();
+        //     $year_obj->year=$year_increment;
+        //     array_push($years,$year_obj);
+        //     $year_increment+=1;
+        // }
 
         $active = $this->active.($siswa ? (' '.ucwords($siswa == 'calon' ? $siswa.' Siswa' : $siswa)) : null);
         $route = $this->route;
 
-        return view($this->template.$route.'-index', compact('active','route','lists','unit','units','unit_id','academic_year','years','year','month','plan','siswa'));
+        return view($this->template.$route.'-index', compact('active','route','unit','years','year','academicYears','tahunPelajaran','isYear','plan','siswa'));
     }
 
     /**
@@ -132,24 +192,40 @@ class PembayaranBmsController extends Controller
         $unit_id = $request->unit_id;
         // $level_id = $request->level_id;
 
-        $bmsTransaction = $siswa == 'calon' ? BmsTransactionCalonSiswa::where('year', $year) : BmsTransaction::where('year', $year);
+        $datas = null;
 
-        if($request->user()->pegawai->unit_id == 5){
-            $bmsTransaction = $bmsTransaction->where('unit_id',$unit_id);
-        }else{
-            $bmsTransaction = $bmsTransaction->where('unit_id',$request->user()->pegawai->unit_id);
+        $year = str_replace("-","/",$year);
+        $year = TahunAjaran::select('id','academic_year_start','academic_year_end')->where('academic_year',$year)->first();
+        
+        if($year){
+            $bmsTransaction = $siswa == 'calon' ? BmsTransactionCalonSiswa::query() : BmsTransaction::query();
+
+            $datas = $bmsTransaction->when($siswa == 'siswa',function($q){
+                return $q->whereIn('exchange_que',array(0,1));
+            })->when($month, function($q)use($month,$year){
+                return $q->where('month', $month)->when($month >= 7, function($q)use($year){
+                    return $q->where('year',$year->academic_year_start);
+                }, function($q)use($year){
+                    return $q->where('year',$year->academic_year_end);
+                });
+            }, function($q)use($year){
+                return $q->where(function($q)use($year){
+                    $q->where(function($q)use($year){
+                        $q->where('year',$year->academic_year_start)->where('month', '>=', 7);
+                    })->orWhere(function($q)use($year){
+                        $q->where('year',$year->academic_year_end)->where('month', '<=', 6);
+                    });
+                });
+            });
+
+            if($request->user()->pegawai->unit_id == 5){
+                $datas = $datas->where('unit_id',$unit_id);
+            }else{
+                $datas = $datas->where('unit_id',$request->user()->pegawai->unit_id);
+            }
+
+            $datas = $datas->latest()->get();
         }
-
-        $datas = $bmsTransaction
-        // ->when($level_id, function($q, $level_id){
-        //     return $q->where('level_id', $level_id);
-        // })
-        ->when($month, function($q, $month){
-            return $q->where('month', $month);
-        });
-        if($siswa == 'siswa')
-            $datas = $datas->whereIn('exchange_que',array(0,1));
-        $datas = $datas->latest()->get();
 
         $resource = new LaporanBmsCollection($datas);
 

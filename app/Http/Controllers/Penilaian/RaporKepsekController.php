@@ -23,6 +23,8 @@ use App\Models\Penilaian\RefIklas;
 use App\Models\Penilaian\SertifIklas;
 use App\Models\Penilaian\TanggalRapor;
 use App\Models\Penilaian\TilawahType;
+use App\Models\Penilaian\Iklas\DeskripsiIklas;
+use App\Models\Penilaian\Iklas\IndikatorKurikulumIklas;
 use App\Models\Rekrutmen\Pegawai;
 use App\Models\Siswa\Siswa;
 use App\Models\Unit;
@@ -138,7 +140,7 @@ class RaporKepsekController extends Controller
 
         $smt_aktif = Semester::where('id', session('semester_aktif'))->first();
 
-        $raporkelas = NilaiRapor::where([['class_id', $class_id], ['semester_id', session('semester_aktif')]])->with(['siswa' => function ($q){$q->select('id','student_id')->with('identitas:id,student_name');}])-> get()->sortBy('siswa.identitas.student_name')->values();
+        $raporkelas = NilaiRapor::where([['class_id', $class_id], ['semester_id', session('semester_aktif')]])->with(['siswa' => function ($q){$q->select('id','student_id','unit_id')->with('identitas:id,student_name');}])->get()->sortBy('siswa.identitas.student_name')->values();
 
         foreach ($raporkelas as $rapor) {
             $rapor->report_status_id = 1;
@@ -227,7 +229,7 @@ class RaporKepsekController extends Controller
 
     public function getsiswapas(Request $request)
     {
-        $siswa = NilaiRapor::where([['semester_id', $request->semester_id], ['class_id', $request->class_id]])->with(['siswa' => function ($q){$q->select('id','student_id')->with('identitas:id,student_name');}])-> get()->sortBy('siswa.identitas.student_name')->values();
+        $siswa = NilaiRapor::where([['semester_id', $request->semester_id], ['class_id', $request->class_id]])->with(['siswa' => function ($q){$q->select('id','student_id','level_id','class_id')->with('identitas:id,student_name');}])-> get()->sortBy('siswa.identitas.student_name')->values();
         $semester = Semester::where('id', $request->semester_id)->first();
         $view = view('penilaian.getsiswavalidasipas', compact('siswa', 'semester'))->render();
         return response()->json(array('success' => true, 'html' => $view));
@@ -320,10 +322,9 @@ class RaporKepsekController extends Controller
 
             if ($unit) {
                 $semester = Semester::where('id', $request->semester)->first();
-                $iklas = RefIklas::select(['id','iklas_cat','iklas_no','competence','category'])->orderBy('iklas_cat','asc')->orderBy('iklas_no','asc')->get();
                 $tilawah = TilawahType::whereNotNull('tilawah_ep')->get();
                 $targetTahfidz = $unit->targetTahfidz()->where(['level_id' => $request->level_id, 'semester_id' => $semester->id])->pluck('target');
-                $hafalan = HafalanType::all();
+                $hafalan = HafalanType::whereIn('mem_type',['hadits','doa'])->get();
                 $rapor = $siswa->nilaiRapor()->where('semester_id', $semester->id)->first();
                 $nilairapor = NilaiRapor::where([['student_id', $id], ['semester_id', $request->semester]])->first();
 
@@ -340,14 +341,118 @@ class RaporKepsekController extends Controller
 
                 // Digital Signature
                 $digital = isset($request->digital) && $request->digital == 1 ? true : false;
+
+                // Baru
+                $kelas = $rapor->kelas;
+                $competencies = $descs = $nilai = $capaian = $mergedRows = $iklas = null;
+                if($semester->tahunAjaran->academic_year_start >= 2022){
+                    // IKLaS
+                    $competencies = $unit->kompetensiKategoriIklas()->where([
+                        'semester_id' => $semester->id
+                    ])->orderBy('sort_order')->get();
+
+                    if($competencies && count($competencies) > 0){
+                        $catActive = $parentCompetence = null;
+                        foreach($competencies as $c){
+                            $nilaiKompetensi = $rapor->nilaiIklas()->where('competence_id',$c->competence_id)->first();
+                            $nilai['iklas'][$c->competence_id] = $nilaiKompetensi ? $nilaiKompetensi->predicate : 0;
+
+                            $deskripsiKompetensi = DeskripsiIklas::where([
+                                'class_id' => $kelas->id,
+                                'iklas_curriculum_id' => $c->id,
+                            ])->whereHas('kurikulum',function($q)use($semester,$unit){
+                                $q->where([
+                                    'semester_id' => $semester->id,
+                                    'unit_id' => $unit->id,
+                                ]);
+                            })->first();
+
+                            $mergedRows['iklas'][$c->competence_id] = 1;
+                            if($deskripsiKompetensi){
+                                $descs['iklas'][$c->competence_id] = $deskripsiKompetensi;
+                                if($deskripsiKompetensi->is_merged == 0) $parentCompetence = $c->competence_id;
+                                if($catActive == $c->category_id && $deskripsiKompetensi->is_merged == 1){
+                                    $mergedRows['iklas'][$parentCompetence]++;
+                                }
+                            }
+
+                            if($catActive != $c->category_id) $iklas['rows'][$c->category_id] = 0;
+                            $indicators = IndikatorKurikulumIklas::where([
+                                'level_id' => $kelas->level_id,
+                                'iklas_curriculum_id' => $c->id,
+                            ])->whereHas('kurikulum',function($q)use($semester,$unit){
+                                $q->where([
+                                    'semester_id' => $semester->id,
+                                    'unit_id' => $unit->id,
+                                ]);
+                            })->get();
+                            $iklas['indikator'][$c->id] = null;
+                            if($indicators && count($indicators) > 0){
+                                $iklas['indikator'][$c->id] = $indicators;
+                                $iklas['rows'][$c->category_id] += count($indicators);
+                            }
+                            else{
+                                $iklas['rows'][$c->category_id]++;
+                            }
+
+                            if($catActive != $c->category_id) $catActive = $c->category_id;
+                        }
+                    }
+                }
+                else{
+                    $iklas = RefIklas::select(['id','iklas_cat','iklas_no','competence','category'])->orderBy('iklas_cat','asc')->orderBy('iklas_no','asc')->get();
+                }
+
+                // Khataman
+                $capaian['khataman']['type'] = $rapor->khatamKurdeka;
+                if($capaian['khataman']['type'] && $capaian['khataman']['type']->type){
+                    if($capaian['khataman']['type']->type_id == 1){
+                        $capaian['khataman']['quran'] = $rapor->khatamQuran()->get();
+                    }
+                    elseif($capaian['khataman']['type']->type_id == 2){
+                        $capaian['khataman']['buku'] = $rapor->khatamBuku && $rapor->khatamBuku->buku ? $rapor->khatamBuku->buku->title : null;
+                    }
+                }
+                $kategoriList['khataman'] = ['kelancaran','kebagusan'];
+                foreach($kategoriList['khataman'] as $kategori){
+                    $capaianDeskripsi[$kategori] = $rapor->deskripsiKurdeka()->whereHas('jenis',function($q)use($kategori){
+                        $q->where('rpd_type',ucwords($kategori).' Tilawah');
+                    })->first();
+                    $capaian['khataman'][$kategori]['desc'] = $capaianDeskripsi[$kategori] && $capaianDeskripsi[$kategori]->deskripsi ? $capaianDeskripsi[$kategori]->deskripsi->description : null;
+                }
+
+                // Hafalan Qur'an
+                $capaian['quran']['hafalan'] = $rapor->quranKurdeka()->get();
+                $capaianDeskripsi['quran'] = $rapor->deskripsiKurdeka()->whereHas('jenis',function($q){
+                    $q->where('rpd_type','Hafalan');
+                })->first();
+                $capaian['quran']['desc'] = $capaianDeskripsi['quran'] && $capaianDeskripsi['quran']->deskripsi ? $capaianDeskripsi['quran']->deskripsi->description : null;
+
+                // Hafalan Hadits & Doa
+                $kategoriList['hafalan'] = HafalanType::whereIn('mem_type',['hadits','doa'])->get();
+
+                if($kategoriList['hafalan'] && count($kategoriList['hafalan']) > 0){
+                    foreach($kategoriList['hafalan'] as $kategori){
+                        $kategori = $kategori->mem_type;
+                        $capaian[$kategori]['hafalan'] = $rapor->hafalanKurdeka()->whereHas('jenis',function($q)use($kategori){
+                            $q->where('mem_type',ucwords($kategori));
+                        })->get();
+                        $capaianDeskripsi[$kategori] = $rapor->deskripsiKurdeka()->whereHas('jenis',function($q)use($kategori){
+                            $q->where('rpd_type','Hafalan '.ucwords($kategori));
+                        })->first();
+                        $capaian[$kategori]['desc'] = $capaianDeskripsi[$kategori] && $capaianDeskripsi[$kategori]->deskripsi ? $capaianDeskripsi[$kategori]->deskripsi->description : null;
+                    }
+                }
                 
                 if($semester->tahunAjaran->academic_year_start < 2021){
                     $template = 'old.pas_laporan_lt_2021';
+                }elseif($semester->tahunAjaran->academic_year_start < 2022){
+                    $template = 'old.pas_laporan_lt_2022';
                 }else{
                     $template = 'pas_laporan';
                 }
                 
-                return view('penilaian.'.$template, compact('siswa', 'unit', 'semester', 'iklas', 'tilawah', 'targetTahfidz', 'hafalan', 'rapor', 'nilairapor', 'kelompok', 'pas_date', 'digital'));
+                return view('penilaian.'.$template, compact('siswa', 'unit', 'semester', 'iklas', 'tilawah', 'targetTahfidz', 'hafalan', 'rapor', 'nilairapor', 'kelompok', 'pas_date', 'digital','competencies','kategoriList','descs','rapor','nilai','capaian','mergedRows'));
             }
         }
 
@@ -372,7 +477,110 @@ class RaporKepsekController extends Controller
                 // Digital Signature
                 $digital = isset($request->digital) && $request->digital == 1 ? true : false;
 
-                return view('penilaian.pas_laporan_tk', compact('pas_date', 'siswa', 'unit', 'semester', 'rapor', 'aspek', 'digital'));
+                // Baru
+                $kelas = $rapor->kelas;
+                $descs = $nilai = $capaian = $mergedRows = $iklas = null;
+                // IKLaS
+                $competencies = $unit->kompetensiKategoriIklas()->where([
+                    'semester_id' => $semester->id
+                ])->orderBy('sort_order')->get();
+
+                if($competencies && count($competencies) > 0){
+                    $catActive = $parentCompetence = null;
+                    foreach($competencies as $c){
+                        $nilaiKompetensi = $rapor->nilaiIklas()->where('competence_id',$c->competence_id)->first();
+                        $nilai['iklas'][$c->competence_id] = $nilaiKompetensi ? $nilaiKompetensi->predicate : 0;
+
+                        $deskripsiKompetensi = DeskripsiIklas::where([
+                            'class_id' => $kelas->id,
+                            'iklas_curriculum_id' => $c->id,
+                        ])->whereHas('kurikulum',function($q)use($semester,$unit){
+                            $q->where([
+                                'semester_id' => $semester->id,
+                                'unit_id' => $unit->id,
+                            ]);
+                        })->first();
+
+                        $mergedRows['iklas'][$c->competence_id] = 1;
+                        if($deskripsiKompetensi){
+                            $descs['iklas'][$c->competence_id] = $deskripsiKompetensi;
+                            if($deskripsiKompetensi->is_merged == 0) $parentCompetence = $c->competence_id;
+                            if($catActive == $c->category_id && $deskripsiKompetensi->is_merged == 1){
+                                $mergedRows['iklas'][$parentCompetence]++;
+                            }
+                        }
+
+                        if($catActive != $c->category_id) $iklas['rows'][$c->category_id] = 0;
+                        $indicators = IndikatorKurikulumIklas::where([
+                            'level_id' => $kelas->level_id,
+                            'iklas_curriculum_id' => $c->id,
+                        ])->whereHas('kurikulum',function($q)use($semester,$unit){
+                            $q->where([
+                                'semester_id' => $semester->id,
+                                'unit_id' => $unit->id,
+                            ]);
+                        })->get();
+                        $iklas['indikator'][$c->id] = null;
+                        if($indicators && count($indicators) > 0){
+                            $iklas['indikator'][$c->id] = $indicators;
+                            $iklas['rows'][$c->category_id] += count($indicators);
+                        }
+                        else{
+                            $iklas['rows'][$c->category_id]++;
+                        }
+
+                        if($catActive != $c->category_id) $catActive = $c->category_id;
+                    }
+                }
+
+                // Khataman
+                $capaian['khataman']['type'] = $rapor->khatamKurdeka;
+                if($capaian['khataman']['type'] && $capaian['khataman']['type']->type){
+                    if($capaian['khataman']['type']->type_id == 1){
+                        $capaian['khataman']['quran'] = $rapor->khatamQuran()->get();
+                    }
+                    elseif($capaian['khataman']['type']->type_id == 2){
+                        $capaian['khataman']['buku'] = $rapor->khatamBuku && $rapor->khatamBuku->buku ? $rapor->khatamBuku->buku->title : null;
+                    }
+                }
+                $kategoriList['khataman'] = ['kelancaran','kebagusan'];
+                foreach($kategoriList['khataman'] as $kategori){
+                    $capaianDeskripsi[$kategori] = $rapor->deskripsiKurdeka()->whereHas('jenis',function($q)use($kategori){
+                        $q->where('rpd_type',ucwords($kategori).' Tilawah');
+                    })->first();
+                    $capaian['khataman'][$kategori]['desc'] = $capaianDeskripsi[$kategori] && $capaianDeskripsi[$kategori]->deskripsi ? $capaianDeskripsi[$kategori]->deskripsi->description : null;
+                }
+
+                // Hafalan Qur'an
+                $capaian['quran']['hafalan'] = $rapor->quranKurdeka()->get();
+                $capaianDeskripsi['quran'] = $rapor->deskripsiKurdeka()->whereHas('jenis',function($q){
+                    $q->where('rpd_type','Hafalan');
+                })->first();
+                $capaian['quran']['desc'] = $capaianDeskripsi['quran'] && $capaianDeskripsi['quran']->deskripsi ? $capaianDeskripsi['quran']->deskripsi->description : null;
+
+                // Hafalan Hadits & Doa
+                $kategoriList['hafalan'] = HafalanType::whereIn('mem_type',['hadits','doa'])->get();
+
+                if($kategoriList['hafalan'] && count($kategoriList['hafalan']) > 0){
+                    foreach($kategoriList['hafalan'] as $kategori){
+                        $kategori = $kategori->mem_type;
+                        $capaian[$kategori]['hafalan'] = $rapor->hafalanKurdeka()->whereHas('jenis',function($q)use($kategori){
+                            $q->where('mem_type',ucwords($kategori));
+                        })->get();
+                        $capaianDeskripsi[$kategori] = $rapor->deskripsiKurdeka()->whereHas('jenis',function($q)use($kategori){
+                            $q->where('rpd_type','Hafalan '.ucwords($kategori));
+                        })->first();
+                        $capaian[$kategori]['desc'] = $capaianDeskripsi[$kategori] && $capaianDeskripsi[$kategori]->deskripsi ? $capaianDeskripsi[$kategori]->deskripsi->description : null;
+                    }
+                }
+                
+                if($semester->tahunAjaran->academic_year_start < 2022){
+                    $template = 'old.pas_laporan_tk_lt_2022';
+                }else{
+                    $template = 'pas_laporan_tk';
+                }
+
+                return view('penilaian.'.$template, compact('pas_date', 'siswa', 'unit', 'semester', 'aspek', 'digital','competencies','kategoriList','descs','rapor','nilai','capaian','mergedRows','iklas'));
             }
         }
 
@@ -493,7 +701,62 @@ class RaporKepsekController extends Controller
                 // Digital Signature
                 $digital = isset($request->digital) && $request->digital == 1 ? true : false;
 
-                return view('penilaian.pts_lihatnilai', compact('siswa', 'unit', 'semester', 'rapor', 'nilai_harian', 'kelompok', 'total_rows', 'pts_date', 'digital'));
+                // Baru
+                $nilai = $descs = null;
+                // IKLaS
+                $competencies = $unit->kompetensiKategoriIklas()->where([
+                    'semester_id' => $semester->id
+                ])->orderBy('sort_order')->get();
+
+                if($competencies && count($competencies) > 0){
+                    foreach($competencies as $c){
+                        $nilaiKompetensi = $rapor->nilaiIklas()->where('competence_id',$c->competence_id)->first();
+                        $nilai['iklas'][$c->competence_id] = $nilaiKompetensi ? $nilaiKompetensi->predicate : 0;
+                    }
+                }
+
+                // Khataman
+                $capaian['khataman']['type'] = $rapor->khatamKurdeka;
+                if($capaian['khataman']['type'] && $capaian['khataman']['type']->type){
+                    if($capaian['khataman']['type']->type_id == 1){
+                        $capaian['khataman']['quran'] = $rapor->khatamQuran()->get();
+                    }
+                    elseif($capaian['khataman']['type']->type_id == 2){
+                        $capaian['khataman']['buku'] = $rapor->khatamBuku && $rapor->khatamBuku->buku ? $rapor->khatamBuku->buku->title : null;
+                    }
+                }
+                $kategoriList['khataman'] = ['kelancaran','kebagusan'];
+                foreach($kategoriList['khataman'] as $kategori){
+                    $capaianDeskripsi[$kategori] = $rapor->deskripsiKurdeka()->whereHas('jenis',function($q)use($kategori){
+                        $q->where('rpd_type',ucwords($kategori).' Tilawah');
+                    })->first();
+                    $capaian['khataman'][$kategori]['desc'] = $capaianDeskripsi[$kategori] && $capaianDeskripsi[$kategori]->deskripsi ? $capaianDeskripsi[$kategori]->deskripsi->description : null;
+                }
+
+                // Hafalan Qur'an
+                $capaian['quran']['hafalan'] = $rapor->quranKurdeka()->get();
+                $capaianDeskripsi['quran'] = $rapor->deskripsiKurdeka()->whereHas('jenis',function($q){
+                    $q->where('rpd_type','Hafalan');
+                })->first();
+                $capaian['quran']['desc'] = $capaianDeskripsi['quran'] && $capaianDeskripsi['quran']->deskripsi ? $capaianDeskripsi['quran']->deskripsi->description : null;
+
+                // Hafalan Hadits & Doa
+                $kategoriList['hafalan'] = HafalanType::whereIn('mem_type',['hadits','doa'])->get();
+
+                if($kategoriList['hafalan'] && count($kategoriList['hafalan']) > 0){
+                    foreach($kategoriList['hafalan'] as $kategori){
+                        $kategori = $kategori->mem_type;
+                        $capaian[$kategori]['hafalan'] = $rapor->hafalanKurdeka()->whereHas('jenis',function($q)use($kategori){
+                            $q->where('mem_type',ucwords($kategori));
+                        })->get();
+                        $capaianDeskripsi[$kategori] = $rapor->deskripsiKurdeka()->whereHas('jenis',function($q)use($kategori){
+                            $q->where('rpd_type','Hafalan '.ucwords($kategori));
+                        })->first();
+                        $capaian[$kategori]['desc'] = $capaianDeskripsi[$kategori] && $capaianDeskripsi[$kategori]->deskripsi ? $capaianDeskripsi[$kategori]->deskripsi->description : null;
+                    }
+                }
+
+                return view('penilaian.pts_lihatnilai', compact('siswa', 'unit', 'semester', 'rapor', 'nilai_harian', 'kelompok', 'total_rows', 'pts_date', 'digital','competencies','kategoriList','descs','rapor','nilai','capaian'));
             }
         }
 
@@ -673,46 +936,43 @@ class RaporKepsekController extends Controller
         $semester_id = session('semester_aktif');
         $tgl_lts = $request->tanggal_lts;
         $tgl_rapor = $request->tanggal_rapor;
-        $rapor = TanggalRapor::where([['semester_id', $semester_id], ['unit_id', $unit]])->get();
 
-        if ($rapor->isEmpty() == FALSE) {
-            foreach ($rapor as $rapors) {
-                if ($rapors->date_type == 1) {
-                    $rapors->report_date = $tgl_lts;
-                } else {
-                    $rapors->report_date = $tgl_rapor;
-                }
-                if ($rapors->save()) {
-                    $iserror = FALSE;
-                } else {
-                    $iserror = TRUE;
-                    break;
-                }
-            }
-        } else {
-            $simpanlts = TanggalRapor::create([
-                'semester_id' => $semester_id,
-                'unit_id' => $unit,
-                'report_date' => $tgl_lts,
-                'date_type' => 1
-            ]);
-            $simpanrapor = TanggalRapor::create([
-                'semester_id' => $semester_id,
-                'unit_id' => $unit,
-                'report_date' => $tgl_rapor,
-                'date_type' => 2
-            ]);
-            if ($simpanlts->save() && $simpanrapor->save()) {
-                $iserror = FALSE;
-            } else {
-                $iserror = TRUE;
-            }
-        }
+        $pts = TanggalRapor::where([
+            'semester_id' => $semester_id,
+            'unit_id' => $unit,
+            'date_type' => 1
+        ])->first();
 
-        if ($iserror == FALSE) {
-            return redirect('/kependidikan/penilaiankepsek/tanggalrapor')->with(['sukses' => 'Data berhasil disimpan']);
-        } else {
-            return redirect('/kependidikan/penilaiankepsek/tanggalrapor')->with(['error' => 'Data gagal disimpan']);
+        if(!$pts){
+            $pts = new TanggalRapor();
+            $pts->semester_id = $semester_id;
+            $pts->unit_id = $unit;
+            $pts->report_date = $tgl_lts;
+            $pts->date_type = 1;
+            $pts->save();
+            $pts->fresh();
         }
+        $pts->report_date = $tgl_lts;
+        $pts->save();
+
+        $rapor = TanggalRapor::where([
+            'semester_id' => $semester_id,
+            'unit_id' => $unit,
+            'date_type' => 2
+        ])->first();
+
+        if(!$rapor){
+            $rapor = new TanggalRapor();
+            $rapor->semester_id = $semester_id;
+            $rapor->unit_id = $unit;
+            $rapor->report_date = $tgl_rapor;
+            $rapor->date_type = 2;
+            $rapor->save();
+            $rapor->fresh();
+        }
+        $rapor->report_date = $tgl_rapor;
+        $rapor->save();
+
+        return redirect('/kependidikan/penilaiankepsek/tanggalrapor')->with(['sukses' => 'Data berhasil disimpan']);
     }
 }

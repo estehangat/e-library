@@ -11,7 +11,7 @@ RPPA
 @endsection
 
 @section('sidebar')
-@include('template.sidebar.keuangan.'.Auth::user()->role->name)
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -26,7 +26,7 @@ RPPA
     <li class="breadcrumb-item active" aria-current="page">{{ $lppaAktif->firstNumber }}</li>
   </ol>
 </div>
-
+{{--
 <div class="row">
     @foreach($jenisAnggaran as $j)
     @php
@@ -66,14 +66,14 @@ RPPA
         <div class="card h-100">
             <div class="card-body p-0">
                 <div class="row align-items-center mx-0">
-                    <div class="col-auto px-3 py-2 bg-brand-purple">
+                    <div class="col-auto px-3 py-2 bg-brand-green">
                         <i class="mdi mdi-file-document-outline mdi-24px text-white"></i>
                     </div>
                     <div class="col">
                         <div class="h6 mb-0 font-weight-bold text-gray-800">{{ $j->name }}</div>
                     </div>
                     <div class="col-auto">
-                        <a href="{{ route('lppa.index', ['jenis' => $j->link])}}" class="btn btn-sm btn-outline-brand-purple">Pilih</a>
+                        <a href="{{ route('lppa.index', ['jenis' => $j->link])}}" class="btn btn-sm btn-outline-brand-green">Pilih</a>
                     </div>
                 </div>
             </div>
@@ -101,7 +101,7 @@ RPPA
     @endif
     @endforeach
 </div>
-
+--}}
 @if($jenisAktif)
 <div class="row mb-4">
   <div class="col-12">
@@ -121,7 +121,7 @@ RPPA
         @endphp
         @if($lppaAktif->finance_acc_status_id == 1 && ($hasSelisih && $selisihLebih > 0) && $isAnggotaPa)
         <div class="alert alert-secondary alert-dismissible fade show" role="alert">
-            <i class="fa fa-exclamation-circle text-yellow mr-2"></i><strong>Perhatian!</strong> Total selisih yang lebih harap segera ditransfer ke rekening BNI Syariah <strong>448 448 4321</strong>
+            <i class="fa fa-exclamation-circle text-yellow mr-2"></i><strong>Perhatian!</strong> Total selisih yang lebih harap segera ditransfer ke rekening Bank Syariah Indonesia <strong>448 448 4321</strong>
         </div>
         @endif
         <div class="row mb-0">
@@ -348,7 +348,7 @@ RPPA
           <input type="hidden" name="validate" value="">
         @endif
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">{{ $anggaranAktif->anggaran->name }}</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">{{ $anggaranAktif->anggaran->name }}</h6>
             </div>
             @if(Session::has('success'))
             <div class="alert alert-success alert-dismissible fade show mx-3" role="alert">
@@ -399,7 +399,7 @@ RPPA
                             <td>
                                 @if($lppaAktif->finance_acc_status_id == 1)
                                 {{ $l->valueWithSeparator }}
-                                @elseif($lppaAktif->detail()->where('acc_status_id',1)->count() >= ($lppaAktif->detail()->count()))
+                                @elseif(($lppaAktif->detail()->where('acc_status_id',1)->count() >= ($lppaAktif->detail()->count())) || $l->ppaDetail->value == 0)
                                 <input type="text" class="form-control form-control-sm" value="{{ $l->valueWithSeparator }}" disabled>
                                 @else
                                 <input name="value-{{ $l->id }}" type="text" class="form-control form-control-sm number-separator" value="{{ $l->valueWithSeparator }}">
@@ -424,7 +424,7 @@ RPPA
                                 @else
                                 <i class="fa fa-lg fa-question-circle text-warning" data-toggle="tooltip" data-original-title="Tidak diketahui"></i>
                                 @endif
-                                @elseif($lppaAktif->detail()->where('acc_status_id',1)->count() >= ($lppaAktif->detail()->count()))
+                                @elseif(($lppaAktif->detail()->where('acc_status_id',1)->count() >= ($lppaAktif->detail()->count())) || $l->ppaDetail->value == 0)
                                 <input class="receipt-toggle" type="checkbox" data-toggle="toggle" data-on="Ada" data-off="Tidak" data-size="small" data-onstyle="success" data-offstyle="danger" {{ $l->receipt_status_id == 1 ? 'checked' : null }} disabled>
                                 @else
                                 <input name="receipt-{{ $l->id }}" class="receipt-toggle" type="checkbox" data-toggle="toggle" data-on="Ada" data-off="Tidak" data-size="small" data-onstyle="success" data-offstyle="danger" {{ $l->receipt_status_id == 1 ? 'checked' : null }} >
@@ -434,11 +434,11 @@ RPPA
                                 @if(!$l->employee_id)
                                 <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Belum ada nominal realisasi yang dimasukkan"></i>
                                 @elseif(!$l->acc_status_id)
-                                <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Persetujuan {{ Auth::user()->pegawai->position_id == $anggaranAktif->anggaran->acc_position_id ? 'Anda' : $anggaranAktif->anggaran->accJabatan->name }}"></i>
+                                <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Pemeriksaan {{ Auth::user()->pegawai->position_id == $anggaranAktif->anggaran->acc_position_id ? 'Anda' : $anggaranAktif->anggaran->accJabatan->name }}"></i>
                                 @elseif(($lppaAktif->detail()->where('acc_status_id',1)->count() < ($lppaAktif->detail()->count())) && $l->acc_status_id == 1)
-                                <i class="fa fa-lg fa-check-circle text-secondary mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disetujui oleh {{ Auth::user()->pegawai->is($l->accPegawai) ? 'Anda' : $l->accPegawai->name }}<br>{{ date('d M Y H.i.s', strtotime($l->acc_time)) }}"></i>
+                                <i class="fa fa-lg fa-check-circle text-secondary mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disimpan oleh {{ Auth::user()->pegawai->is($l->accPegawai) ? 'Anda' : $l->accPegawai->name }}<br>{{ date('d M Y H.i.s', strtotime($l->acc_time)) }}"></i>
                                 @elseif(($lppaAktif->detail()->where('acc_status_id',1)->count() >= ($lppaAktif->detail()->count())) && !$lppaAktif->finance_acc_status_id)
-                                <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Persetujuan {{ Auth::user()->pegawai->position_id == 29 ? 'Anda' : 'Finance & Accounting Manager' }}"></i>
+                                <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Persetujuan {{ Auth::user()->pegawai->position_id == 57 ? 'Anda' : 'Supervisor Akuntansi' }}"></i>
                                 @elseif($lppaAktif->finance_acc_status_id)
                                 <i class="fa fa-lg fa-check-circle text-success mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disetujui oleh {{ Auth::user()->pegawai->is($lppaAktif->accKeuangan) ? 'Anda' : $lppaAktif->accKeuangan->name }}<br>{{ date('d M Y H.i.s', strtotime($lppaAktif->finance_acc_time)) }}"></i>
                                 @else
@@ -455,7 +455,9 @@ RPPA
                 <div class="row">
                     <div class="col-12">
                         <div class="text-center">
-                            <button class="btn btn-brand-purple-dark" type="submit">Simpan</button>
+                            @if($lppaAktif->detail()->whereHas('ppaDetail',function($q){$q->where('value','>',0);})->count())
+                            <button class="btn btn-brand-green-dark" type="submit">Simpan</button>
+                            @endif
                             <button class="btn btn-secondary" type="button" data-toggle="modal" data-target="#saveAccept">Simpan & Laporkan</button>
                         </div>
                     </div>

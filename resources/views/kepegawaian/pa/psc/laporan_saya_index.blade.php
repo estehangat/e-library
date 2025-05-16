@@ -49,7 +49,7 @@ $role = Auth::user()->role->name;
                       <option value="{{ $t->academicYearLink }}" {{ $tahun->id == $t->id ? 'selected' : '' }}>{{ $t->academic_year }}</option>
                       @endforeach
                     </select>
-                    <a href="{{ route('psc.laporan.saya.index') }}" id="btn-select-year" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('psc.laporan.saya.index') }}">Pilih</a>
+                    <a href="{{ route('psc.laporan.saya.index') }}" id="btn-select-year" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('psc.laporan.saya.index') }}">Pilih</a>
                   </div>
                 </div>
                 </div>
@@ -169,7 +169,7 @@ $role = Auth::user()->role->name;
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Laporan PSC Saya</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Laporan PSC Saya</h6>
             </div>
             <div class="card-body p-3">
               <div class="table-responsive">

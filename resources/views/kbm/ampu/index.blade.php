@@ -22,12 +22,12 @@ Kelas diampu
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 @if($kelas == null)
-                    <h6 class="m-0 font-weight-bold text-brand-purple">Anda Tidak Memiliki Kelas</h6>
+                    <h6 class="m-0 font-weight-bold text-brand-green">Anda Tidak Memiliki Kelas</h6>
                 @else
-                    <h6 class="m-0 font-weight-bold text-brand-purple">Kelas {{$kelas->level->level}} {{$kelas->namakelases->class_name}} : {{$kelas->walikelas->name}}</h6>
-                    <button class="m-0 float-right btn btn-brand-purple-dark btn-sm" data-toggle="modal" data-target="#TambahModal">Tambah siswa <i class="fas fa-plus"></i></button>
+                    <h6 class="m-0 font-weight-bold text-brand-green">Kelas {{$kelas->level->level}} {{$kelas->namakelases->class_name}} : {{$kelas->walikelas->name}}</h6>
+                    <button class="m-0 float-right btn btn-brand-green-dark btn-sm" data-toggle="modal" data-target="#TambahModal">Tambah siswa <i class="fas fa-plus"></i></button>
                     @if( $kelas->status == 1 || $kelas->status == 4 )
-                    <button class="m-0 float-right btn btn-brand-purple-dark btn-sm" data-toggle="modal" data-target="#TambahModal">Tambah siswa <i class="fas fa-plus"></i></button>
+                    <button class="m-0 float-right btn btn-brand-green-dark btn-sm" data-toggle="modal" data-target="#TambahModal">Tambah siswa <i class="fas fa-plus"></i></button>
                     @endif
                     <a class="m-0 float-right btn btn-success btn-sm" href="/kependidikan/kbm/kelas/kelas-diampu/cetak">Unduh <i class="fas fa-download"></i></a>
                 @endif
@@ -107,7 +107,7 @@ Kelas diampu
                 <div class="text-center mt-4">
                     <form action="/kependidikan/kbm/kelas/kelas-diampu/ajukan/{{$kelas->id}}" method="POST">
                     @csrf
-                        <button type="submit" class="btn btn-brand-purple-dark">Ajukan</button>
+                        <button type="submit" class="btn btn-brand-green-dark">Ajukan</button>
                     </form>
                 </div>
                 @endif

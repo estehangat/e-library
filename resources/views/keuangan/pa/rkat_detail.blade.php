@@ -9,7 +9,7 @@ RKAB
 @endsection
 
 @section('sidebar')
-@include('template.sidebar.keuangan.'.Auth::user()->role->name)
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -23,11 +23,11 @@ RKAB
     <li class="breadcrumb-item active" aria-current="page">{{ $anggaranAktif->anggaran->name }}</li>
   </ol>
 </div>
-
+{{--
 <div class="row">
     @foreach($jenisAnggaran as $j)
     @php
-    if(!in_array(Auth::user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv'])){
+    if(!in_array(Auth::user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv','akunspv'])){
         if(Auth::user()->pegawai->unit_id == '5'){
             $anggaranCount = $j->anggaran()->whereHas('anggaran',function($q){
             $q->where('position_id',Auth::user()->pegawai->jabatan->group()->first()->id);})->count();
@@ -65,14 +65,14 @@ RKAB
         <div class="card h-100">
             <div class="card-body p-0">
                 <div class="row align-items-center mx-0">
-                    <div class="col-auto px-3 py-2 bg-brand-purple">
+                    <div class="col-auto px-3 py-2 bg-brand-green">
                         <i class="mdi mdi-file-document-outline mdi-24px text-white"></i>
                     </div>
                     <div class="col">
                         <div class="h6 mb-0 font-weight-bold text-gray-800">{{ $j->name }}</div>
                     </div>
                     <div class="col-auto">
-                        <a href="{{ route('rkat.index', ['jenis' => $j->link])}}" class="btn btn-sm btn-outline-brand-purple">Pilih</a>
+                        <a href="{{ route('rkat.index', ['jenis' => $j->link])}}" class="btn btn-sm btn-outline-brand-green">Pilih</a>
                     </div>
                 </div>
             </div>
@@ -100,7 +100,7 @@ RKAB
     @endif
     @endforeach
 </div>
-
+--}}
 @if($jenisAktif)
 <div class="row mb-4">
   <div class="col-12">
@@ -135,7 +135,7 @@ RKAB
                       @endforeach
                       @endif
                     </select>
-                    <a href="{{ route('rkat.index', ['jenis' => $jenisAktif->link]) }}" id="btn-select-year" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('rkat.index', ['jenis' => $jenisAktif->link]) }}">Pilih</a>
+                    <a href="{{ route('rkat.index', ['jenis' => $jenisAktif->link]) }}" id="btn-select-year" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('rkat.index', ['jenis' => $jenisAktif->link]) }}">Pilih</a>
                     </div>
                   </div>
                 </div>
@@ -196,10 +196,14 @@ RKAB
         <form action="{{ route('rkat.perbarui',['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link]) }}" id="rkat-form" method="post" enctype="multipart/form-data" accept-charset="utf-8">
           {{ csrf_field() }}
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">{{ $anggaranAktif->anggaran->name }}</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">{{ $anggaranAktif->anggaran->name }}</h6>
                 <div class="m-0 float-right">
                     @if((Auth::user()->role->name == 'faspv' || (Auth::user()->role->name != 'faspv' && Auth::user()->pegawai->position_id == $anggaranAktif->anggaran->acc_position_id)) && (!$rkatAktif || ($rkatAktif && $rkatAktif->detail()->count() < 1)) && $anggaranAktif->akun()->count() > 0)
-                    <a href="{{ route('rkat.buat',['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link]) }}" class="btn btn-brand-purple-dark btn-sm">Buat Baru <i class="fas fa-plus-circle ml-1"></i></a>
+                    @if($lock && $lock->value == 1)
+                    <a href="{{ route('rkat.buat',['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link]) }}" class="btn btn-brand-green-dark btn-sm">Buat Baru <i class="fas fa-plus-circle ml-1"></i></a>
+                    @else
+                    <a href="javascript:void(0)" class="btn btn-secondary btn-sm disabled">Buat Baru <i class="fas fa-plus-circle ml-1"></i></a>
+                    @endif
                     @endif
                 </div>
             </div>
@@ -257,12 +261,12 @@ RKAB
                                 @if(!$d->employee_id)
                                 <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Belum ada nominal anggaran yang dimasukkan untuk akun ini"></i>
                                 @elseif(!$d->finance_acc_status_id)
-                                <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Persetujuan {{ Auth::user()->pegawai->position_id == 29 ? 'Anda' : 'Finance & Accounting Manager' }}"></i>
+                                <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Pemeriksaan {{ Auth::user()->pegawai->position_id == 33 ? 'Anda' : 'Kepala Divisi Umum' }}"></i>
                                 @elseif(!$rkatAktif->finance_acc_status_id && $d->finance_acc_status_id == 1)
                                 @if($d->value_pa && $d->value_pa > 0 && $d->value_pa != $d->value_fam)
-                                <i class="fa fa-lg fa-check-circle text-warning mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disetujui dengan perubahan oleh {{ Auth::user()->pegawai->is($d->accKeuangan) ? 'Anda' : $d->accKeuangan->name }}<br>{{ date('d M Y H.i.s', strtotime($d->finance_acc_time)) }}<br>Awal: {{ $d->valuePaWithSeparator }}"></i>
+                                <i class="fa fa-lg fa-check-circle text-warning mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disimpan dengan perubahan oleh {{ Auth::user()->pegawai->is($d->accKeuangan) ? 'Anda' : $d->accKeuangan->name }}<br>{{ date('d M Y H.i.s', strtotime($d->finance_acc_time)) }}<br>Awal: {{ $d->valuePaWithSeparator }}"></i>
                                 @else
-                                <i class="fa fa-lg fa-check-circle text-warning mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disetujui oleh {{ Auth::user()->pegawai->is($d->accKeuangan) ? 'Anda' : $d->accKeuangan->name }}<br>{{ date('d M Y H.i.s', strtotime($d->finance_acc_time)) }}"></i>
+                                <i class="fa fa-lg fa-check-circle text-warning mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disimpan oleh {{ Auth::user()->pegawai->is($d->accKeuangan) ? 'Anda' : $d->accKeuangan->name }}<br>{{ date('d M Y H.i.s', strtotime($d->finance_acc_time)) }}"></i>
                                 @endif
                                 @elseif($rkatAktif->finance_acc_status_id == 1 && !$d->director_acc_status_id)
                                 <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Persetujuan  {{ Auth::user()->pegawai->position_id == 17 ? 'Anda' : 'Director' }}"></i>
@@ -299,13 +303,18 @@ RKAB
                 <div class="row">
                     <div class="col-12">
                         <div class="text-center">
-                            <button class="btn btn-brand-purple-dark" type="submit">Simpan</button>
+                            <button class="btn btn-brand-green-dark" type="submit">Simpan</button>
                         </div>
                     </div>
                 </div>
                 @endif
             </div>
             @else
+            @if(!$lock || ($lock && $lock->value != 1))
+            <div class="alert alert-light alert-dismissible fade show mx-3" role="alert">
+                <i class="fa fa-info-circle text-info mr-2"></i>Harap menunggu proses penyusunan akun untuk anggaran ini
+            </div>
+            @endif
             <div class="text-center mx-3 my-5">
                 <h3 class="text-center">Mohon Maaf,</h3>
                 <h6 class="font-weight-light mb-3">Tidak ada data akun anggaran yang ditemukan</h6>

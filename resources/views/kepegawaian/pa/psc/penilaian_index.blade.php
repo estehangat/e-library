@@ -51,7 +51,7 @@ $role = Auth::user()->role->name;
                       @endif
                       @endforeach
                     </select>
-                    <a href="{{ route('psc.penilaian.index') }}" id="btn-select-year" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('psc.penilaian.index') }}">Pilih</a>
+                    <a href="{{ route('psc.penilaian.index') }}" id="btn-select-year" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('psc.penilaian.index') }}">Pilih</a>
                   </div>
                 </div>
                 </div>
@@ -68,7 +68,7 @@ $role = Auth::user()->role->name;
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Unit Tersedia</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Unit Tersedia</h6>
             </div>
             <div class="card-body p-3">
               @if(count($allUnit) > 0)
@@ -89,7 +89,7 @@ $role = Auth::user()->role->name;
                       </div>
                     </div>
                     <div class="col-4 d-flex justify-content-end align-items-center">
-                      <a href="{{ route('psc.penilaian.index', ['tahun' => $tahun->academicYearLink, 'unit' => $u->name])}}" class="btn btn-sm btn-outline-brand-purple-dark">Pilih</a>
+                      <a href="{{ route('psc.penilaian.index', ['tahun' => $tahun->academicYearLink, 'unit' => $u->name])}}" class="btn btn-sm btn-outline-brand-green-dark">Pilih</a>
                     </div>
                   </div>
                 </div>

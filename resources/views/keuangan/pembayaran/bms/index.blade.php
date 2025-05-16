@@ -5,14 +5,7 @@ Biaya Masuk Sekolah
 @endsection
 
 @section('sidebar')
-@php
-$role = Auth::user()->role->name;
-@endphp
-@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','pembinayys','ketuayys','wakasek']))
-@include('template.sidebar.keuangan.'.$role)
-@else
-@include('template.sidebar.keuangan.employee')
-@endif
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -60,14 +53,14 @@ $role = Auth::user()->role->name;
                                     @endforeach
                                 </select>
                             </div>
-                            <button class="btn btn-brand-purple-dark btn-sm" type="submit">Saring</button>
+                            <button class="btn btn-brand-green-dark btn-sm" type="submit">Saring</button>
                         </div>
                     </form> --}}
                     </div>
                     <div class="table-responsive">
                         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                            <h6 class="m-0 font-weight-bold text-brand-purple">Biaya Masuk Sekolah</h6>
-                            <a class="m-0 float-right btn btn-brand-purple-dark btn-sm" href="/keuangan/bms/tambah">Tambah <i class="fas fa-plus"></i></a>
+                            <h6 class="m-0 font-weight-bold text-brand-green">Biaya Masuk Sekolah</h6>
+                            <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="/keuangan/bms/tambah">Tambah <i class="fas fa-plus"></i></a>
                         </div>
                         @if(Session::has('sukses'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -151,7 +144,7 @@ $role = Auth::user()->role->name;
 <div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h5 class="modal-title text-white">Kirim Email Pengingat Tanggungan BMS</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>

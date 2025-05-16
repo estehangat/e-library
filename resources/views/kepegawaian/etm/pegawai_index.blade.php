@@ -1,7 +1,7 @@
 @extends('template.main.master')
 
 @section('title')
-Pegawai Auliya
+Pegawai
 @endsection
 
 @section('headmeta')
@@ -34,7 +34,7 @@ Pegawai Auliya
                 <a class="nav-link active" href="{{ route('pegawai.index', ['status' => 'aktif']) }}">Aktif</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link text-brand-purple" href="{{ route('pegawai.index', ['status' => 'nonaktif']) }}">Nonaktif</a>
+                <a class="nav-link text-brand-green" href="{{ route('pegawai.index', ['status' => 'nonaktif']) }}">Nonaktif</a>
               </li>
             </ul>
         </div>
@@ -46,7 +46,7 @@ Pegawai Auliya
         <div class="card">
             <form action="{{ route('pegawai.index') }}" id="filter-form" method="get">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Filter</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Filter</h6>
             </div>
             <div class="card-body p-3">
               <div class="row">
@@ -72,7 +72,7 @@ Pegawai Auliya
                   <div class="row">
                     <div class="col-lg-10 offset-lg-2 col-md-12">
                       <div class="text-left">
-                        <button class="btn btn-sm btn-brand-purple-dark" type="submit">Terapkan</button>
+                        <button class="btn btn-sm btn-brand-green-dark" type="submit">Terapkan</button>
                       </div>
                     </div>
                   </div>
@@ -152,7 +152,7 @@ Pegawai Auliya
                       <td>{{ $p->yearsOfService }}</td>
                       <td>{{ $p->statusPegawai->show_name }}</td>
                       <td>
-                        <a href="{{ route('pegawai.detail', ['id' => $p->id]) }}" class="btn btn-sm btn-brand-purple-dark" target="_blank"><i class="fas fa-eye"></i></a>
+                        <a href="{{ route('pegawai.detail', ['id' => $p->id]) }}" class="btn btn-sm btn-brand-green-dark" target="_blank"><i class="fas fa-eye"></i></a>
                         <a href="{{ route('pegawai.ubah', ['id' => $p->id]) }}" class="btn btn-sm btn-warning"><i class="fas fa-pen"></i></a>
                         @if(!$p->phk)
                         @if($p->employee_status_id == 1)

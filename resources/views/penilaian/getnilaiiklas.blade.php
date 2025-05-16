@@ -2,7 +2,7 @@
     @csrf
     <input type="hidden" name="siswa_id" value="{{$siswa->id}}">
     <table class="table align-items-center table-flush">
-        <thead class="bg-brand-purple text-white">
+        <thead class="bg-brand-green text-white">
             <tr>
                 <th width="60%">Kompetensi</th>
                 <th class="text-center">Predikat</th>
@@ -588,12 +588,12 @@
     @if($countrapor > 0)
     @if($validasi > 0)
     <div class="text-center mt-4">
-        <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+        <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
     </div>
     @endif
     @else
     <div class="text-center mt-4">
-        <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+        <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
     </div>
     @endif
 </form>

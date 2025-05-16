@@ -37,7 +37,7 @@ Calon Pegawai
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Calon Pegawai Lulus Seleksi</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Calon Pegawai Lulus Seleksi</h6>
             </div>
             <div class="card-body p-3">
               @if(Session::has('success'))
@@ -94,7 +94,7 @@ Calon Pegawai
                         @endif
                       </td>
                       <td>
-                        <a href="{{ route('calon.detail', ['id' => $c->id]) }}" class="btn btn-sm btn-brand-purple-dark" target="_blank"><i class="fas fa-eye"></i></a>
+                        <a href="{{ route('calon.detail', ['id' => $c->id]) }}" class="btn btn-sm btn-brand-green-dark" target="_blank"><i class="fas fa-eye"></i></a>
                         @if(!$c->education_acc_status_id)
                         @php
                         $unitPenempatan = null;
@@ -147,7 +147,7 @@ Calon Pegawai
 <div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h5 class="modal-title text-white">Ubah Calon Pegawai</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>

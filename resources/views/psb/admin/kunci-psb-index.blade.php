@@ -27,7 +27,7 @@
   <div class="col-12">
     <div class="card">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">{{ $active }}</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">{{ $active }}</h6>
       </div>
       <div class="card-body p-3">
         @if(Session::has('success'))
@@ -67,16 +67,27 @@
             </div>
           </div>
           @foreach($unit as $u)
+          <hr>
+          <div class="row mb-4">
+            <div class="col-12">
+              <h6 class="font-weight-bold text-dark">{{ 'PSB '.$u->name }}</h6>
+            </div>
+          </div>
+          @php $type = ['new','transfer'] @endphp
+          @foreach($type as $t)
           <div class="row">
             <div class="col-lg-10 col-md-12">
               <div class="form-group">
                 <div class="row">
                   <div class="col-lg-5 col-md-8 col-sm-9 col-12">
-                    <label for="normal-input" class="form-control-label">{{ 'PSB '.$u->name }}</label>
+                    <label for="normal-input" class="form-control-label">Siswa{{ $t == 'new' ? ' Baru' : ' Pindahan' }}</label>
                   </div>
+                  @php
+                  $attr = ($t == 'new' ? 'new' : 'transfer').'_admission_active';
+                  @endphp
                   <div class="col-lg-7 col-md-4 col-sm-3 col-12">
-                    <input name="lock-{{ strtolower($u->name) }}" class="lock-toggle" type="checkbox" data-toggle="toggle" data-on="Terbuka" data-off="Terkunci" data-onstyle="success" data-offstyle="danger" {{ isset($u->psb_active) && $u->psb_active == 1 ? 'checked' : null }} >
-                    @error('lock-'.strtolower($u->name))
+                    <input name="lock-{{ strtolower($u->name) }}-{{ $t }}" class="lock-toggle" type="checkbox" data-toggle="toggle" data-on="Terbuka" data-off="Terkunci" data-onstyle="success" data-offstyle="danger" {{ isset($u->{$attr}) && $u->{$attr} == 1 ? 'checked' : null }} >
+                    @error('lock-'.strtolower($u->name).'-'.$t)
                     <span class="text-danger">{{ $message }}</span>
                     @enderror
                   </div>
@@ -85,12 +96,13 @@
             </div>
           </div>
           @endforeach
-          <div class="row">
+          @endforeach
+          <div class="row mt-2">
             <div class="col-lg-10 col-md-12">
               <div class="row">
                 <div class="col-lg-7 offset-lg-5 col-md-4 offset-md-8 col-sn-3 offset-sm-9 col-12">
                   <div class="text-left">
-                    <button class="btn btn-brand-purple-dark" type="submit">Simpan</button>
+                    <button class="btn btn-brand-green-dark" type="submit">Simpan</button>
                   </div>
                 </div>
               </div>

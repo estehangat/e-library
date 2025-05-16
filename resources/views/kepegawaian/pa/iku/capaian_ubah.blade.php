@@ -54,7 +54,7 @@
             <div class="input-group">
               <input type="text" class="form-control @error('editAttachment') is-invalid @enderror" disabled placeholder="{{ $nilaiIndikator && $nilaiIndikator->attachment ? 'Ubah' : 'Unggah' }} berkas..." id="file">
               <div class="input-group-append">
-                <button type="button" class="browse btn btn-brand-purple-dark">Pilih</button>
+                <button type="button" class="browse btn btn-brand-green-dark">Pilih</button>
               </div>
             </div>
             <small id="attachmentHelp" class="form-text text-muted">Maksimum 5 MB. Kompres dengan ekstensi .zip jika berkas lebih dari satu.</small>
@@ -96,7 +96,7 @@
       <button type="button" class="btn btn-light" data-dismiss="modal">Kembali</button>
     </div>
     <div class="col-6 text-right">
-      <input id="save-indicator" type="submit" class="btn btn-brand-purple-dark" value="Ubah">
+      <input id="save-indicator" type="submit" class="btn btn-brand-green-dark" value="Ubah">
     </div>
   </div>
 </form>

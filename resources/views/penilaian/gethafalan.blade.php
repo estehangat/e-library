@@ -6,7 +6,7 @@
     <input type="hidden" name="class_id" id="idkelas">
 
     <table class="table align-items-center table-flush">
-        <thead class="bg-brand-purple text-white">
+        <thead class="bg-brand-green text-white">
             <tr>
                 <th class="text-center" width="75%" colspan="3">Nama Surah</th>
                 <th class="text-center" width="25%">Predikat</th>
@@ -200,12 +200,12 @@
     @if($nilairapor)
     @if($validasi > 0)
     <div class="text-center mt-4">
-        <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+        <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
     </div>
     @endif
     @else
     <div class="text-center mt-4">
-        <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+        <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
     </div>
     @endif
 </form>

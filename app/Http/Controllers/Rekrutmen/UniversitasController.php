@@ -5,22 +5,49 @@ namespace App\Http\Controllers\Rekrutmen;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
+use Auth;
 use Session;
 
+use App\Models\AccessRight\ModulOperation;
 use App\Models\Rekrutmen\Universitas;
 
 class UniversitasController extends Controller
 {
     /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->subsystem = 'kepegawaian';
+        $modul = 'universitas';
+        $this->modul = $modul;
+        $this->active = 'Universitas';
+        $this->route = $this->subsystem.'.manajemen.rekrutmen.'.$this->modul;
+    }
+
+    /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $universitas = Universitas::orderBy('name')->get();
+        /* Access Rights */
+        $modul = $this->modul;
+        $operations = ModulOperation::select('operation_id')->whereHas('modul',function($q)use($modul){$q->where('name',$modul);})->whereHas('rights',function($q){$q->where('role_id',auth::user()->role->id);})->with('operation:id,name')->get();
+        /* End of Access Rights */
 
-        return view('kepegawaian.etm.universitas_index', compact('universitas'));
+        if($operations->where('operation.name','read')->count() > 0){
+            $data = Universitas::orderBy('name')->get();
+
+            $active = $this->active;
+            $route = $this->route;
+
+            return view($this->route.'-index', compact('operations','active','route','data'));
+        }
+        else return redirect()->route($this->subsystem.'.index');
     }
 
     /**
@@ -31,27 +58,38 @@ class UniversitasController extends Controller
      */
     public function store(Request $request)
     {
-        $messages = [
-            'name.required' => 'Mohon tuliskan nama universitas',
-        ];
+        /* Access Rights */
+        $modul = $this->modul;
+        $operations = ModulOperation::select('operation_id')->whereHas('modul',function($q)use($modul){$q->where('name',$modul);})->whereHas('rights',function($q){$q->where('role_id',auth::user()->role->id);})->with('operation:id,name')->get();
+        /* End of Access Rights */
 
-        $this->validate($request, [
-            'name' => 'required',
-        ], $messages);
+        if($operations->where('operation.name','create')->count() > 0){
+            $messages = [
+                'name.required' => 'Mohon tuliskan nama universitas',
+            ];
 
-        $count = Universitas::where('name', $request->name)->count();
-        
-        if($count < 1){
-            $universitas = new Universitas();
-            $universitas->name = $request->name;
-            $universitas->save();
+            $this->validate($request, [
+                'name' => 'required',
+            ], $messages);
 
-            Session::flash('success','Data '.$request->name.' berhasil ditambahkan');
+            $count = Universitas::where('name', $request->name)->count();
+            
+            if($count < 1){
+                $universitas = new Universitas();
+                $universitas->name = $request->name;
+                $universitas->save();
+
+                Session::flash('success','Data '.$request->name.' berhasil ditambahkan');
+            }
+
+            else Session::flash('danger','Data '.$request->name.' sudah pernah ditambahkan');
         }
-
-        else Session::flash('danger','Data '.$request->name.' sudah pernah ditambahkan');
-
-        return redirect()->route('universitas.index');
+        elseif($operations->where('operation.name','read')->count() > 0){
+            return redirect()->route($this->route.'.index');
+        }
+        else{
+            return redirect()->route($this->subsystem.'.index');
+        }
     }
 
     /**

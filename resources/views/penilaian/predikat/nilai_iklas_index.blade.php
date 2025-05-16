@@ -41,11 +41,11 @@ Predikat IKLaS
     <div class="col-md-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Deskripsi Predikat Nilai IKLaS</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Deskripsi Predikat Nilai IKLaS</h6>
                 @if($rpd && (implode(',',$rpd->pluck('predicate')->toArray()) == '1,2,3,4,5'))
                 <button type="button" class="m-0 float-right btn btn-secondary btn-sm" disabled="disabled">Tambah <i class="fas fa-plus"></i></button>
                 @else
-                <a class="m-0 float-right btn btn-brand-purple-dark btn-sm" href="javascript:void(0)" data-toggle="modal" data-target="#TambahModal">Tambah <i class="fas fa-plus"></i></a>
+                <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="javascript:void(0)" data-toggle="modal" data-target="#TambahModal">Tambah <i class="fas fa-plus"></i></a>
                 @endif
             </div>
             <div class="card-body p-3">
@@ -98,7 +98,7 @@ Predikat IKLaS
         <div class="modal-content">
             <form action="{{ route('predikat.iklas.tambah') }}" method="POST">
                 @csrf
-                <div class="modal-header bg-brand-purple-dark text-white">
+                <div class="modal-header bg-brand-green-dark text-white">
                     <h5 class="modal-title" id="exampleModalLongTitle">Tambah Deskripsi Predikat IKLaS</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
@@ -129,7 +129,7 @@ Predikat IKLaS
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-brand-purple-dark">Tambah</button>
+                    <button type="submit" class="btn btn-brand-green-dark">Tambah</button>
                 </div>
             </form>
         </div>
@@ -140,7 +140,7 @@ Predikat IKLaS
 <div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h5 class="modal-title text-white">Ubah Deskripsi Predikat IKLaS</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>

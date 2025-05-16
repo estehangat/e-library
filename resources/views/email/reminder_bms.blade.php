@@ -95,7 +95,7 @@
                                                     <td width="10"><p>:</p></td>
                                                     <td align="left" valign="middle" style="padding: 0 10px;">
                                                         @if($key == 0)
-                                                        <p>{{ 'Rp. '.number_format($t->nominal+$data->register_nominal+$data->bms_deduction, 0, ',', '.').($t->remain+$data->register_remain < 1 ? ' (LUNAS)' : null) }}</p>
+                                                    <p>{{ 'Rp. '.number_format($t->nominal+$data->register_nominal+$data->bms_deduction, 0, ',', '.').($t->remain+($data->register_nominal-$data->register_paid) < 1 ? ' (LUNAS)' : null) }}</p>
                                                         @else
                                                         <p>{{ 'Rp. '.$t->nominalWithSeparator.($t->remain < 1 ? ' (LUNAS)' : null) }}</p>
                                                         @endif
@@ -105,7 +105,7 @@
                                                             if(!$totalRemain) $totalRemain = 0;
                                                             $totalRemain += $t->remain;
                                                             if($key == 0)
-                                                                $totalRemain += $t->$data->register_remain;
+                                                                $totalRemain += $data->register_nominal-$data->register_paid;
                                                         }
                                                         @endphp
                                                     </td>

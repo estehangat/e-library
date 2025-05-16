@@ -26,11 +26,6 @@ class ExchangeTransaction extends Model
         }
     }
 
-    public function transactionTarget()
-    {
-        return $this->hasMany(ExchangeTransactionTarget::class,'exchange_transaction_id');
-    }
-
     public function transactionOrigin()
     {
         if($this->origin == 1){
@@ -40,6 +35,26 @@ class ExchangeTransaction extends Model
         }else{
             return $this->belongsTo(BmsTransactionCalonSiswa::class,'transaction_id');
         }
+    }
+
+    public function bmsTransactionOrigin()
+    {
+        return $this->belongsTo(BmsTransaction::class,'transaction_id');
+    }
+
+    public function sppTransactionOrigin()
+    {
+        return $this->belongsTo(SppTransaction::class,'transaction_id');
+    }
+
+    public function bmsCandidateTransactionOrigin()
+    {
+        return $this->belongsTo(BmsTransactionCalonSiswa::class,'transaction_id');
+    }
+
+    public function transactionTarget()
+    {
+        return $this->hasMany(ExchangeTransactionTarget::class,'exchange_transaction_id');
     }
     
     public function getNominalWithSeparatorAttribute()

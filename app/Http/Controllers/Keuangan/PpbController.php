@@ -27,12 +27,30 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 class PpbController extends Controller
 {
     /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->subsystem = 'keuangan';
+        $modul = 'ppa';
+        $this->modul = $modul;
+        $this->active = 'PPA';
+        $this->route = $this->subsystem.'.manajemen.'.$this->modul;
+        $this->acceptZeroValues = true;
+    }
+
+    /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request, $jenis = null, $tahun = null)
     {
+        // Override Budget Category
+        if(!$jenis) $jenis = 'apby';
+
         $role = $request->user()->role->name;
 
         $jenisAnggaran = JenisAnggaran::all();
@@ -102,19 +120,27 @@ class PpbController extends Controller
                 $tahun = $tahun == null ? Date::now('Asia/Jakarta')->format('Y') : $tahun;
             }
 
-            $anggaranCount = $jenisAktif ? $jenisAktif->anggaran()->whereHas('ppa',function($q){$q->where('finance_acc_status_id',1);})->count() : 0;
+            $yearAttr = $isYear ? 'year' : 'academic_year_id';
+
+            $anggaranCount = $jenisAktif ? $jenisAktif->anggaran()->whereHas('ppa',function($q){
+                $q->where('finance_acc_status_id',1);
+            })->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+            })->count() : 0;
 
             if($anggaranCount > 0){
-                $anggarans = $jenisAktif->anggaran()->pluck('id');
+                $anggarans = $jenisAktif->anggaran()->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                    $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                })->pluck('id');
 
-                $ppaAcc = Ppa::where('finance_acc_status_id', 1)->whereIn('budgeting_budgeting_type_id',$anggarans);
-                $ppaAcc = !$isYear ? $ppaAcc->where('academic_year_id', $tahun->id) : $ppaAcc->where('year', $tahun);
+                $ppaAcc = Ppa::where('finance_acc_status_id', 1)->doesntHave('eksklusi')->whereIn('budgeting_budgeting_type_id',$anggarans);
+                $ppaAcc = $ppaAcc->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
 
                 if($ppaAcc->count() > 0){
-                    $bbk = !$isYear ? $jenisAktif->bbk()->where('academic_year_id', $tahun->id)->get() : $jenisAktif->bbk()->where('year', $tahun)->get();
+                    $bbk = $jenisAktif->bbk()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->get();
                     $ppaAcc = $ppaAcc->doesntHave('bbk')->get();
 
-                    if(in_array($role,['ketuayys','direktur','fam','faspv','keulsi']))
+                    if(in_array($role,['ketuayys','direktur','fam','faspv','keulsi','am']))
                         $folder = $role;
                     else $folder = 'read-only';
 
@@ -149,7 +175,10 @@ class PpbController extends Controller
                 $tahun = TahunAjaran::where('academic_year',$tahun)->first();
                 if(!$tahun) return redirect()->route('ppb.index', ['jenis' => $jenisAktif->link]);
             }
-            $anggarans = $jenisAktif->anggaran()->pluck('id');
+            $yearAttr = $isYear ? 'year' : 'academic_year_id';
+            $anggarans = $jenisAktif->anggaran()->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+            })->pluck('id');
 
             $yearAttr = $isYear ? 'year' : 'academic_year_id';
 
@@ -308,11 +337,12 @@ class PpbController extends Controller
                 $tahun = TahunAjaran::where('academic_year',$tahun)->first();
                 if(!$tahun) return redirect()->route('ppb.index', ['jenis' => $jenisAktif->link]);
             }
-            $anggarans = $jenisAktif->anggaran()->pluck('id');
-
             $yearAttr = $isYear ? 'year' : 'academic_year_id';
+            $anggarans = $jenisAktif->anggaran()->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+            })->pluck('id');
 
-            $bbkAktif = $jenisAktif->bbk()->where('number','LIKE',$nomor.'%')->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->first();
+            $bbkAktif = $jenisAktif->bbk()->where('number','LIKE',$nomor.'/%')->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->first();
 
             if($bbkAktif){
                 //check active APBY
@@ -331,7 +361,7 @@ class PpbController extends Controller
                 }
                 
                 $acceptable = false; 
-                if($apbyAktifCount >= count($ppa)) $acceptable = true;
+                if($apbyAktifCount >= count($ppa) && ($this->acceptZeroValues || (!$this->acceptZeroValues && $bbkAktif->detail()->whereHas('ppa.detail',function($q){$q->where('value','<=',0);})->count() <= 0))) $acceptable = true;
 
                 $notifikasi = Notifikasi::where(['id' => $request->notif_id,'user_id' => $request->user()->id])->first();
 
@@ -339,14 +369,16 @@ class PpbController extends Controller
                     $notifikasi->update(['is_active' => 0]);
                 }
 
+                $acceptZeroValues = $this->acceptZeroValues;
+
                 if(in_array($role,['ketuayys','direktur','fam','faspv','keulsi']))
                     $folder = $role;
                 else $folder = 'read-only';
 
                 if($isKso)
-                    return view('keuangan.'.$folder.'.ppb_kso_show', compact('jenisAnggaran','jenisAktif','tahun','isYear','bbkAktif','isKso','acceptable'));
+                    return view('keuangan.'.$folder.'.ppb_kso_show', compact('jenisAnggaran','jenisAktif','tahun','isYear','bbkAktif','isKso','acceptable','acceptZeroValues'));
                 else
-                    return view('keuangan.'.$folder.'.ppb_show', compact('jenisAnggaran','jenisAktif','tahun','isYear','bbkAktif','isKso','acceptable'));
+                    return view('keuangan.'.$folder.'.ppb_show', compact('jenisAnggaran','jenisAktif','tahun','isYear','bbkAktif','isKso','acceptable','acceptZeroValues'));
             }
             else return redirect()->route('ppb.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
         }
@@ -378,14 +410,15 @@ class PpbController extends Controller
                 $tahun = TahunAjaran::where('academic_year',$tahun)->first();
                 if(!$tahun) return redirect()->route('ppb.index', ['jenis' => $jenisAktif->link]);
             }
-            $anggarans = $jenisAktif->anggaran()->pluck('id');
-
             $yearAttr = $isYear ? 'year' : 'academic_year_id';
+            $anggarans = $jenisAktif->anggaran()->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+            })->pluck('id');
 
             $ppaAcc = Ppa::where([$yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id), 'finance_acc_status_id' => 1])->whereIn('budgeting_budgeting_type_id',$anggarans)->get();
 
             if($ppaAcc && count($ppaAcc) > 0){
-                $bbkAktif = $jenisAktif->bbk()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'%');
+                $bbkAktif = $jenisAktif->bbk()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'/%');
                 if($isKso){
                     $bbkAktif = $bbkAktif->where(function($query){
                         $query->where('director_acc_status_id','!=',1)->orWhereNull('director_acc_status_id');
@@ -463,14 +496,15 @@ class PpbController extends Controller
                 $tahun = TahunAjaran::where('academic_year',$tahun)->first();
                 if(!$tahun) return redirect()->route('ppb.index', ['jenis' => $jenisAktif->link]);
             }
-            $anggarans = $jenisAktif->anggaran()->pluck('id');
-
             $yearAttr = $isYear ? 'year' : 'academic_year_id';
+            $anggarans = $jenisAktif->anggaran()->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+            })->pluck('id');
 
             $ppaAcc = Ppa::where([$yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id), 'finance_acc_status_id' => 1])->whereIn('budgeting_budgeting_type_id',$anggarans)->get();
 
             if($ppaAcc && count($ppaAcc) > 0){
-                $bbkAktif = $jenisAktif->bbk()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'%');
+                $bbkAktif = $jenisAktif->bbk()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'/%');
                 if($isKso){
                     $bbkAktif = $bbkAktif->where(function($query){
                         $query->where('director_acc_status_id','!=',1)->orWhereNull('director_acc_status_id');
@@ -654,14 +688,15 @@ class PpbController extends Controller
                 $tahun = TahunAjaran::where('academic_year',$tahun)->first();
                 if(!$tahun) return redirect()->route('ppb.index', ['jenis' => $jenisAktif->link]);
             }
-            $anggarans = $jenisAktif->anggaran()->pluck('id');
-
             $yearAttr = $isYear ? 'year' : 'academic_year_id';
+            $anggarans = $jenisAktif->anggaran()->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+            })->pluck('id');
 
             $ppaAcc = $isKso ? Ppa::where([$yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id), 'finance_acc_status_id' => 1])->whereIn('budgeting_budgeting_type_id',$anggarans)->get() : null;
 
             if($ppaAcc && count($ppaAcc) > 0){
-                $bbkAktif = $isKso ? $jenisAktif->bbk()->where($yearAttr, ($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'%')->where(function($query){
+                $bbkAktif = $isKso ? $jenisAktif->bbk()->where($yearAttr, ($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'/%')->where(function($query){
                     $query->where('director_acc_status_id','!=',1)->orWhereNull('director_acc_status_id');
                 })->first() : null;
 
@@ -678,6 +713,122 @@ class PpbController extends Controller
                         Session::flash('success','PPA No. '.$ppaAktif->number.' berhasil dihapus');
                     }
                     else Session::flash('danger','PPA gagal dihapus');
+
+                    return redirect()->route('ppb.show', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'nomor' => $bbkAktif->firstNumber]);
+                }
+                else return redirect()->route('ppb.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
+
+            }
+            else return redirect()->route('ppb.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
+        }
+
+        return redirect()->route('ppb.index');
+    }
+
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\Models\Ppa\Ppa  $ppa
+     * @return \Illuminate\Http\Response
+     */
+    public function cancel(Request $request, $jenis, $tahun, $nomor, $ppa)
+    {
+        $role = $request->user()->role->name;
+        if(($jenis != 'apb-kso-'.strtolower($request->user()->pegawai->unit->name)) && $role == 'keulsi'){
+            return redirect()->route('ppb.index');
+        }
+        
+        $jenisAnggaran = JenisAnggaran::all();
+        $jenisAktif = JenisAnggaran::where('link',$jenis)->first();
+
+        if($jenisAktif){
+            $isKso = $jenisAktif->isKso;
+            $isYear = strlen($tahun) == 4 ? true : false;
+            if(!$isYear){
+                $tahun = str_replace("-","/",$tahun);
+                $tahun = TahunAjaran::where('academic_year',$tahun)->first();
+                if(!$tahun) return redirect()->route('ppb.index', ['jenis' => $jenisAktif->link]);
+            }
+            $yearAttr = $isYear ? 'year' : 'academic_year_id';
+            $anggarans = $jenisAktif->anggaran()->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+            })->pluck('id');
+
+            $ppaAcc = Ppa::where([$yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id), 'finance_acc_status_id' => 1])->whereIn('budgeting_budgeting_type_id',$anggarans)->get();
+
+            if($ppaAcc && count($ppaAcc) > 0){
+                $bbkAktif = $jenisAktif->bbk()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'/%');
+                if($isKso){
+                    $bbkAktif = $bbkAktif->where(function($query){
+                        $query->where('director_acc_status_id','!=',1)->orWhereNull('director_acc_status_id');
+                    })->first();
+                }
+                else{
+                    if($role == 'ketuayys'){
+                        $bbkAktif = $bbkAktif->where('director_acc_status_id',1)->where(function($query){
+                            $query->where('president_acc_status_id','!=',1)->orWhereNull('president_acc_status_id');
+                        })->first();
+                    }
+                    elseif($role == 'direktur'){
+                        $bbkAktif = $bbkAktif->where(function($query){
+                            $query->where('director_acc_status_id','!=',1)->orWhereNull('director_acc_status_id');
+                        })->first();
+                    }
+                }
+
+                if($bbkAktif){
+                    if($bbkAktif->detail()->count() > 1){
+                        $bbk = $ppa ? $bbkAktif->detail()->where('ppa_id',$ppa)->first() : null;
+
+                        if($bbk){
+                            $ppaAktif = $bbk->ppa;
+                            $bbk->delete();
+                            if($ppaAktif->finance_acc_status_id == 1){
+                                foreach($ppaAktif->detail as $d){
+                                    if(in_array($role,['ketuayys'])){
+                                        $d->update([
+                                            'value_president' => null,
+                                            'president_acc_id' => null,
+                                            'president_acc_status_id' => null,
+                                            'president_acc_time' => null,
+                                        ]);
+                                    }
+                                    $d->update([
+                                        'value' => $d->value_fam,
+                                        'value_director' => null,
+                                        'value_letris' => null,
+                                        'director_acc_id' => null,
+                                        'director_acc_status_id' => null,
+                                        'director_acc_time' => null,
+                                        'letris_acc_id' => null,
+                                        'letris_acc_status_id' => null,
+                                        'letris_acc_time' => null,
+                                    ]);
+                                }
+                                if(in_array($role,['ketuayys'])){
+                                    $ppaAktif->update([
+                                        'president_acc_id' => null,
+                                        'president_acc_status_id' => null,
+                                        'president_acc_time' => null,
+                                    ]);
+                                }
+                                $ppaAktif->update([
+                                    'total_value' => $ppaAktif->detail()->sum('value_fam'),
+                                    'director_acc_id' => null,
+                                    'director_acc_status_id' => null,
+                                    'director_acc_time' => null,
+                                    'letris_acc_id' => null,
+                                    'letris_acc_status_id' => null,
+                                    'letris_acc_time' => null,
+                                ]);
+                            }
+
+                            Session::flash('success','PPA No. '.$ppaAktif->number.' berhasil ditunda');
+                        }
+                        else Session::flash('danger','PPA gagal ditunda');
+                    }
+                    else Session::flash('danger','PPA tidak dapat ditunda');
 
                     return redirect()->route('ppb.show', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'nomor' => $bbkAktif->firstNumber]);
                 }
@@ -715,14 +866,15 @@ class PpbController extends Controller
                 $tahun = TahunAjaran::where('academic_year',$tahun)->first();
                 if(!$tahun) return redirect()->route('ppb.index', ['jenis' => $jenisAktif->link]);
             }
-            $anggarans = $jenisAktif->anggaran()->pluck('id');
-
             $yearAttr = $isYear ? 'year' : 'academic_year_id';
+            $anggarans = $jenisAktif->anggaran()->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+            })->pluck('id');
 
             $ppaAcc = $isKso ? Ppa::where([$yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id), 'finance_acc_status_id' => 1])->whereIn('budgeting_budgeting_type_id',$anggarans)->get() : null;
 
             if($ppaAcc && count($ppaAcc) > 0){
-                $bbkAktif = $isKso ? $jenisAktif->bbk()->where($yearAttr, ($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'%')->where(function($query){
+                $bbkAktif = $isKso ? $jenisAktif->bbk()->where($yearAttr, ($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'/%')->where(function($query){
                     $query->where('director_acc_status_id','!=',1)->orWhereNull('director_acc_status_id');
                 })->first() : null;
 
@@ -786,7 +938,7 @@ class PpbController extends Controller
                                             foreach($letrisUsers as $u){
                                                 Notifikasi::create([
                                                     'user_id' => $u->id,
-                                                    'desc' => 'PPB No. '.$bbkAktif->number.' sudah disepakati Auliya',
+                                                    'desc' => 'PPB No. '.$bbkAktif->number.' sudah disepakati MUDA',
                                                     'link' => route('ppb.show', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'nomor' => $bbkAktif->firstNumber]),
                                                     'is_active' => 1,
                                                     'notification_category_id' => 2,
@@ -876,14 +1028,15 @@ class PpbController extends Controller
                 $tahun = TahunAjaran::where('academic_year',$tahun)->first();
                 if(!$tahun) return redirect()->route('ppb.index', ['jenis' => $jenisAktif->link]);
             }
-            $anggarans = $jenisAktif->anggaran()->pluck('id');
-
             $yearAttr = $isYear ? 'year' : 'academic_year_id';
+            $anggarans = $jenisAktif->anggaran()->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+            })->pluck('id');
 
             $ppaAcc = Ppa::where([$yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id), 'finance_acc_status_id' => 1])->whereIn('budgeting_budgeting_type_id',$anggarans)->get();
 
             if($ppaAcc && count($ppaAcc) > 0){
-                $bbkAktif = $jenisAktif->bbk()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'%');
+                $bbkAktif = $jenisAktif->bbk()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'/%');
                 if($isKso){
                     $bbkAktif = $bbkAktif->where(function($query){
                         $query->where('director_acc_status_id','!=',1)->orWhereNull('director_acc_status_id');
@@ -903,70 +1056,51 @@ class PpbController extends Controller
                 }
 
                 if($bbkAktif){
-                    $ppa = $bbkAktif->detail()->select('ppa_id')->get();
-                    $apbyAktifCount = 0;
-                    foreach($ppa as $p){
-                        $anggaranAktif = $p->ppa->jenisAnggaran;
+                    if($this->acceptZeroValues || (!$this->acceptZeroValues && $bbkAktif->detail()->whereHas('ppa.detail',function($q){$q->where('value','<=',0);})->count() <= 0)){
+                        $ppa = $bbkAktif->detail()->select('ppa_id')->get();
+                        $apbyAktifCount = 0;
+                        foreach($ppa as $p){
+                            $anggaranAktif = $p->ppa->jenisAnggaran;
 
-                        $apbyAktif = $p->ppa->jenisAnggaranAnggaran->apby()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->aktif()->unfinal()->latest();
+                            $apbyAktif = $p->ppa->jenisAnggaranAnggaran->apby()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->aktif()->unfinal()->latest();
 
-                        $apbyAktif = !$isYear ? $apbyAktif->where('director_acc_status_id', 1)->first() : $apbyAktif->where('president_acc_status_id', 1)->first();
+                            $apbyAktif = !$isYear ? $apbyAktif->where('director_acc_status_id', 1)->first() : $apbyAktif->where('president_acc_status_id', 1)->first();
 
-                        if($apbyAktif) $apbyAktifCount++;
-                    }
-
-                    if($apbyAktifCount >= count($ppa)){
-                        if($role == 'ketuayys' && !$isKso){
-                            // Inti function
-
-                            // Accept BBK
-                            $bbkAktif->update([
-                                'total_value' => $bbkAktif->detail()->sum('ppa_value'),
-                                'president_acc_id' => $request->user()->pegawai->id,
-                                'president_acc_status_id' => 1,
-                                'president_acc_time' => Date::now('Asia/Jakarta')
-                            ]);
-
-                            foreach($bbkAktif->detail as $bbk){
-                                $ppaAktif = $bbk->ppa;
-
-                                $pa = $ppaAktif->jenisAnggaranAnggaran->anggaran->accJabatan;
-
-                                if($pa){
-                                    $user = $pa->role->loginUsers()->whereHas('pegawai.units',function($q)use($ppaAktif){
-                                        $q->where('unit_id',$ppaAktif->jenisAnggaranAnggaran->anggaran->unit_id);
-                                    })->aktif()->first();
-                                    if($user){
-                                        Notifikasi::create([
-                                            'user_id' => $user->id,
-                                            'desc' => 'PPA No. '.$ppaAktif->number.' sudah disetujui',
-                                            'link' => route('ppa.show', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $ppaAktif->jenisAnggaranAnggaran->anggaran->link, 'nomor' => $ppaAktif->firstNumber]),
-                                            'is_active' => 1,
-                                            'notification_category_id' => 2,
-                                        ]);
-                                    }
-                                }
-                            }
-
-                            // Substract Apby Detail Balances
-                            $this->substractApby($bbkAktif);
-
-                            // Generate LPPA
-                            $this->generateLppa($bbkAktif);
-
-                            Session::flash('success','Data PPB berhasil disetujui');
+                            if($apbyAktif) $apbyAktifCount++;
                         }
-                        elseif($role == 'direktur'){
-                            // Inti function
 
-                            if($isKso){
+                        if($apbyAktifCount >= count($ppa)){
+                            if($role == 'ketuayys' && !$isKso){
+                                // Inti function
+
                                 // Accept BBK
                                 $bbkAktif->update([
                                     'total_value' => $bbkAktif->detail()->sum('ppa_value'),
-                                    'director_acc_id' => $request->user()->pegawai->id,
-                                    'director_acc_status_id' => 1,
-                                    'director_acc_time' => Date::now('Asia/Jakarta')
+                                    'president_acc_id' => $request->user()->pegawai->id,
+                                    'president_acc_status_id' => 1,
+                                    'president_acc_time' => Date::now('Asia/Jakarta')
                                 ]);
+
+                                foreach($bbkAktif->detail as $bbk){
+                                    $ppaAktif = $bbk->ppa;
+
+                                    $pa = $ppaAktif->jenisAnggaranAnggaran->anggaran->accJabatan;
+
+                                    if($pa){
+                                        $user = $pa->role->loginUsers()->whereHas('pegawai.units',function($q)use($ppaAktif){
+                                            $q->where('unit_id',$ppaAktif->jenisAnggaranAnggaran->anggaran->unit_id);
+                                        })->aktif()->first();
+                                        if($user){
+                                            Notifikasi::create([
+                                                'user_id' => $user->id,
+                                                'desc' => 'PPA No. '.$ppaAktif->number.' sudah disetujui',
+                                                'link' => route('ppa.show', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $ppaAktif->jenisAnggaranAnggaran->anggaran->link, 'nomor' => $ppaAktif->firstNumber]),
+                                                'is_active' => 1,
+                                                'notification_category_id' => 2,
+                                            ]);
+                                        }
+                                    }
+                                }
 
                                 // Substract Apby Detail Balances
                                 $this->substractApby($bbkAktif);
@@ -976,46 +1110,68 @@ class PpbController extends Controller
 
                                 Session::flash('success','Data PPB berhasil disetujui');
                             }
-                            else{
-                                if($bbkAktif->detail()->count() > 0){
-                                    foreach($bbkAktif->detail as $d){
-                                        $ppaAktif = $d->ppa;
-                                        if($ppaAktif){
-                                            $ppaAktif->update([
-                                                'director_acc_id' => $request->user()->pegawai->id,
-                                                'director_acc_status_id' => 1,
-                                                'director_acc_time' => Date::now('Asia/Jakarta')
+                            elseif($role == 'direktur'){
+                                // Inti function
+
+                                if($isKso){
+                                    // Accept BBK
+                                    $bbkAktif->update([
+                                        'total_value' => $bbkAktif->detail()->sum('ppa_value'),
+                                        'director_acc_id' => $request->user()->pegawai->id,
+                                        'director_acc_status_id' => 1,
+                                        'director_acc_time' => Date::now('Asia/Jakarta')
+                                    ]);
+
+                                    // Substract Apby Detail Balances
+                                    $this->substractApby($bbkAktif);
+
+                                    // Generate LPPA
+                                    $this->generateLppa($bbkAktif);
+
+                                    Session::flash('success','Data PPB berhasil disetujui');
+                                }
+                                else{
+                                    if($bbkAktif->detail()->count() > 0){
+                                        foreach($bbkAktif->detail as $d){
+                                            $ppaAktif = $d->ppa;
+                                            if($ppaAktif){
+                                                $ppaAktif->update([
+                                                    'director_acc_id' => $request->user()->pegawai->id,
+                                                    'director_acc_status_id' => 1,
+                                                    'director_acc_time' => Date::now('Asia/Jakarta')
+                                                ]);
+                                            }
+                                        }
+                                    }
+
+                                    // Accept BBK
+                                    $bbkAktif->update([
+                                        'director_acc_id' => $request->user()->pegawai->id,
+                                        'director_acc_status_id' => 1,
+                                        'director_acc_time' => Date::now('Asia/Jakarta')
+                                    ]);
+
+                                    $president = Jabatan::where('code','18')->first();
+
+                                    if($president){
+                                        $user = $president->role->loginUsers()->aktif()->first();
+                                        if($user){
+                                            Notifikasi::create([
+                                                'user_id' => $user->id,
+                                                'desc' => 'PPB No. '.$bbkAktif->number.' menunggu persetujuan Anda',
+                                                'link' => route('ppb.show', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'nomor' => $bbkAktif->firstNumber]),
+                                                'is_active' => 1
                                             ]);
                                         }
                                     }
+
+                                    Session::flash('success','Data PPB berhasil disetujui');
                                 }
-
-                                // Accept BBK
-                                $bbkAktif->update([
-                                    'director_acc_id' => $request->user()->pegawai->id,
-                                    'director_acc_status_id' => 1,
-                                    'director_acc_time' => Date::now('Asia/Jakarta')
-                                ]);
-
-                                $president = Jabatan::where('code','18')->first();
-
-                                if($president){
-                                    $user = $president->role->loginUsers()->aktif()->first();
-                                    if($user){
-                                        Notifikasi::create([
-                                            'user_id' => $user->id,
-                                            'desc' => 'PPB No. '.$bbkAktif->number.' menunggu persetujuan Anda',
-                                            'link' => route('ppb.show', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'nomor' => $bbkAktif->firstNumber]),
-                                            'is_active' => 1
-                                        ]);
-                                    }
-                                }
-
-                                Session::flash('success','Data PPB berhasil disetujui');
                             }
+                            else Session::flash('danger','Data PPB gagal disetujui');
                         }
-                        else Session::flash('danger','Data PPB gagal disetujui');
                     }
+                    else Session::flash('danger','Data PPB tidak dapat disetujui karena masih ada detail pengajuan 0');
 
                     return redirect()->route('ppb.show', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'nomor' => $bbkAktif->firstNumber]);
                 }
@@ -1052,14 +1208,15 @@ class PpbController extends Controller
                 $tahun = TahunAjaran::where('academic_year',$tahun)->first();
                 if(!$tahun) return redirect()->route('ppb.index', ['jenis' => $jenisAktif->link]);
             }
-            $anggarans = $jenisAktif->anggaran()->pluck('id');
-
             $yearAttr = $isYear ? 'year' : 'academic_year_id';
+            $anggarans = $jenisAktif->anggaran()->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+            })->pluck('id');
 
             $ppaAcc = Ppa::where([$yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id), 'finance_acc_status_id' => 1])->whereIn('budgeting_budgeting_type_id',$anggarans)->get();
 
             if($ppaAcc && count($ppaAcc) > 0){
-                $bbkAktif = $jenisAktif->bbk()->where([$yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id), 'director_acc_status_id' => 1])->where('number','LIKE',$nomor.'%')->first();
+                $bbkAktif = $jenisAktif->bbk()->where([$yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id), 'director_acc_status_id' => 1])->where('number','LIKE',$nomor.'/%')->first();
 
                 if($bbkAktif){
                     $bbk = $ppa ? $bbkAktif->detail()->where('ppa_id',$ppa)->first() : null;
@@ -1107,24 +1264,26 @@ class PpbController extends Controller
                 if(!$tahun) return redirect()->route('ppb.index', ['jenis' => $jenisAktif->link]);
             }
             $yearAttr = $isYear ? 'year' : 'academic_year_id';
-            $anggarans = $jenisAktif->anggaran()->pluck('id');
+            $anggarans = $jenisAktif->anggaran()->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+            })->pluck('id');
 
-            $bbkAktif = $jenisAktif->bbk()->where($yearAttr, ($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'%');
+            $bbkAktif = $jenisAktif->bbk()->where($yearAttr, ($yearAttr == 'year' ? $tahun : $tahun->id))->where('number','LIKE',$nomor.'/%');
             $bbkAktif = $isKso ? $bbkAktif->where('director_acc_status_id', 1)->first() : $bbkAktif->where('president_acc_status_id', 1)->first();
 
             if($bbkAktif && $bbkAktif->detail()->count() > 0){
                 $spreadsheet = new Spreadsheet();
 
-                $spreadsheet->getProperties()->setCreator('SIT Auliya')
+                $spreadsheet->getProperties()->setCreator('Sekolah MUDA')
                 ->setLastModifiedBy($request->user()->pegawai->name)
-                ->setTitle("Data Pengajuan Perintah Bayar".($isKso?" KSO":null)." Auliya Nomor ".$bbkAktif->number)
-                ->setSubject("Pengajuan Perintah Bayar".($isKso?" KSO":null)." Auliya Nomor ".$bbkAktif->number)
-                ->setDescription("Rekapitulasi Data Pengajuan Perintah Bayar".($isKso?" KSO":null)." Auliya Nomor ".$bbkAktif->number)
-                ->setKeywords("Pengajuan, Perintah, Bayar, PPB, Auliya".($isKso?", KSO":null));
+                ->setTitle("Data Pengajuan Perintah Bayar".($isKso?" KSO":null)." MUDA Nomor ".$bbkAktif->number)
+                ->setSubject("Pengajuan Perintah Bayar".($isKso?" KSO":null)." MUDA Nomor ".$bbkAktif->number)
+                ->setDescription("Rekapitulasi Data Pengajuan Perintah Bayar".($isKso?" KSO":null)." MUDA Nomor ".$bbkAktif->number)
+                ->setKeywords("Pengajuan, Perintah, Bayar, PPB, MUDA".($isKso?", KSO":null));
 
                 $spreadsheet->setActiveSheetIndex(0)
                 ->setCellValue('B1', 'PENGAJUAN PERINTAH BAYAR'.($isKso?" - KSO":null))
-                ->setCellValue('B2', 'YAYASAN AULIYA INSAN UTAMA'.($isKso?" DAN YAYASAN LETRIS INDONESIA":null))
+                ->setCellValue('B2', 'YAYASAN MUDA INCOMSO'.($isKso?" DAN YAYASAN LETRIS LUMINTOO":null))
                 ->setCellValue('A4', 'No. PPB')
                 ->setCellValue('B4', $bbkAktif->number ? $bbkAktif->number : '-')
                 ->setCellValue('A5', 'Tanggal')
@@ -1134,8 +1293,8 @@ class PpbController extends Controller
                 ->setCellValue('F7', 'Nomor Rekening Tujuan');
 
                 $logo = new Drawing;
-                $logo->setName('Logo Auliya');
-                $logo->setDescription('Logo Auliya');
+                $logo->setName('Logo MUDA');
+                $logo->setDescription('Logo MUDA');
                 $logo->setPath('./img/logo/logo-vertical.png');
                 $logo->setHeight(76);
                 $logo->setOffsetX(9);
@@ -1301,7 +1460,7 @@ class PpbController extends Controller
 
                 // Director or President Signature Row
                 $spreadsheet->getActiveSheet()
-                ->setCellValue('E'.$kolom, ($isKso?'Direktur':'Ketua Yayasan').' SIT Auliya');
+                ->setCellValue('E'.$kolom, ($isKso?'Direktur':'Ketua Yayasan').' Sekolah MUDA');
                 $spreadsheet->getActiveSheet()->mergeCells('E'.$kolom.':G'.$kolom);
 
                 $styleArray = [

@@ -31,8 +31,8 @@ Pemetaan Peran
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Pemetaan Peran</h6>
-                <button type="button" class="m-0 float-right btn btn-brand-purple-dark btn-sm" data-toggle="modal" data-target="#add-form">Tambah <i class="fas fa-plus-circle ml-1"></i></button>
+                <h6 class="m-0 font-weight-bold text-brand-green">Pemetaan Peran</h6>
+                <button type="button" class="m-0 float-right btn btn-brand-green-dark btn-sm" data-toggle="modal" data-target="#add-form">Tambah <i class="fas fa-plus-circle ml-1"></i></button>
             </div>
             <div class="card-body p-3">
               @if(Session::has('success'))
@@ -109,7 +109,7 @@ Pemetaan Peran
 <div class="modal fade" id="add-form" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h5 class="modal-title text-white">Tambah Pemetaan Peran</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>
@@ -197,7 +197,7 @@ Pemetaan Peran
               <button type="button" class="btn btn-light" data-dismiss="modal">Kembali</button>
             </div>
             <div class="col-6 text-right">
-              <input id="save-mapping" type="submit" class="btn btn-brand-purple-dark" value="Tambah">
+              <input id="save-mapping" type="submit" class="btn btn-brand-green-dark" value="Tambah">
             </div>
           </div>
         </form>
@@ -209,7 +209,7 @@ Pemetaan Peran
 <div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h5 class="modal-title text-white">Ubah Pemetaan Peran</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>

@@ -1,7 +1,7 @@
 @extends('template.main.master')
 
 @section('title')
-Detail Calon Civitas Auliya
+Detail Calon Civitas
 @endsection
 
 @section('sidebar')
@@ -10,10 +10,10 @@ Detail Calon Civitas Auliya
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-2">
-  <h1 class="h3 mb-0 text-gray-800">Detail Calon Civitas Auliya</h1>
+  <h1 class="h3 mb-0 text-gray-800">Detail Calon Civitas</h1>
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="./">Beranda</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('calon.index') }}">Calon Civitas Auliya</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('calon.index') }}">Calon Civitas</a></li>
     <li class="breadcrumb-item active" aria-current="page">Detail</li>
   </ol>
 </div>
@@ -31,7 +31,7 @@ Detail Calon Civitas Auliya
               @if($calon->gender_id == '1')
               <span class="badge badge-info font-weight-normal">{{ ucwords($calon->jenisKelamin->name) }}</span>
               @elseif($calon->gender_id == '2')
-              <span class="badge badge-brand-purple font-weight-normal">{{ ucwords($calon->jenisKelamin->name) }}</span>
+              <span class="badge badge-brand-green font-weight-normal">{{ ucwords($calon->jenisKelamin->name) }}</span>
               @endif
               @if($calon->acceptance_status_id == '1')
               <span class="badge badge-success font-weight-normal">{{ ucwords($calon->rekomendasiPenerimaan->status) }}</span>
@@ -45,16 +45,16 @@ Detail Calon Civitas Auliya
       <div class="card-body bg-gray-200 p-4">
         <div class="d-flex align-items-center">
           @if(!$calon->education_acc_id)
-          <span class="mdi mdi-24px mdi-information text-info mr-2"></span>Calon civitas Auliya ini masih menunggu persetujuan Education Team Leader
+          <span class="mdi mdi-24px mdi-information text-info mr-2"></span>Calon civitas ini masih menunggu persetujuan Education Team Leader
           @else
-          <span class="mdi mdi-24px mdi-check-circle text-success mr-2"></span>Rekomendasi calon civitas Auliya ini telah disetujui oleh {{ $calon->accEdukasi->name }}
+          <span class="mdi mdi-24px mdi-check-circle text-success mr-2"></span>Rekomendasi calon civitas ini telah disetujui oleh {{ $calon->accEdukasi->name }}
           @endif
         </div>
       </div>
       <div class="card-body p-4">
         <div class="row mb-3">
           <div class="col-12">
-            <h6 class="font-weight-bold text-brand-purple">Info Umum</h6>
+            <h6 class="font-weight-bold text-brand-green">Info Umum</h6>
           </div>
         </div>
         <div class="row">
@@ -174,7 +174,7 @@ Detail Calon Civitas Auliya
         <hr>
         <div class="row mb-3">
           <div class="col-12">
-            <h6 class="font-weight-bold text-brand-purple">Info Alamat dan Kontak</h6>
+            <h6 class="font-weight-bold text-brand-green">Info Alamat dan Kontak</h6>
           </div>
         </div>
         <div class="row">
@@ -216,7 +216,7 @@ Detail Calon Civitas Auliya
         <hr>
         <div class="row mb-3">
           <div class="col-12">
-            <h6 class="font-weight-bold text-brand-purple">Pendidikan</h6>
+            <h6 class="font-weight-bold text-brand-green">Pendidikan</h6>
           </div>
         </div>
         <div class="row">
@@ -260,7 +260,7 @@ Detail Calon Civitas Auliya
         <hr>
         <div class="row mb-3">
           <div class="col-12">
-            <h6 class="font-weight-bold text-brand-purple">Hasil Tes</h6>
+            <h6 class="font-weight-bold text-brand-green">Hasil Tes</h6>
           </div>
         </div>
         <div class="row">
@@ -290,7 +290,7 @@ Detail Calon Civitas Auliya
         <hr>
         <div class="row mb-3">
           <div class="col-12">
-            <h6 class="font-weight-bold text-brand-purple">Rekomendasi</h6>
+            <h6 class="font-weight-bold text-brand-green">Rekomendasi</h6>
           </div>
         </div>
         <div class="row">

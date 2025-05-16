@@ -53,15 +53,15 @@ Daftar Siswa
                                     @endforeach
                                 </select>
                             </div>
-                            <button class="btn btn-brand-purple-dark btn-sm" type="submit">Saring</button>
+                            <button class="btn btn-brand-green-dark btn-sm" type="submit">Saring</button>
                         </div>
                     </form>
                     </div>
                     <div class="table-responsive">
                         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                            <h6 class="m-0 font-weight-bold text-brand-purple">Siswa</h6>
+                            <h6 class="m-0 font-weight-bold text-brand-green">Siswa</h6>
                             @if( in_array((auth()->user()->role_id), array(1,5)))
-                            <a class="m-0 float-right btn btn-brand-purple-dark btn-sm" href="/kependidikan/kbm/siswa/tambah">Tambah <i class="fas fa-plus"></i></a>
+                            <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="/kependidikan/kbm/siswa/tambah">Tambah <i class="fas fa-plus"></i></a>
                             @endif
                         </div>
                         <table id="dataTable" class="table align-items-center table-flush">

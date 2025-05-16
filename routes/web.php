@@ -102,6 +102,47 @@ use App\Http\Controllers\Penilaian\KeterampilanController;
 use App\Http\Controllers\Penilaian\SikapController;
 use App\Http\Controllers\Penilaian\HafalanController;
 
+use App\Http\Controllers\Penilaian\KurikulumController;
+
+// TK
+use App\Http\Controllers\Penilaian\Tk\DeskripsiPerkembanganController;
+use App\Http\Controllers\Penilaian\Tk\ElemenCapaianController;
+use App\Http\Controllers\Penilaian\Tk\NilaiElemenController;
+use App\Http\Controllers\Penilaian\Tk\PerkembanganController;
+use App\Http\Controllers\Penilaian\Tk\TujuanElemenController;
+use App\Http\Controllers\Penilaian\Tk\TujuanPembelajaranController;
+
+// IKLaS
+use App\Http\Controllers\Penilaian\Iklas\DeskripsiIklasController;
+use App\Http\Controllers\Penilaian\Iklas\IndikatorIklasController;
+use App\Http\Controllers\Penilaian\Iklas\IndikatorKurikulumIklasController;
+use App\Http\Controllers\Penilaian\Iklas\KompetensiIklasController;
+use App\Http\Controllers\Penilaian\Iklas\KurikulumIklasController;
+use App\Http\Controllers\Penilaian\Iklas\NilaiIklasController as NilaiIklasKurdekaController;
+
+// Khataman
+use App\Http\Controllers\Penilaian\Khataman\BukuController;
+use App\Http\Controllers\Penilaian\Khataman\CapaianKhatamController;
+use App\Http\Controllers\Penilaian\Khataman\DeskripsiBukuController;
+
+// Penilaian Kurdeka
+use App\Http\Controllers\Penilaian\Mapel\CapaianKompetensiController;
+use App\Http\Controllers\Penilaian\Mapel\DeskripsiHaditsDoaController;
+use App\Http\Controllers\Penilaian\Mapel\DeskripsiKhatamanController;
+use App\Http\Controllers\Penilaian\Mapel\DeskripsiQuranController;
+use App\Http\Controllers\Penilaian\Mapel\DeskripsiTpsController;
+use App\Http\Controllers\Penilaian\Mapel\HaditsDoaController;
+use App\Http\Controllers\Penilaian\Mapel\HafalanQuranController;
+use App\Http\Controllers\Penilaian\Mapel\KhatamanController;
+use App\Http\Controllers\Penilaian\Mapel\JumlahTpfController;
+use App\Http\Controllers\Penilaian\Mapel\NilaiAkhirController;
+use App\Http\Controllers\Penilaian\Mapel\NilaiFormatifController;
+use App\Http\Controllers\Penilaian\Mapel\NilaiSumatifController;
+
+// Rapor
+use App\Http\Controllers\Penilaian\Rapor\LtsKurdekaController;
+use App\Http\Controllers\Penilaian\Rapor\RaporKurdekaController;
+
 // IKU Edukasi
 use App\Http\Controllers\Penilaian\IkuEdukasiController as PenilaianIkuEdukasiController;
 
@@ -122,6 +163,7 @@ use App\Http\Controllers\Import\ImportVaController;
 //KBM
 use App\Http\Controllers\Kbm\SiswaController;
 use App\Http\Controllers\Kbm\NamaKelasController;
+use App\Http\Controllers\Kbm\JurusanController;
 use App\Http\Controllers\Kbm\PelajaranController;
 use App\Http\Controllers\Kbm\TahunAjaranController;
 use App\Http\Controllers\Kbm\KelasController;
@@ -141,10 +183,13 @@ use App\Http\Controllers\Psb\Ortu\OrtuController;
 use App\Http\Controllers\KeuanganController;
 
 use App\Http\Controllers\Keuangan\AkunController;
+use App\Http\Controllers\Keuangan\PratinjauAkunController;
 use App\Http\Controllers\Keuangan\RkatController;
 use App\Http\Controllers\Keuangan\ApbyController;
+use App\Http\Controllers\Keuangan\TahunAnggaranController;
 use App\Http\Controllers\Keuangan\ProposalPpaController;
 use App\Http\Controllers\Keuangan\PpaController;
+use App\Http\Controllers\Keuangan\KunciPpaController;
 use App\Http\Controllers\Keuangan\PpbController;
 use App\Http\Controllers\Keuangan\LppaController;
 use App\Http\Controllers\Keuangan\RealisasiController as RealisasiKeuanganController;
@@ -161,6 +206,7 @@ use App\Http\Controllers\Keuangan\Pembayaran\ExchangeTransactionController;
 use App\Http\Controllers\Keuangan\Pembayaran\SppController;
 use App\Http\Controllers\Keuangan\Pembayaran\DashboardController as PembayaranDashboardController;
 use App\Http\Controllers\Keuangan\Pembayaran\Spp\DasborSppController;
+use App\Http\Controllers\Keuangan\Pembayaran\Spp\GeneratorSppController;
 use App\Http\Controllers\Keuangan\Pembayaran\Spp\LaporanSppController;
 use App\Http\Controllers\Keuangan\Pembayaran\Spp\NominalSppController;
 use App\Http\Controllers\Keuangan\Pembayaran\Spp\PembayaranSppController;
@@ -245,7 +291,7 @@ Route::group(['middleware' => 'auth'], function () {
 		Route::prefix('pegawai')->group(function () {
 			Route::group(['middleware' => 'role:admin,kepsek,wakasek,pembinayys,ketuayys,direktur,etl,etm,fam,faspv,am,aspv'], function () {
 				Route::get('/', [PegawaiController::class, 'index'])->name('pegawai.index');
-				Route::get('ekspor', [PegawaiController::class, 'export'])->name('pegawai.ekspor')->middleware('role:aspv');
+				Route::get('ekspor', [PegawaiController::class, 'export'])->name('pegawai.ekspor')->middleware('role:etl,aspv');
 				Route::get('{id}', [PegawaiController::class, 'show'])->where('id', '[0-9]+')->name('pegawai.detail');
 			});
 			Route::group(['middleware' => 'role:etm'], function () {
@@ -265,18 +311,20 @@ Route::group(['middleware' => 'auth'], function () {
 				return redirect()->route('calon.index');
 			})->name('rekrutmen.index');
 			Route::prefix('calon')->group(function () {
-				Route::group(['middleware' => 'role:kepsek,wakasek,pembinayys,ketuayys,direktur,etl,etm,am,aspv'], function () {
+				Route::group(['middleware' => 'role:kepsek,wakasek,pembinayys,ketuayys,direktur,etl,etm,am,aspv,sdms'], function () {
 					Route::get('/', [CalonPegawaiController::class, 'index'])->name('calon.index');
 					Route::get('{id}', [CalonPegawaiController::class, 'show'])->where('id', '[0-9]+')->name('calon.detail');
 				});
-				Route::group(['middleware' => 'role:etm'], function () {
+				Route::group(['middleware' => 'role:etm,sdms'], function () {
 					Route::get('tambah', [CalonPegawaiController::class, 'create'])->name('calon.tambah');
 					Route::post('simpan', [CalonPegawaiController::class, 'store'])->name('calon.simpan');
 					Route::get('{id}/ubah', [CalonPegawaiController::class, 'edit'])->where('id', '[0-9]+')->name('calon.ubah');
+				});
+				Route::group(['middleware' => 'role:etm'], function () {
 					Route::delete('{id}/hapus', [CalonPegawaiController::class, 'destroy'])->where('id', '[0-9]+')->name('calon.hapus');
 					Route::post('impor', [CalonPegawaiController::class, 'import'])->name('calon.impor');
 				});
-				Route::put('{id}/perbarui', [CalonPegawaiController::class, 'update'])->where('id', '[0-9]+')->name('calon.perbarui')->middleware('role:etl,etm');
+				Route::put('{id}/perbarui', [CalonPegawaiController::class, 'update'])->where('id', '[0-9]+')->name('calon.perbarui')->middleware('role:etl,etm,sdms');
 				Route::group(['middleware' => 'role:etl'], function () {
 					Route::post('ubah', [CalonPegawaiController::class, 'editRecommend'])->name('calon.ubah.etl');
 					Route::put('{id}/validasi', [CalonPegawaiController::class, 'accept'])->where('id', '[0-9]+')->name('calon.validasi');
@@ -315,7 +363,7 @@ Route::group(['middleware' => 'auth'], function () {
 					Route::put('perbarui', [ProgramStudiController::class, 'update'])->name('.perbarui');
 					Route::delete('{id}/hapus', [ProgramStudiController::class, 'destroy'])->where('id', '[0-9]+')->name('.hapus');
 				});
-				Route::prefix('universitas')->name('universitas')->group(function () {
+				Route::prefix('universitas')->name('kepegawaian.manajemen.rekrutmen.universitas')->group(function () {
 					Route::get('/', [UniversitasController::class, 'index'])->name('.index');
 					Route::post('simpan', [UniversitasController::class, 'store'])->name('.simpan');
 					Route::post('ubah', [UniversitasController::class, 'edit'])->name('.ubah');
@@ -339,7 +387,7 @@ Route::group(['middleware' => 'auth'], function () {
 						Route::put('perbarui', [StrukturalController::class, 'update'])->name('struktural.perbarui');
 						Route::put('perbarui/semua', [StrukturalController::class, 'updateAll'])->name('struktural.perbarui.semua');
 					});
-					Route::delete('{id}/hapus', [StrukturalController::class, 'destroy'])->where('id', '[0-9]+')->name('struktural.hapus')->middleware('role:etm');
+					Route::delete('{id}/hapus', [StrukturalController::class, 'destroy'])->where('id', '[0-9]+')->name('struktural.hapus')->middleware('role:etl,etm');
 					Route::get('ekspor', [StrukturalController::class, 'export'])->name('struktural.ekspor')->middleware('role:aspv');
 				});
 			});
@@ -353,7 +401,7 @@ Route::group(['middleware' => 'auth'], function () {
 						Route::put('perbarui', [NonstrukturalController::class, 'update'])->name('nonstruktural.perbarui');
 						Route::put('perbarui/semua', [NonstrukturalController::class, 'updateAll'])->name('nonstruktural.perbarui.semua');
 					});
-					Route::delete('{id}/hapus', [NonstrukturalController::class, 'destroy'])->where('id', '[0-9]+')->name('nonstruktural.hapus')->middleware('role:etm');
+					Route::delete('{id}/hapus', [NonstrukturalController::class, 'destroy'])->where('id', '[0-9]+')->name('nonstruktural.hapus')->middleware('role:etl,etm');
 					Route::get('ekspor', [NonstrukturalController::class, 'export'])->name('nonstruktural.ekspor')->middleware('role:aspv');
 				});
 			});
@@ -585,7 +633,7 @@ Route::group(['middleware' => 'auth'], function () {
 	});
 
 	// Penilaian
-	Route::get('/kependidikan', [KependidikanController::class, 'index'])->name('kependidikan.index')->middleware('role:kepsek,wakasek,etl,pembinayys,ketuayys,direktur,etm,am,guru,aspv,ctl,ctm,fam,faspv,sek,keu');
+	Route::get('/kependidikan', [KependidikanController::class, 'index'])->name('kependidikan.index')->middleware('role:kepsek,wakasek,etl,pembinayys,ketuayys,direktur,etm,am,guru,aspv,ctl,ctm,cspv,fam,faspv,sek,keu,lay');
 	Route::get('/kependidikan/dashboardmapel', [KependidikanController::class, 'penilaianmapel'])->middleware('role:guru');
 
 	Route::prefix('kependidikan/penilaian')->group(function () {
@@ -670,26 +718,26 @@ Route::group(['middleware' => 'auth'], function () {
 		Route::get('cetakpas/{id?}/akhir', [PasController::class, 'akhir'])->where('id', '[0-9]+')->name('pas.cetak.akhir');
 
 		Route::prefix('iklas')->group(function () {
-			Route::get('/', [IklasController::class, 'index']);
+			Route::get('/', [IklasController::class, 'index'])->name('iklas.index');
 			Route::post('simpan', [IklasController::class, 'create'])->name('iklas.simpan');
 			Route::post('getNilai', [IklasController::class, 'getNilai'])->name('iklas.getNilai');
 		});
 	});
 
-Route::prefix('kependidikan')->group(function () {
-	Route::prefix('skbm')->group(function () {
-		Route::get('/', [SkbmController::class, 'index'])->name('skbm.index')->middleware('role:kepsek,wakasek,pembinayys,ketuayys,direktur,etl,am');
-		Route::prefix('{tahunpelajaran?}/{unit?}')->group(function () {
-			Route::get('/', [SkbmController::class, 'show'])->name('skbm.tampil')->middleware('role:kepsek,wakasek,pembinayys,ketuayys,direktur,etl,am');
-			Route::group(['middleware' => 'role:kepsek'], function () {
-				Route::post('simpan', [SkbmController::class, 'store'])->name('skbm.simpan');
-				Route::post('ubah', [SkbmController::class, 'edit'])->name('skbm.ubah');
-				Route::put('perbarui', [SkbmController::class, 'update'])->name('skbm.perbarui');
-				Route::delete('{id}/hapus', [SkbmController::class, 'destroy'])->where('id', '[0-9]+')->name('skbm.hapus');
-				Route::get('ekspor', [SkbmController::class, 'export'])->name('skbm.ekspor');
+	Route::prefix('kependidikan')->group(function () {
+		Route::prefix('skbm')->group(function () {
+			Route::get('/', [SkbmController::class, 'index'])->name('skbm.index')->middleware('role:kepsek,wakasek,pembinayys,ketuayys,direktur,etl,etm,am');
+			Route::prefix('{tahunpelajaran?}/{unit?}')->group(function () {
+				Route::get('/', [SkbmController::class, 'show'])->name('skbm.tampil')->middleware('role:kepsek,wakasek,pembinayys,ketuayys,direktur,etl,etm,am');
+				Route::group(['middleware' => 'role:kepsek'], function () {
+					Route::post('simpan', [SkbmController::class, 'store'])->name('skbm.simpan');
+					Route::post('ubah', [SkbmController::class, 'edit'])->name('skbm.ubah');
+					Route::put('perbarui', [SkbmController::class, 'update'])->name('skbm.perbarui');
+					Route::delete('{id}/hapus', [SkbmController::class, 'destroy'])->where('id', '[0-9]+')->name('skbm.hapus');
+					Route::get('ekspor', [SkbmController::class, 'export'])->name('skbm.ekspor');
+				});
 			});
 		});
-	});
 	
 		Route::prefix('penilaian')->group(function () {
 			Route::group(['middleware' => 'role:kepsek'], function () {
@@ -718,6 +766,235 @@ Route::prefix('kependidikan')->group(function () {
 					});
 				});
 			});
+			Route::prefix('mapel')->name('kependidikan.penilaian.mapel')->group(function () {
+				Route::prefix('formatif')->name('.formatif')->group(function () {
+					Route::get('{tahun?}/{semester?}/{kelas?}/{mataPelajaran?}', [NilaiFormatifController::class, 'index'])->name('.index');
+					Route::prefix('{tahun}/{semester}/{kelas}/{mataPelajaran}')->group(function () {
+						Route::post('perbarui', [NilaiFormatifController::class, 'update'])->name('.update');
+					});
+				});
+				Route::prefix('sumatif')->name('.sumatif')->group(function () {
+					Route::get('{tahun?}/{semester?}/{kelas?}/{mataPelajaran?}', [NilaiSumatifController::class, 'index'])->name('.index');
+					Route::prefix('{tahun}/{semester}/{kelas}/{mataPelajaran}')->group(function () {
+						Route::post('perbarui', [NilaiSumatifController::class, 'update'])->name('.update');
+					});
+				});
+				Route::prefix('nilai-akhir')->name('.nilai-akhir')->group(function () {
+					Route::get('{tahun?}/{semester?}/{kelas?}/{mataPelajaran?}', [NilaiAkhirController::class, 'index'])->name('.index');
+					Route::prefix('{tahun}/{semester}/{kelas}/{mataPelajaran}')->group(function () {
+						Route::post('perbarui', [NilaiAkhirController::class, 'update'])->name('.update');
+					});
+				});
+				Route::prefix('capaian-kompetensi')->name('.capaian-kompetensi')->group(function () {
+					Route::get('{tahun?}/{semester?}/{kelas?}/{mataPelajaran?}', [CapaianKompetensiController::class, 'index'])->name('.index');
+					Route::prefix('{tahun}/{semester}/{kelas}/{mataPelajaran}')->group(function () {
+						Route::post('perbarui', [CapaianKompetensiController::class, 'update'])->name('.update');
+					});
+				});
+				Route::prefix('khataman')->name('.khataman')->group(function () {
+					Route::get('{tahun?}/{semester?}/{kelas?}/{mataPelajaran?}/{siswa?}', [KhatamanController::class, 'index'])->name('.index');
+					Route::prefix('{tahun}/{semester}/{kelas}/{mataPelajaran}/{siswa}')->group(function () {
+						Route::post('perbarui', [KhatamanController::class, 'update'])->name('.update');
+					});
+				});
+				Route::prefix('quran')->name('.quran')->group(function () {
+					Route::get('{tahun?}/{semester?}/{kelas?}/{mataPelajaran?}/{siswa?}', [HafalanQuranController::class, 'index'])->name('.index');
+					Route::prefix('{tahun}/{semester}/{kelas}/{mataPelajaran}/{siswa}')->group(function () {
+						Route::post('perbarui', [HafalanQuranController::class, 'update'])->name('.update');
+					});
+				});
+				Route::prefix('hadits-doa')->name('.hadits-doa')->group(function () {
+					Route::get('{tahun?}/{semester?}/{kelas?}/{mataPelajaran?}/{siswa?}', [HaditsDoaController::class, 'index'])->name('.index');
+					Route::prefix('{tahun}/{semester}/{kelas}/{mataPelajaran}/{siswa}')->group(function () {
+						Route::post('perbarui', [HaditsDoaController::class, 'update'])->name('.update');
+					});
+				});
+				Route::prefix('jumlah-tpf')->name('.jumlah-tpf')->group(function () {
+					Route::get('{tahun?}/{semester?}/{tingkat?}', [JumlahTpfController::class, 'index'])->name('.index');
+					Route::prefix('{tahun}/{semester}/{tingkat}')->group(function () {
+						Route::put('perbarui', [JumlahTpfController::class, 'update'])->name('.update');
+					});
+				});
+				Route::prefix('deskripsi-tps')->name('.deskripsi-tps')->group(function () {
+					Route::get('{tahun?}/{semester?}/{tingkat?}/{mataPelajaran?}', [DeskripsiTpsController::class, 'index'])->name('.index');
+					Route::prefix('{tahun}/{semester}/{tingkat}/{mataPelajaran}')->group(function () {
+						Route::post('simpan', [DeskripsiTpsController::class, 'store'])->name('.store');
+						Route::post('ubah', [DeskripsiTpsController::class, 'edit'])->name('.edit');
+						Route::put('perbarui', [DeskripsiTpsController::class, 'update'])->name('.update');
+						Route::delete('{id}/hapus', [DeskripsiTpsController::class, 'destroy'])->where('id', '[0-9]+')->name('.destroy');
+					});
+				});
+				Route::prefix('deskripsi-khataman')->name('.deskripsi-khataman')->group(function () {
+					Route::get('{tahun?}/{semester?}/{tingkat?}/{mataPelajaran?}', [DeskripsiKhatamanController::class, 'index'])->name('.index');
+					Route::prefix('{tahun}/{semester}/{tingkat}/{mataPelajaran}')->group(function () {
+						Route::post('simpan', [DeskripsiKhatamanController::class, 'store'])->name('.store');
+						Route::post('ubah', [DeskripsiKhatamanController::class, 'edit'])->name('.edit');
+						Route::put('perbarui', [DeskripsiKhatamanController::class, 'update'])->name('.update');
+						Route::delete('{id}/hapus', [DeskripsiKhatamanController::class, 'destroy'])->where('id', '[0-9]+')->name('.destroy');
+					});
+				});
+				Route::prefix('deskripsi-quran')->name('.deskripsi-quran')->group(function () {
+					Route::get('{tahun?}/{semester?}/{tingkat?}/{mataPelajaran?}', [DeskripsiQuranController::class, 'index'])->name('.index');
+					Route::prefix('{tahun}/{semester}/{tingkat}/{mataPelajaran}')->group(function () {
+						Route::post('simpan', [DeskripsiQuranController::class, 'store'])->name('.store');
+						Route::post('ubah', [DeskripsiQuranController::class, 'edit'])->name('.edit');
+						Route::put('perbarui', [DeskripsiQuranController::class, 'update'])->name('.update');
+						Route::delete('{id}/hapus', [DeskripsiQuranController::class, 'destroy'])->where('id', '[0-9]+')->name('.destroy');
+					});
+				});
+				Route::prefix('deskripsi-hadits-doa')->name('.deskripsi-hadits-doa')->group(function () {
+					Route::get('{tahun?}/{semester?}/{tingkat?}/{mataPelajaran?}', [DeskripsiHaditsDoaController::class, 'index'])->name('.index');
+					Route::prefix('{tahun}/{semester}/{tingkat}/{mataPelajaran}')->group(function () {
+						Route::post('simpan', [DeskripsiHaditsDoaController::class, 'store'])->name('.store');
+						Route::post('ubah', [DeskripsiHaditsDoaController::class, 'edit'])->name('.edit');
+						Route::put('perbarui', [DeskripsiHaditsDoaController::class, 'update'])->name('.update');
+						Route::delete('{id}/hapus', [DeskripsiHaditsDoaController::class, 'destroy'])->where('id', '[0-9]+')->name('.destroy');
+					});
+				});
+			});
+			Route::prefix('tk')->name('kependidikan.penilaian.tk')->group(function () {
+				Route::prefix('nilai-elemen')->name('.nilai-elemen')->group(function () {
+					Route::get('{tahun?}/{semester?}/{kelas?}/{siswa?}', [NilaiElemenController::class, 'index'])->name('.index');
+					Route::prefix('{tahun}/{semester}/{kelas}/{siswa}')->group(function () {
+						Route::post('perbarui', [NilaiElemenController::class, 'update'])->name('.update');
+					});
+				});Route::prefix('perkembangan')->name('.perkembangan')->group(function () {
+					Route::get('{tahun?}/{semester?}/{kelas?}/{siswa?}', [PerkembanganController::class, 'index'])->name('.index');
+				});
+				Route::prefix('deskripsi-perkembangan')->name('.deskripsi-perkembangan')->group(function () {
+					Route::get('{tahun?}/{semester?}/{tingkat?}', [DeskripsiPerkembanganController::class, 'index'])->name('.index');
+					Route::prefix('{tahun}/{semester}/{tingkat}')->group(function () {
+						Route::post('perbarui', [DeskripsiPerkembanganController::class, 'update'])->name('.update');
+
+						Route::post('simpan', [TujuanElemenController::class, 'store'])->name('.store');
+						Route::delete('{id}/hapus', [TujuanElemenController::class, 'destroy'])->where('id', '[0-9]+')->name('.destroy');
+						Route::post('relasikan', [TujuanElemenController::class, 'relate'])->name('.relate');
+					});
+				});
+				Route::prefix('tujuan-elemen')->name('.tujuan-elemen')->group(function () {
+					Route::get('{tahun?}/{semester?}/{tingkat?}', [TujuanElemenController::class, 'index'])->name('.index');
+					Route::prefix('{tahun}/{semester}/{tingkat}')->group(function () {
+						Route::post('simpan', [TujuanElemenController::class, 'store'])->name('.store');
+						Route::delete('{id}/hapus', [TujuanElemenController::class, 'destroy'])->where('id', '[0-9]+')->name('.destroy');
+						Route::post('relasikan', [TujuanElemenController::class, 'relate'])->name('.relate');
+					});
+				});
+				Route::prefix('tujuan-pembelajaran')->name('.tujuan-pembelajaran')->group(function () {
+					Route::get('{tingkat?}', [TujuanPembelajaranController::class, 'index'])->name('.index');
+					Route::prefix('{tingkat}')->group(function () {
+						Route::post('simpan', [TujuanPembelajaranController::class, 'store'])->name('.store');
+						Route::post('ubah', [TujuanPembelajaranController::class, 'edit'])->name('.edit');
+						Route::put('perbarui', [TujuanPembelajaranController::class, 'update'])->name('.update');
+						Route::delete('{id}/hapus', [TujuanPembelajaranController::class, 'destroy'])->where('id', '[0-9]+')->name('.destroy');
+					});
+				});
+				Route::prefix('elemen-capaian')->name('.elemen-capaian')->group(function () {
+					Route::get('/', [ElemenCapaianController::class, 'index'])->name('.index');
+					Route::prefix('/')->group(function () {
+						Route::post('simpan', [ElemenCapaianController::class, 'store'])->name('.store');
+						Route::post('ubah', [ElemenCapaianController::class, 'edit'])->name('.edit');
+						Route::put('perbarui', [ElemenCapaianController::class, 'update'])->name('.update');
+						Route::delete('{id}/hapus', [ElemenCapaianController::class, 'destroy'])->where('id', '[0-9]+')->name('.destroy');
+					});
+				});
+			});
+			Route::prefix('iklas')->name('kependidikan.penilaian.iklas')->group(function () {
+				Route::prefix('nilai')->name('.nilai-iklas')->group(function () {
+					Route::get('{tahun?}/{semester?}/{kelas?}/{siswa?}', [NilaiIklasKurdekaController::class, 'index'])->name('.index');
+					Route::prefix('{tahun}/{semester}/{kelas}/{siswa}')->group(function () {
+						Route::post('perbarui', [NilaiIklasKurdekaController::class, 'update'])->name('.update');
+					});
+				});
+				Route::prefix('deskripsi')->name('.deskripsi')->group(function () {
+					Route::get('{tahun?}/{semester?}/{kelas?}', [DeskripsiIklasController::class, 'index'])->name('.index');
+					Route::prefix('{tahun}/{semester}/{kelas}')->group(function () {
+						Route::post('perbarui', [DeskripsiIklasController::class, 'update'])->name('.update');
+					});
+				});
+				Route::prefix('indikator')->name('.indikator')->group(function () {
+					Route::get('{unit?}', [IndikatorIklasController::class, 'index'])->name('.index');
+					Route::prefix('{unit}')->group(function () {
+						Route::post('simpan', [IndikatorIklasController::class, 'store'])->name('.store');
+						Route::post('ubah', [IndikatorIklasController::class, 'edit'])->name('.edit');
+						Route::put('perbarui', [IndikatorIklasController::class, 'update'])->name('.update');
+						Route::delete('{id}/hapus', [IndikatorIklasController::class, 'destroy'])->where('id', '[0-9]+')->name('.destroy');
+					});
+				});
+				Route::prefix('indikator-kurikulum')->name('.indikator-kurikulum')->group(function () {
+					Route::get('{tahun?}/{semester?}/{tingkat?}', [IndikatorKurikulumIklasController::class, 'index'])->name('.index');
+					Route::prefix('{tahun}/{semester}/{tingkat}')->group(function () {
+						Route::post('simpan', [IndikatorKurikulumIklasController::class, 'store'])->name('.store');
+						Route::delete('{id}/hapus', [IndikatorKurikulumIklasController::class, 'destroy'])->where('id', '[0-9]+')->name('.destroy');
+						Route::post('relasikan', [IndikatorKurikulumIklasController::class, 'relate'])->name('.relate');
+					});
+				});
+				Route::prefix('kurikulum')->name('.kurikulum')->group(function () {
+					Route::get('{unit?}/{tahun?}/{semester?}', [KurikulumIklasController::class, 'index'])->name('.index');
+					Route::prefix('{unit?}/{tahun}/{semester}')->group(function () {
+						Route::post('simpan', [KurikulumIklasController::class, 'store'])->name('.store');
+						Route::delete('{id}/hapus', [KurikulumIklasController::class, 'destroy'])->where('id', '[0-9]+')->name('.destroy');
+						Route::post('relasikan', [KurikulumIklasController::class, 'relate'])->name('.relate');
+					});
+				});
+				Route::prefix('kompetensi')->name('.kompetensi')->group(function () {
+					Route::get('{unit?}', [KompetensiIklasController::class, 'index'])->name('.index');
+					Route::prefix('{unit}')->group(function () {
+						Route::post('simpan', [KompetensiIklasController::class, 'store'])->name('.store');
+						Route::post('ubah', [KompetensiIklasController::class, 'edit'])->name('.edit');
+						Route::put('perbarui', [KompetensiIklasController::class, 'update'])->name('.update');
+						Route::delete('{id}/hapus', [KompetensiIklasController::class, 'destroy'])->where('id', '[0-9]+')->name('.destroy');
+					});
+				});
+			});
+			Route::prefix('khataman')->name('kependidikan.penilaian.khataman')->group(function () {
+				Route::prefix('capaian')->name('.capaian')->group(function () {
+					Route::get('{tahun?}/{semester?}', [CapaianKhatamController::class, 'index'])->name('.index');
+					Route::prefix('{tahun}/{semester}')->group(function () {
+						Route::put('perbarui', [CapaianKhatamController::class, 'update'])->name('.update');
+					});
+				});
+				Route::prefix('deskripsi-buku')->name('.deskripsi-buku')->group(function () {
+					Route::get('{unit?}/{tahun?}/{semester?}', [DeskripsiBukuController::class, 'index'])->name('.index');
+					Route::prefix('{unit?}/{tahun}/{semester}')->group(function () {
+						Route::post('simpan', [DeskripsiBukuController::class, 'store'])->name('.store');
+						Route::delete('{id}/hapus', [DeskripsiBukuController::class, 'destroy'])->where('id', '[0-9]+')->name('.destroy');
+						Route::post('relasikan', [DeskripsiBukuController::class, 'relate'])->name('.relate');
+					});
+				});
+				Route::prefix('buku')->name('.buku')->group(function () {
+					Route::get('{unit?}', [BukuController::class, 'index'])->name('.index');
+					Route::prefix('{unit}')->group(function () {
+						Route::post('simpan', [BukuController::class, 'store'])->name('.store');
+						Route::post('ubah', [BukuController::class, 'edit'])->name('.edit');
+						Route::put('perbarui', [BukuController::class, 'update'])->name('.update');
+						Route::delete('{id}/hapus', [BukuController::class, 'destroy'])->where('id', '[0-9]+')->name('.destroy');
+					});
+				});
+			});
+			Route::prefix('lts')->name('kependidikan.penilaian.lts')->group(function () {
+				Route::prefix('cetak')->name('.cetak')->group(function () {
+					Route::get('{tahun?}/{semester?}/{kelas?}/{siswa?}', [LtsKurdekaController::class, 'index'])->name('.index');
+					Route::prefix('{tahun}/{semester}/{kelas}/{siswa}')->group(function () {
+						Route::get('report', [LtsKurdekaController::class, 'report'])->name('.report');
+						Route::put('accept', [LtsKurdekaController::class, 'accept'])->name('.accept');
+					});
+				});
+			});
+			Route::prefix('rapor')->name('kependidikan.penilaian.rapor')->group(function () {
+				Route::prefix('cetak')->name('.cetak')->group(function () {
+					Route::get('{tahun?}/{semester?}/{kelas?}/{siswa?}', [RaporKurdekaController::class, 'index'])->name('.index');
+					Route::prefix('{tahun}/{semester}/{kelas}/{siswa}')->group(function () {
+						Route::get('report', [RaporKurdekaController::class, 'report'])->name('.report');
+						Route::put('accept', [RaporKurdekaController::class, 'accept'])->name('.accept');
+					});
+				});
+			});
+			Route::prefix('kurikulum')->name('kependidikan.penilaian.kurikulum')->group(function () {
+				Route::get('{tahun?}/{semester?}', [KurikulumController::class, 'index'])->name('.index');
+				Route::prefix('{tahun}/{semester}')->group(function () {
+					Route::put('perbarui', [KurikulumController::class, 'update'])->name('.update');
+				});
+			});
 		});
 
 		//Sertifikat IKLaS
@@ -732,19 +1009,19 @@ Route::prefix('kependidikan')->group(function () {
 
 		Route::prefix('ledger')->group(function () {
 			Route::prefix('kelas/{tahun?}/{semester?}/{kelas?}')->group(function () {
-				Route::get('/', [PenilaianIkuEdukasiController::class, 'index'])->name('penilaian.ikuEdukasi.kelas')->middleware('role:kepsek,wakasek,guru,pembinayys,ketuayys,direktur,etl');
+				Route::get('/', [PenilaianIkuEdukasiController::class, 'index'])->name('penilaian.ikuEdukasi.kelas')->middleware('role:kepsek,wakasek,guru,pembinayys,ketuayys,direktur,etl,etm');
 			});
 			Route::prefix('unit/{ledger?}/{unit?}/{tahun?}/{semester?}')->group(function () {
-				Route::get('/', [PenilaianIkuEdukasiController::class, 'unit'])->name('penilaian.ikuEdukasi.unit')->middleware('role:kepsek,wakasek,pembinayys,ketuayys,direktur,etl');
+				Route::get('/', [PenilaianIkuEdukasiController::class, 'unit'])->name('penilaian.ikuEdukasi.unit')->middleware('role:kepsek,wakasek,pembinayys,ketuayys,direktur,etl,etm');
 			});
 			Route::prefix('grafik/{ledger?}/{unit?}/{tahun?}/{semester?}')->group(function () {
-				Route::get('/', [PenilaianIkuEdukasiController::class, 'chart'])->name('penilaian.ikuEdukasi.grafik')->middleware('role:kepsek,pembinayys,ketuayys,direktur,etl');
+				Route::get('/', [PenilaianIkuEdukasiController::class, 'chart'])->name('penilaian.ikuEdukasi.grafik')->middleware('role:kepsek,pembinayys,ketuayys,direktur,etl,etm');
 			});
 		});
 
 		Route::prefix('iku-edukasi/{ledger?}/{unit?}/{tahun?}/{semester?}')->group(function () {
-			Route::get('/', [PenilaianIkuEdukasiController::class, 'persen'])->name('penilaian.ikuEdukasi.persen')->middleware('role:kepsek,wakasek,pembinayys,ketuayys,direktur,etl');
-			Route::post('/', [PenilaianIkuEdukasiController::class, 'getPersen'])->name('penilaian.ikuEdukasi.persen.get')->middleware('role:kepsek,wakasek,pembinayys,ketuayys,direktur,etl');
+			Route::get('/', [PenilaianIkuEdukasiController::class, 'persen'])->name('penilaian.ikuEdukasi.persen')->middleware('role:kepsek,wakasek,pembinayys,ketuayys,direktur,etl,etm');
+			Route::post('/', [PenilaianIkuEdukasiController::class, 'getPersen'])->name('penilaian.ikuEdukasi.persen.get')->middleware('role:kepsek,wakasek,pembinayys,ketuayys,direktur,etl,etm');
 		});
 	});
 
@@ -986,14 +1263,14 @@ Route::prefix('kependidikan')->group(function () {
 			Route::get('new', [SiswaController::class, 'newIndex']);
 			Route::get('onLoad', [SiswaController::class, 'onLoadIndex']);
 			Route::get('test', [SiswaController::class, 'test']);
-			Route::group(['middleware' => ['auth', 'checkRole:1,7,11,12,13,15,16,18,25,26,29,30,31,2,3,18']], function () {
+			Route::group(['middleware' => ['auth', 'checkRole:1,7,9,11,12,13,15,16,18,25,26,29,30,31,2,3,18']], function () {
 				Route::get('', [SiswaController::class, 'index']);
 				Route::post('', [SiswaController::class, 'filter']);
 				Route::get('aktif', [SiswaController::class, 'index']);
 				Route::post('aktif', [SiswaController::class, 'filter']);
 				Route::get('aktif/datatables', [SiswaController::class, 'datatablesSiswa'])->name('siswa-datatables');
 			});
-			Route::group(['middleware' => ['auth', 'checkRole:1,7,11,12,13,15,16,18,29,30,31,2,3,18']], function () {
+			Route::group(['middleware' => ['auth', 'checkRole:1,7,9,11,12,13,15,16,18,29,30,31,2,3,18']], function () {
 				Route::get('aktif/download', [SiswaController::class, 'downloadSiswa'])->name('siswa-datatables');
 				Route::get('alumni', [SiswaController::class, 'indexAlumni']);
 				Route::post('alumni', [SiswaController::class, 'filterAlumni']);
@@ -1004,15 +1281,15 @@ Route::prefix('kependidikan')->group(function () {
 				Route::get('/tambah', [SiswaController::class, 'create']);
 				Route::post('/tambah', [SiswaController::class, 'store']);
 			});
-			Route::group(['middleware' => ['auth', 'checkRole:1,2,7,18,30,31']], function () {
+			Route::group(['middleware' => ['auth', 'checkRole:1,2,7,9,18,30,31']], function () {
 				Route::get('/ubah/{id}', [SiswaController::class, 'edit']);
 				Route::put('/ubah/{id}', [SiswaController::class, 'update']);
 			});
 			Route::group(['middleware' => ['auth', 'checkRole:25,26']], function () {
 				Route::post('/ubah-spp', [SiswaController::class, 'updateStartOfSpp'])->name('siswa.ubah-awal-spp');
 			});
-			Route::group(['middleware' => ['auth', 'checkRole:1,7,11,12,13,15,16,18,29,30,31,2,3,18']], function () {
-				Route::get('/lihat/{id}', [SiswaController::class, 'show']); // ??
+			Route::group(['middleware' => ['auth', 'checkRole:1,7,9,11,12,13,15,16,18,29,30,31,2,3,18']], function () {
+				Route::get('/lihat/{id}', [SiswaController::class, 'show'])->name('kependidikan.kbm.siswa.show'); // ??
 			});
 			Route::post('/hapus/{id}', [SiswaController::class, 'destroy']); // ??
 		});
@@ -1034,24 +1311,22 @@ Route::prefix('kependidikan')->group(function () {
 				});
 			});
 
-			Route::prefix('jurusan')->group(function () {
-				// kepsek
-				// Jurusan
-				Route::group(['middleware' => ['auth', 'checkRole:1,11,12,13,15,16,2']], function () {
-					Route::get('', [NamaKelasController::class, 'index']);
+			Route::prefix('jurusan')->name('kependidikan.kbm.kelas.jurusan')->group(function () {
+				Route::group(['middleware' => 'role:kepsek,wakasek,pembinayys,ketuayys,direktur'], function () {
+					Route::get('/', [JurusanController::class, 'index'])->name('.index');
 				});
-				Route::group(['middleware' => ['auth', 'checkRole:1,2']], function () {
-					Route::get('tambah', [NamaKelasController::class, 'create']);
-					Route::post('tambah', [NamaKelasController::class, 'store']);
-					Route::put('ubah/{id}', [NamaKelasController::class, 'update']);
-					Route::post('hapus/{id}', [NamaKelasController::class, 'destroy']);
+				Route::group(['middleware' => 'role:kepsek'], function () {
+					Route::post('simpan', [JurusanController::class, 'store'])->name('.store');
+					Route::post('ubah', [JurusanController::class, 'edit'])->name('.edit');
+					Route::put('perbarui', [JurusanController::class, 'update'])->name('.update');
+					Route::delete('{id}/hapus', [JurusanController::class, 'destroy'])->where('id', '[0-9]+')->name('.destroy');
 				});
 			});
 
 			Route::prefix('daftar-kelas')->group(function () {
 				// kelas
 				Route::group(['middleware' => ['auth', 'checkRole:1,11,12,13,15,16,2']], function () {
-					Route::get('', [KelasController::class, 'index']);
+					Route::get('', [KelasController::class, 'index'])->name('daftar-kelas.index');
 				});
 				Route::group(['middleware' => ['auth', 'checkRole:1,2']], function () {
 					Route::get('tambah', [KelasController::class, 'create']);
@@ -1174,40 +1449,54 @@ Route::prefix('kependidikan')->group(function () {
 	Route::prefix('keuangan')->group(function () {
 		Route::get('/', [KeuanganController::class, 'index'])->name('keuangan.index');
 
-		Route::prefix('akun')->group(function () {
-			Route::group(['middleware' => 'role:fam,faspv'], function () {
-				Route::get('/', [AkunController::class, 'index'])->name('keuangan.akun.index');
-				Route::post('simpan', [AkunController::class, 'store'])->name('keuangan.akun.simpan');
-				Route::post('ubah', [AkunController::class, 'edit'])->name('keuangan.akun.ubah');
-				Route::put('perbarui', [AkunController::class, 'update'])->name('keuangan.akun.perbarui');
-				Route::delete('{id}/hapus', [AkunController::class, 'destroy'])->where('id', '[0-9]+')->name('keuangan.akun.hapus');
-				Route::get('urutkan', [AkunController::class, 'sort'])->name('keuangan.akun.urutkan');
+		Route::prefix('akun')->name('keuangan.akun')->group(function () {
+			Route::get('/', [AkunController::class, 'index'])->name('.index')->middleware('role:pembinayys,ketuayys,direktur,fam,faspv,am,akunspv');
+			Route::group(['middleware' => 'role:fam,faspv,am,akunspv'], function () {
+				Route::post('simpan', [AkunController::class, 'store'])->name('.simpan');
+				Route::post('ubah', [AkunController::class, 'edit'])->name('.ubah');
+				Route::put('perbarui', [AkunController::class, 'update'])->name('.perbarui');
+				Route::delete('{id}/hapus', [AkunController::class, 'destroy'])->where('id', '[0-9]+')->name('.hapus');
+				Route::get('urutkan', [AkunController::class, 'sort'])->name('.urutkan');
+				Route::put('validasi', [AkunController::class, 'lock'])->name('.lock')->middleware('role:am');
+			});
+		});
+		Route::prefix('pratinjau-akun')->name('keuangan.pratinjau-akun')->group(function () {
+			Route::prefix('{jenis?}/{tahun?}/{anggaran?}')->group(function () {
+				Route::get('/', [PratinjauAkunController::class, 'index'])->name('.index')->middleware('role:pembinayys,ketuayys,direktur,fam,faspv,am,akunspv');
 			});
 		});
 		Route::prefix('rkat')->group(function () {
 			Route::prefix('{jenis?}/{tahun?}/{anggaran?}')->group(function () {
-				Route::get('/', [RkatController::class, 'index'])->name('rkat.index')->middleware('role:kepsek,pembinayys,ketuayys,direktur,etl,ctl,fam,faspv,am,ftm');
+				Route::get('/', [RkatController::class, 'index'])->name('rkat.index')->middleware('role:kepsek,pembinayys,ketuayys,direktur,etl,ctl,fam,faspv,am,akunspv');
 			});
 			Route::prefix('{jenis}/{tahun}/{anggaran}')->group(function () {
-				Route::get('buat', [RkatController::class, 'create'])->name('rkat.buat')->middleware('role:kepsek,etl,ctl,fam,faspv,am,ftm');
-				Route::post('perbarui', [RkatController::class, 'update'])->name('rkat.perbarui')->middleware('role:kepsek,direktur,etl,ctl,fam,faspv,am,ftm');
-				Route::put('validasi/semua', [RkatController::class, 'acceptAll'])->name('rkat.validasi.semua')->middleware('role:direktur,fam');
+				Route::get('buat', [RkatController::class, 'create'])->name('rkat.buat')->middleware('role:kepsek,etl,ctl,faspv,am,akunspv');
+				Route::post('perbarui', [RkatController::class, 'update'])->name('rkat.perbarui')->middleware('role:kepsek,direktur,etl,ctl,faspv,am,akunspv');
+				Route::put('validasi/semua', [RkatController::class, 'acceptAll'])->name('rkat.validasi.semua')->middleware('role:direktur,am');
 			});
 		});
 		Route::prefix('apb')->group(function () {
 			Route::prefix('{jenis}/{tahun}')->group(function () {
-				Route::get('ekspor', [ApbyController::class, 'export'])->name('apby.ekspor')->middleware('role:ketuayys,direktur,fam,faspv');
-				Route::put('perubahan', [ApbyController::class, 'revise'])->name('apby.perubahan')->middleware('role:fam,faspv');
+				Route::get('ekspor/{status?}', [ApbyController::class, 'export'])->name('apby.ekspor')->middleware('role:ketuayys,direktur,fam,faspv,am,akunspv');
+				Route::put('perubahan', [ApbyController::class, 'revise'])->name('apby.perubahan')->middleware('role:faspv,am,akunspv');
 				Route::post('tutup', [ApbyController::class, 'lock'])->name('apby.tutup')->middleware('role:ketuayys');
 			});
 			Route::prefix('{jenis?}/{tahun?}/{anggaran?}')->group(function () {
-				Route::get('/', [ApbyController::class, 'index'])->name('apby.index')->middleware('role:pembinayys,ketuayys,direktur,fam,faspv');
+				Route::get('/', [ApbyController::class, 'index'])->name('apby.index')->middleware('role:pembinayys,ketuayys,direktur,fam,faspv,am,akunspv');
 			});
 			Route::prefix('{jenis}/{tahun}/{anggaran}')->group(function () {
-				Route::post('perbarui', [ApbyController::class, 'update'])->name('apby.perbarui')->middleware('role:ketuayys,direktur,fam,faspv');
+				Route::post('perbarui', [ApbyController::class, 'update'])->name('apby.perbarui')->middleware('role:ketuayys,direktur,fam,faspv,am,akunspv');
 				Route::put('validasi/semua', [ApbyController::class, 'acceptAll'])->name('apby.validasi.semua')->middleware('role:ketuayys,direktur');
 				Route::post('ubah', [ApbyController::class, 'edit'])->name('apby.ubah');
 				Route::put('transfer', [ApbyController::class, 'transfer'])->name('apby.transfer');
+			});
+		});
+		Route::prefix('tahun')->group(function () {
+			Route::prefix('{jenis}/{tahun}')->group(function () {
+				Route::post('tutup', [TahunAnggaranController::class, 'lock'])->name('tahun-anggaran.tutup')->middleware('role:ketuayys');
+			});
+			Route::prefix('{jenis?}/{tahun?}')->group(function () {
+				Route::get('/', [TahunAnggaranController::class, 'index'])->name('tahun-anggaran.index')->middleware('role:ketuayys');
 			});
 		});
 		Route::prefix('proposal')->name('proposal-ppa')->group(function () {
@@ -1221,47 +1510,64 @@ Route::prefix('kependidikan')->group(function () {
 				Route::delete('{id}/destroy', [ProposalPpaController::class, 'destroy'])->where('id', '[0-9]+')->name('.destroy');
 				Route::prefix('{id}')->name('.detail')->group(function () {
 					Route::get('/', [ProposalPpaController::class, 'show'])->where('id', '[0-9]+')->name('.show');
+					Route::post('modal', [ProposalPpaController::class, 'detailModal'])->where('id', '[0-9]+')->name('.modal');
 					Route::post('store', [ProposalPpaController::class, 'detailStore'])->where('id', '[0-9]+')->name('.store');
 					Route::put('update/detail/all', [ProposalPpaController::class, 'detailUpdateAll'])->where('id', '[0-9]+')->name('.update.all');  
 					Route::put('update/detail', [ProposalPpaController::class, 'detailUpdate'])->where('id', '[0-9]+')->name('.update');
 					Route::delete('{item}/destroy', [ProposalPpaController::class, 'detailDestroy'])->where('id', '[0-9]+')->where('item', '[0-9]+')->name('.destroy');
 				});
+				Route::get('{id}/ekspor', [ProposalPpaController::class, 'export'])->where('id', '[0-9]+')->name('.export')->middleware('role:wakasek,keu,fam,faspv,akunspv');
 			//});
 		});
 		Route::prefix('ppa')->group(function () {
 			Route::prefix('{jenis?}/{tahun?}/{anggaran?}')->group(function () {
-				Route::get('/', [PpaController::class, 'index'])->name('ppa.index')->middleware('role:kepsek,wakasek,keu,pembinayys,ketuayys,direktur,etl,etm,ctl,ctm,fam,faspv,fas,am,aspv,ftm,ftspv,fts');
+				Route::get('/', [PpaController::class, 'index'])->name('ppa.index')->middleware('role:kepsek,wakasek,keu,pembinayys,ketuayys,direktur,etl,ctl,fam,faspv,fas,am,akunspv');
 			});
 			Route::prefix('{jenis}/{tahun}/{anggaran}')->group(function () {
-				Route::get('buat/{type?}', [PpaController::class, 'create'])->name('ppa.buat')->middleware('role:kepsek,wakasek,keu,etl,etm,ctl,ctm,faspv,fas,am,aspv,ftm,ftspv,fts');
+				Route::get('buat/{type?}', [PpaController::class, 'create'])->name('ppa.buat')->middleware('role:kepsek,wakasek,keu,etl,ctl,am');
+				Route::prefix('draf/{nomor}')->group(function () {
+					Route::get('/', [PpaController::class, 'draft'])->where('nomor', '[0-9]+')->name('ppa.draft')->middleware('role:kepsek,wakasek,keu,pembinayys,ketuayys,direktur,etl,ctl,am');
+					Route::get('{id}', [PpaController::class, 'editDraftProposal'])->where('nomor', '[0-9]+')->where('id', '[0-9]+')->name('ppa.draft.ubah.proposal')->middleware('role:kepsek,wakasek,keu,etl,ctl,am');
+				});
 				Route::prefix('{nomor}')->group(function () {
-					Route::get('/', [PpaController::class, 'show'])->where('nomor', '[0-9]+')->name('ppa.show')->middleware('role:kepsek,wakasek,keu,pembinayys,ketuayys,direktur,etl,etm,ctl,ctm,fam,faspv,fas,am,aspv,ftm,ftspv,fts');
-					Route::group(['middleware' => 'role:kepsek,wakasek,keu,etl,etm,ctl,ctm,fam,faspv,fas,am,aspv,ftm,ftspv,fts'], function () {
-						Route::post('tambah', [PpaController::class, 'store'])->where('nomor', '[0-9]+')->name('ppa.tambah');
-						Route::post('ubah/detail', [PpaController::class, 'edit'])->name('ppa.ubah.detail');
-						Route::put('perbarui/detail', [PpaController::class, 'updateDetail'])->where('nomor', '[0-9]+')->name('ppa.perbarui.detail');
+					Route::get('/', [PpaController::class, 'show'])->where('nomor', '[0-9]+')->name('ppa.show')->middleware('role:kepsek,wakasek,keu,pembinayys,ketuayys,direktur,etl,ctl,fam,faspv,fas,am,akunspv');
+					Route::group(['middleware' => 'role:kepsek,wakasek,keu,ketuayys,direktur,etl,ctl,fam,faspv,fas,am,akunspv'], function () {
+						Route::group(['middleware' => 'role:kepsek,wakasek,keu,etl,ctl,am'], function () {
+							Route::post('tambah', [PpaController::class, 'store'])->where('nomor', '[0-9]+')->name('ppa.tambah');
+							Route::post('ubah/detail', [PpaController::class, 'edit'])->name('ppa.ubah.detail');
+							Route::put('perbarui/detail', [PpaController::class, 'updateDetail'])->where('nomor', '[0-9]+')->name('ppa.perbarui.detail');
+						});
 						Route::prefix('{id}')->group(function () {
-							Route::get('ubah', [PpaController::class, 'editProposal'])->where('nomor', '[0-9]+')->where('id', '[0-9]+')->name('ppa.ubah.proposal');
+							Route::get('/', [PpaController::class, 'editProposal'])->where('nomor', '[0-9]+')->where('id', '[0-9]+')->name('ppa.ubah.proposal');
+							Route::post('desc', [PpaController::class, 'editProposalDesc'])->where('nomor', '[0-9]+')->where('id', '[0-9]+')->name('ppa.ubah.proposal.desc');
+							Route::put('desc/perbarui', [PpaController::class, 'updateProposalDesc'])->where('nomor', '[0-9]+')->where('id', '[0-9]+')->name('ppa.perbarui.proposal.desc');
 							Route::put('perbarui/semua', [PpaController::class, 'updateAllProposal'])->where('nomor', '[0-9]+')->where('id', '[0-9]+')->name('ppa.perbarui.semua.proposal');
 							Route::put('perbarui', [PpaController::class, 'updateProposal'])->where('nomor', '[0-9]+')->where('id', '[0-9]+')->name('ppa.perbarui.proposal');
-							Route::delete('{item}/hapus', [PpaController::class, 'destroyProposal'])->where('nomor', '[0-9]+')->where('id', '[0-9]+')->where('item', '[0-9]+')->name('ppa.hapus.proposal');
+							Route::delete('{item}/hapus', [PpaController::class, 'destroyProposalItem'])->where('nomor', '[0-9]+')->where('id', '[0-9]+')->where('item', '[0-9]+')->name('ppa.hapus.proposal.item');
 						});
-						Route::delete('{id}/hapus', [PpaController::class, 'destroy'])->where('nomor', '[0-9]+')->where('id', '[0-9]+')->name('ppa.hapus');
+						Route::group(['middleware' => 'role:kepsek,wakasek,keu,etl,ctl,am'], function () {
+							Route::delete('{id}/hapus', [PpaController::class, 'destroyDetail'])->where('nomor', '[0-9]+')->where('id', '[0-9]+')->name('ppa.hapus.detail');
+						});
 					});
-					Route::put('perbarui/semua', [PpaController::class, 'update'])->where('nomor', '[0-9]+')->name('ppa.perbarui.semua')->middleware('role:kepsek,wakasek,keu,ketuayys,direktur,etl,etm,ctl,ctm,fam,faspv,fas,am,aspv,ftm,ftspv,fts');
-					Route::delete('ekslusi', [PpaController::class, 'exclude'])->where('nomor', '[0-9]+')->name('ppa.eksklusi')->middleware('role:fam');
-					Route::get('ekspor', [PpaController::class, 'export'])->where('nomor', '[0-9]+')->name('ppa.ekspor')->middleware('role:fam,faspv,keulsi');
+					Route::put('perbarui/semua', [PpaController::class, 'update'])->where('nomor', '[0-9]+')->name('ppa.perbarui.semua')->middleware('role:kepsek,wakasek,keu,ketuayys,direktur,etl,ctl,am');
+					Route::delete('hapus', [PpaController::class, 'destroy'])->where('nomor', '[0-9]+')->name('ppa.destroy')->middleware('role:kepsek,ketuayys,direktur,etl,ctl,am');
+					Route::delete('eksklusi', [PpaController::class, 'exclude'])->where('nomor', '[0-9]+')->name('ppa.eksklusi')->middleware('role:fam,am');
+					Route::get('ekspor', [PpaController::class, 'export'])->where('nomor', '[0-9]+')->name('ppa.ekspor')->middleware('role:fam,faspv,am,keulsi,akunspv');
 				});
 			});
 		});
+		Route::prefix('kunci-ppa')->name('kunci-ppa')->group(function () {
+			Route::post('{jenis}/{tahun}/perbarui', [KunciPpaController::class, 'update'])->name('.perbarui')->middleware('role:am');
+			Route::get('{jenis?}/{tahun?}', [KunciPpaController::class, 'index'])->name('.index')->middleware('role:pembinayys,ketuayys,direktur,am');
+		});
 		Route::prefix('ppb')->group(function () {
 			Route::prefix('{jenis?}/{tahun?}')->group(function () {
-				Route::get('/', [PpbController::class, 'index'])->name('ppb.index')->middleware('role:pembinayys,ketuayys,direktur,fam,faspv,fas,keulsi');
+				Route::get('/', [PpbController::class, 'index'])->name('ppb.index')->middleware('role:pembinayys,ketuayys,direktur,fam,faspv,fas,am,keulsi,akunspv');
 			});
 			Route::prefix('{jenis}/{tahun}')->group(function () {
-				Route::get('buat', [PpbController::class, 'create'])->name('ppb.buat')->middleware('role:faspv');
+				Route::get('buat', [PpbController::class, 'create'])->name('ppb.buat')->middleware('role:am');
 				Route::prefix('{nomor}')->group(function () {
-					Route::get('/', [PpbController::class, 'show'])->where('nomor', '[0-9]+')->name('ppb.show')->middleware('role:pembinayys,ketuayys,direktur,fam,faspv,fas,keulsi');
+					Route::get('/', [PpbController::class, 'show'])->where('nomor', '[0-9]+')->name('ppb.show')->middleware('role:pembinayys,ketuayys,direktur,fam,faspv,fas,am,keulsi,akunspv');
 					Route::get('{ppa}', [PpbController::class, 'view'])->where('nomor', '[0-9]+')->where('ppa', '[0-9]+')->name('ppb.lihat')->middleware('role:keulsi');
 					Route::group(['middleware' => 'role:ketuayys,direktur,keulsi'], function () {
 						Route::get('{ppa}/ubah', [PpbController::class, 'edit'])->where('nomor', '[0-9]+')->where('ppa', '[0-9]+')->name('ppb.ubah');
@@ -1269,26 +1575,27 @@ Route::prefix('kependidikan')->group(function () {
 						Route::put('validasi', [PpbController::class, 'accept'])->name('ppb.validasi');
 					});
 					Route::put('{ppa}/sepakati', [PpbController::class, 'agree'])->where('nomor', '[0-9]+')->where('ppa', '[0-9]+')->name('ppb.sepakati')->middleware('role:direktur,keulsi');
-					Route::delete('{ppa}/hapus', [PpbController::class, 'destroy'])->where('nomor', '[0-9]+')->where('id', '[0-9]+')->name('ppb.hapus')->middleware('role:fam');
-					Route::get('ekspor', [PpbController::class, 'export'])->name('ppb.ekspor')->middleware('role:fam,faspv,fas,keulsi');
+					Route::delete('{ppa}/hapus', [PpbController::class, 'destroy'])->where('nomor', '[0-9]+')->where('ppa', '[0-9]+')->name('ppb.hapus')->middleware('role:fam,am');
+					Route::delete('{ppa}/tunda', [PpbController::class, 'cancel'])->where('nomor', '[0-9]+')->where('ppa', '[0-9]+')->name('ppb.tunda')->middleware('role:ketuayys,direktur');
+					Route::get('ekspor', [PpbController::class, 'export'])->name('ppb.ekspor')->middleware('role:fam,faspv,fas,am,keulsi,akunspv');
 				});
 			});
 		});
 		Route::prefix('rppa')->group(function () {
 			Route::prefix('{jenis?}/{tahun?}/{anggaran?}')->group(function () {
-				Route::get('/', [LppaController::class, 'index'])->name('lppa.index')->middleware('role:kepsek,wakasek,keu,pembinayys,ketuayys,direktur,etl,etm,ctl,ctm,fam,faspv,fas,am,aspv,ftm,ftspv,fts');
+				Route::get('/', [LppaController::class, 'index'])->name('lppa.index')->middleware('role:kepsek,wakasek,keu,pembinayys,ketuayys,direktur,etl,ctl,fam,faspv,fas,am,akunspv');
 			});
 			Route::prefix('{jenis}/{tahun}/{anggaran}/{nomor}')->group(function () {
-				Route::get('/', [LppaController::class, 'show'])->where('nomor', '[0-9]+')->name('lppa.show')->middleware('role:kepsek,wakasek,keu,pembinayys,ketuayys,direktur,etl,etm,ctl,ctm,fam,faspv,fas,am,aspv,ftm,ftspv,fts');
-				Route::put('perbarui', [LppaController::class, 'update'])->where('nomor', '[0-9]+')->name('lppa.perbarui')->middleware('role:kepsek,wakasek,keu,ketuayys,direktur,etl,etm,ctl,ctm,fam,faspv,am,aspv,ftm,ftspv,fts');
-				Route::put('validasi', [LppaController::class, 'accept'])->name('lppa.validasi')->middleware('role:fam');
-				Route::get('ekspor', [LppaController::class, 'export'])->name('lppa.ekspor')->middleware('role:fam,faspv');
+				Route::get('/', [LppaController::class, 'show'])->where('nomor', '[0-9]+')->name('lppa.show')->middleware('role:kepsek,wakasek,keu,pembinayys,ketuayys,direktur,etl,ctl,fam,faspv,fas,am,akunspv');
+				Route::put('perbarui', [LppaController::class, 'update'])->where('nomor', '[0-9]+')->name('lppa.perbarui')->middleware('role:kepsek,wakasek,keu,ketuayys,direktur,etl,ctl,fam,faspv,am,akunspv');
+				Route::put('validasi', [LppaController::class, 'accept'])->name('lppa.validasi')->middleware('role:faspv');
+				Route::get('ekspor', [LppaController::class, 'export'])->name('lppa.ekspor')->middleware('role:fam,faspv,am,akunspv');
 			});
 		});
 		Route::prefix('realisasi')->group(function () {
-			Route::get('sinkronisasi', [RealisasiKeuanganController::class, 'sync'])->name('realisasi.sync')->middleware('role:fam,faspv');
+			Route::get('sinkronisasi', [RealisasiKeuanganController::class, 'sync'])->name('realisasi.sync')->middleware('role:fam,faspv,am,akunspv');
 			Route::prefix('{jenis?}/{tahun?}/{anggaran?}')->group(function () {
-				Route::get('/', [RealisasiKeuanganController::class, 'index'])->name('realisasi.index')->middleware('role:pembinayys,ketuayys,direktur,fam,faspv');
+				Route::get('/', [RealisasiKeuanganController::class, 'index'])->name('realisasi.index')->middleware('role:pembinayys,ketuayys,direktur,fam,faspv,am,akunspv');
 			});
 		});
 		Route::prefix('saldo')->group(function () {
@@ -1301,17 +1608,18 @@ Route::prefix('kependidikan')->group(function () {
 		 *  Sub Modul Pembayaran Uang Sekolah
 		 */
 		Route::get('dashboard', [PembayaranDashboardController::class, 'index']);
-		Route::group(['middleware' => ['auth', 'checkRole:25']], function () {
+		Route::group(['middleware' => ['auth', 'checkRole:25,26,29,50']], function () {
 			Route::prefix('pemindahan-transaksi')->name('exchange')->group(function (){
-				Route::get('/', [ExchangeTransactionController::class, 'index'])->name('.index');
-	 			Route::get('refund', [ExchangeTransactionController::class, 'refund'])->name('.refund');
-	 			Route::post('/', [ExchangeTransactionController::class, 'update'])->name('.update');
-	 			Route::put('/', [ExchangeTransactionController::class, 'store'])->name('.store');
-	 			Route::delete('/', [ExchangeTransactionController::class, 'destroy'])->name('.destroy');
+				Route::get('{status?}', [ExchangeTransactionController::class, 'index'])->name('.index');
+	 			Route::post('/', [ExchangeTransactionController::class, 'update'])->name('.update')->middleware('checkRole:26');
+	 			Route::group(['middleware' => 'checkRole:26'], function () {
+		 			Route::put('/', [ExchangeTransactionController::class, 'store'])->name('.store');
+		 			Route::delete('/', [ExchangeTransactionController::class, 'destroy'])->name('.destroy');
+				});
 			});
  		});
 
-		Route::group(['middleware' => ['auth', 'checkRole:1,2,8,11,12,13,18,25,26']], function () {
+		Route::group(['middleware' => ['auth', 'checkRole:1,2,8,11,12,13,18,25,26,29']], function () {
 			Route::prefix('bms')->name('bms')->group(function () {
 				// Deprecated
 				//Route::get('', [BmsController::class, 'index'])->name('.index');
@@ -1337,8 +1645,8 @@ Route::prefix('kependidikan')->group(function () {
 					Route::post('/', [VaBmsController::class, 'vaGet'])->name('.get');
 				});
 				Route::prefix('nominal')->name('.nominal')->group(function () {
-					Route::get('/', [NominalBmsController::class, 'index'])->name('.index')->middleware('role:pembinayys,ketuayys,direktur,fam');
-					Route::group(['middleware' => 'role:fam'], function () {
+					Route::get('/', [NominalBmsController::class, 'index'])->name('.index')->middleware('role:pembinayys,ketuayys,direktur,fam,am');
+					Route::group(['middleware' => 'role:am'], function () {
 						Route::post('simpan', [NominalBmsController::class, 'store'])->name('.store');
 						Route::post('ubah', [NominalBmsController::class, 'edit'])->name('.edit');
 						Route::put('perbarui', [NominalBmsController::class, 'update'])->name('.update');
@@ -1346,8 +1654,8 @@ Route::prefix('kependidikan')->group(function () {
 					});		
 				});		
 				Route::prefix('potongan')->name('.potongan')->group(function () {
-					Route::get('/', [PotonganBmsController::class, 'index'])->name('.index')->middleware('role:pembinayys,ketuayys,direktur,fam');
-					Route::group(['middleware' => 'role:fam'], function () {
+					Route::get('/', [PotonganBmsController::class, 'index'])->name('.index')->middleware('role:pembinayys,ketuayys,direktur,fam,am');
+					Route::group(['middleware' => 'role:am'], function () {
 						Route::post('simpan', [PotonganBmsController::class, 'store'])->name('.store');
 						Route::post('ubah', [PotonganBmsController::class, 'edit'])->name('.edit');
 						Route::put('perbarui', [PotonganBmsController::class, 'update'])->name('.update');
@@ -1386,8 +1694,8 @@ Route::prefix('kependidikan')->group(function () {
 					Route::post('/', [VaSppController::class, 'vaGet'])->name('.get');
 				});
 				Route::prefix('nominal')->name('.nominal')->group(function () {
-					Route::get('/', [NominalSppController::class, 'index'])->name('.index')->middleware('role:pembinayys,ketuayys,direktur,fam');
-					Route::group(['middleware' => 'role:fam'], function () {
+					Route::get('/', [NominalSppController::class, 'index'])->name('.index')->middleware('role:pembinayys,ketuayys,direktur,fam,am');
+					Route::group(['middleware' => 'role:am'], function () {
 						Route::post('simpan', [NominalSppController::class, 'store'])->name('.store');
 						Route::post('ubah', [NominalSppController::class, 'edit'])->name('.edit');
 						Route::put('perbarui', [NominalSppController::class, 'update'])->name('.update');
@@ -1395,8 +1703,8 @@ Route::prefix('kependidikan')->group(function () {
 					});
 				});
 				Route::prefix('potongan')->name('.potongan')->group(function () {
-					Route::get('/', [PotonganSppController::class, 'index'])->name('.index')->middleware('role:pembinayys,ketuayys,direktur,fam');
-					Route::group(['middleware' => 'role:fam'], function () {
+					Route::get('/', [PotonganSppController::class, 'index'])->name('.index')->middleware('role:pembinayys,ketuayys,direktur,fam,am');
+					Route::group(['middleware' => 'role:am'], function () {
 						Route::post('simpan', [PotonganSppController::class, 'store'])->name('.store');
 						Route::post('ubah', [PotonganSppController::class, 'edit'])->name('.edit');
 						Route::put('perbarui', [PotonganSppController::class, 'update'])->name('.update');
@@ -1408,12 +1716,17 @@ Route::prefix('kependidikan')->group(function () {
 					Route::post('/', [LaporanSppController::class, 'indexGet'])->name('.get');
 					Route::post('atur', [LaporanSppController::class, 'set'])->name('.set');
 					Route::put('potong', [LaporanSppController::class, 'deduct'])->name('.deduct');
+					Route::delete('{id}/hapus', [LaporanSppController::class, 'destroy'])->name('.destroy')->middleware('role:faspv');
 				});
 				Route::get('cetak/{id}', [SppController::class, 'cetakTagihan'])->name('.print');
 				Route::prefix('pembayaran')->name('.pembayaran')->group(function (){
 					Route::get('/', [PembayaranSppController::class, 'index'])->name('.index');
 					Route::post('/', [PembayaranSppController::class, 'indexGet'])->name('.get');
 					Route::post('ubah-transaksi', [PembayaranSppController::class, 'changeTransaction'])->name('.change');
+				});
+				Route::prefix('generator')->name('.generator')->group(function () {
+					Route::get('/', [GeneratorSppController::class, 'index'])->name('.index');
+					Route::post('generate', [GeneratorSppController::class, 'generate'])->name('.generate');
 				});
 				Route::get('list-siswa/{unit_id?}', [SppController::class, 'siswaList'])->name('.list-siswa');
 				Route::get('list-calon/{unit_id?}', [BmsController::class, 'calonList'])->name('.list-calon');
@@ -1430,7 +1743,7 @@ Route::prefix('kependidikan')->group(function () {
 	});
 	
 	Route::prefix('kependidikan/infopsb')->name('kependidikan.infopsb.')->group(function () {
-		Route::group(['middleware' => ['auth', 'checkRole:1,2,3,7,8,11,12,13,14,17,18,20,21,25,26']], function () {
+		Route::group(['middleware' => ['auth', 'checkRole:1,2,3,7,8,9,11,12,13,14,17,18,20,21,25,26']], function () {
 			Route::get('all-pegawai', [CalonSiswaController::class,'allPegawai']);
 
 			Route::get('dashboard', [PsbDashboardController::class,'index'])->name('dashboard');
@@ -1439,17 +1752,21 @@ Route::prefix('kependidikan')->group(function () {
 	});
 
 	Route::prefix('kependidikan/psb')->name('kependidikan.psb.')->group(function () {
-		Route::group(['middleware' => ['auth', 'checkRole:1,2,3,7,8,11,12,13,14,17,18,20,21,25,26']], function () {
+		Route::group(['middleware' => ['auth', 'checkRole:1,2,3,7,8,9,11,12,13,14,17,18,20,21,22,25,26,29,30']], function () {
 			Route::get('all-pegawai', [CalonSiswaController::class,'allPegawai']);
 
-			Route::get('dashboard', [PsbDashboardController::class,'index'])->name('.dashboard');
-			Route::get('chart', [AdminPsbController::class,'chart'])->name('.chart');
+			Route::group(['middleware' => ['auth', 'checkRole:1,2,3,7,8,9,11,12,13,14,17,18,20,21,22,25,26']], function () {
+				Route::get('dashboard', [PsbDashboardController::class,'index'])->name('.dashboard');
+				Route::get('chart', [AdminPsbController::class,'chart'])->name('.chart');
+			});
 
-			Route::put('calon/ubah/{id}', [CalonSiswaController::class,'update'])->name('calonsiswa.update');
-			Route::get('calon/ubah/{id}', [CalonSiswaController::class,'edit'])->name('calonsiswa.edit');
 			Route::get('calon/lihat/{id}', [CalonSiswaController::class,'show'])->name('calonsiswa.lihat');
-			Route::post('calon', [CalonSiswaController::class,'store'])->name('tahun-angkatan');
-			Route::post('hapus', [CalonSiswaController::class,'destroy'])->name('hapus');
+			Route::group(['middleware' => ['auth', 'checkRole:1,2,3,7,8,9,11,12,13,14,17,18,20,21,22,25,26']], function () {
+				Route::put('calon/ubah/{id}', [CalonSiswaController::class,'update'])->name('calonsiswa.update');
+				Route::get('calon/ubah/{id}', [CalonSiswaController::class,'edit'])->name('calonsiswa.edit');
+				Route::post('calon', [CalonSiswaController::class,'store'])->name('tahun-angkatan');
+				Route::post('hapus', [CalonSiswaController::class,'destroy'])->name('hapus');
+			});
 
 			Route::get('formulir-terisi', [AdminPsbController::class,'formulirTerisi']);
 			// Route::post('formulir-terisi', [AdminPsbController::class,'formulirTerisiFind']);
@@ -1470,11 +1787,15 @@ Route::prefix('kependidikan')->group(function () {
 			Route::get('saving-seat/cari', [SavingSeatController::class,'show']);
 			Route::post('acc-saving-seat', [SavingSeatController::class,'store'])->name('acc-saving-seat');
 
-			Route::get('belum-lunas', [DaftarUlangPsbController::class,'index'])->name('belum-lunas');
-			Route::get('sudah-lunas', [DaftarUlangPsbController::class,'create'])->name('sudah-lunas');
-			Route::post('ubah-du', [DaftarUlangPsbController::class,'update'])->name('ubah-du');
-			Route::post('konfirmasi', [DaftarUlangPsbController::class,'store'])->name('konfirmasiLunas');
+			Route::group(['middleware' => ['auth', 'checkRole:1,2,3,7,8,9,11,12,13,14,17,18,20,21,25,26,29,30']], function () {
+				Route::get('belum-lunas', [DaftarUlangPsbController::class,'index'])->name('belum-lunas');
+				Route::get('sudah-lunas', [DaftarUlangPsbController::class,'create'])->name('sudah-lunas');
+				Route::post('ubah-du', [DaftarUlangPsbController::class,'update'])->name('ubah-du');
+				Route::post('konfirmasi', [DaftarUlangPsbController::class,'store'])->name('konfirmasiLunas');
+			});
+
 			Route::post('batal', [AdminPsbController::class,'batalDaftarUlang'])->name('batalDaftarUlang');
+			Route::post('revert', [AdminPsbController::class,'revertBatalDaftarUlang'])->name('revertBatalDaftarUlang');
 			
 			Route::get('peresmian-siswa', [AdminPsbController::class,'linkPeresmianSiswa']);
 			// Route::post('peresmian-siswa', [AdminPsbController::class,'linkPeresmianSiswaFind']);
@@ -1487,17 +1808,34 @@ Route::prefix('kependidikan')->group(function () {
 			Route::post('dicadangkan', [AdminPsbController::class,'linkDicadangkanFind']);
 			
 			Route::post('ubah-bms', [BmsPsbController::class,'update']);
+
+			Route::get('{status}/ekspor', [AdminPsbController::class,'export'])->name('calonsiswa.ekspor');
 			
 			// Route::get('{link}', [AdminPsbController::class,'data']);
 			// Route::post('{link}', [AdminPsbController::class,'find']);
 		});
 		Route::prefix('ortu')->name('ortu')->group(function () {
-			Route::get('/', [AkunOrtuController::class, 'index'])->name('.index')->middleware('role:sek,pembinayys,ketuayys,direktur,am,aspv');
-			Route::group(['middleware' => 'role:sek'], function () {
-				Route::post('ubah', [AkunOrtuController::class, 'edit'])->name('.edit');
-				Route::put('perbarui', [AkunOrtuController::class, 'update'])->name('.update');
-				Route::put('{id}/reset', [AkunOrtuController::class, 'reset'])->where('id', '[0-9]+')->name('.reset');
+			Route::get('/', [AkunOrtuController::class, 'index'])->name('.index')->middleware('role:sek,lay,pembinayys,ketuayys,direktur,cspv,am,aspv');
+			Route::get('export', [AkunOrtuController::class, 'export'])->name('.export')->middleware('role:cspv,aspv');
+			Route::group(['middleware' => 'role:aspv'], function () {
+				Route::prefix('anak')->name('.children')->group(function () {
+					Route::post('ubah', [AkunOrtuController::class, 'editChildren'])->name('.edit');
+					Route::put('perbarui', [AkunOrtuController::class, 'updateChildren'])->name('.update');
+				});
 			});
+			Route::group(['middleware' => 'role:sek,lay,aspv'], function () {
+				Route::prefix('akun')->name('.account')->group(function () {
+					Route::post('ubah', [AkunOrtuController::class, 'editAccount'])->name('.edit');
+					Route::put('perbarui', [AkunOrtuController::class, 'updateAccount'])->name('.update');
+					Route::put('{id}/reset', [AkunOrtuController::class, 'resetAccount'])->where('id', '[0-9]+')->name('.reset');
+				});
+			});
+			Route::get('{id}', [AkunOrtuController::class, 'show'])->where('id', '[0-9]+')->name('.show')->middleware('role:sek,lay,pembinayys,ketuayys,direktur,cspv,am,aspv');
+			Route::group(['middleware' => 'role:cspv,aspv'], function () {
+				Route::get('{id}/ubah', [AkunOrtuController::class, 'edit'])->where('id', '[0-9]+')->name('.edit');
+				Route::put('perbarui', [AkunOrtuController::class, 'update'])->name('.update');
+			});
+
 			Route::group(['middleware' => 'role:am,aspv'], function () {
 				Route::delete('{id}/hapus', [AkunOrtuController::class, 'destroy'])->where('id', '[0-9]+')->name('.destroy');
 			});
@@ -1529,8 +1867,8 @@ Route::get('/wilayah/desa/{code}', [WilayahController::class, 'getDesa']);
 Route::prefix('psb')->name('psb')->group(function () {
 	Route::get('', [LoginSiswaController::class, 'index'])->name('.index');
 	Route::post('', [LoginSiswaController::class, 'login']);
-	// Route::get('daftar', [RegisterSiswaController::class, 'index']);
-	// Route::post('daftar', [RegisterSiswaController::class, 'store']);
+	//Route::get('daftar', [RegisterSiswaController::class, 'index']);
+	//Route::post('daftar', [RegisterSiswaController::class, 'store']);
 	Route::get('pendaftaran', [RegisterSiswaController::class, 'create'])->name('.pendaftaran');
 	Route::post('pendaftaran', [RegisterSiswaController::class, 'storeOrtu'])->name('.register');
 	Route::get('pendaftaran-siswa', [RegisterSiswaController::class, 'createSiswa'])->name('.siswa.create');
@@ -1563,7 +1901,13 @@ Route::get('reset-spp-deduction',function (){
 	SppGenerator::resetSppDeduction();	
 });
 Route::get('generate-trx',function (){
+	SppGenerator::generateFromTransactions();	
+});
+Route::get('generate-a-trx',function (){
 	SppGenerator::generateFromTransaction();	
+});
+Route::post('get-trx',function (){
+	SppGenerator::getTransactions();
 });
 Route::get('check-spp-paid/{student_id}',function ($student_id){
 	SppGenerator::checkTotalPaidStudent($student_id);

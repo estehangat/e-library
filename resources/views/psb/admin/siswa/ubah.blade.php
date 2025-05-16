@@ -13,7 +13,7 @@ Ubah Data Calon Siswa
 @endsection
 
 @section('content')
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
+<div class="d-sm-flex align-items-center justify-content-between mb-2">
     <h1 class="h3 mb-0 text-gray-800">Ubah Data Calon Siswa</h1>
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="javascript:void(0)">Penerimaan Siswa Baru</a></li>
@@ -25,7 +25,7 @@ Ubah Data Calon Siswa
 <div class="row mb-3">
     <div class="col-md-12">
         <div class="card h-100">
-        <div class="card-header py-3 bg-brand-purple-dark d-flex flex-row align-items-center justify-content-between">
+        <div class="card-header py-3 bg-brand-green-dark d-flex flex-row align-items-center justify-content-between">
             <h6 class="m-0 font-weight-bold text-white">Form Ubah Calon Siswa</h6>
         </div>
             <div class="card-body">
@@ -45,7 +45,7 @@ Ubah Data Calon Siswa
                     <div class="col-md-8">
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Siswa</h6>
+                            <h6 class="font-weight-bold text-brand-green">Siswa</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -75,7 +75,7 @@ Ubah Data Calon Siswa
                         </div>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Informasi Umum Siswa</h6>
+                            <h6 class="font-weight-bold text-brand-green">Informasi Umum Siswa</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -152,7 +152,7 @@ Ubah Data Calon Siswa
                         <hr>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Informasi Alamat Siswa</h6>
+                            <h6 class="font-weight-bold text-brand-green">Informasi Alamat Siswa</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -273,7 +273,7 @@ Ubah Data Calon Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Informasi Orang Tua</h6>
+                            <h6 class="font-weight-bold text-brand-green">Informasi Orang Tua</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -320,7 +320,7 @@ Ubah Data Calon Siswa
                                         @if( $siswa->orangtua->father_job=="Wiraswasta")
                                             <option value="Wiraswasta" selected>Wiraswasta</option>
                                         @else
-                                            <option value="Wiraswasta">Pegawai Negeri</option>
+                                            <option value="Wiraswasta">Wiraswasta</option>
                                         @endif
                                 </select>
                             </div>
@@ -398,6 +398,11 @@ Ubah Data Calon Siswa
                             <label for="pekerjaan_ibu" class="col-sm-4 control-label">Pekerjaan Ibu</label>
                             <div class="col-sm-6">
                                 <select name="pekerjaan_ibu" class="select2 form-control auto_width" id="kelas" style="width:100%;" tabindex="-1" aria-hidden="true">
+                                        @if( $siswa->orangtua->mother_job=="Ibu Rumah Tangga")
+                                            <option value="Ibu Rumah Tangga" selected>Ibu Rumah Tangga</option>
+                                        @else
+                                            <option value="Ibu Rumah Tangga">Ibu Rumah Tangga</option>
+                                        @endif
                                         @if( $siswa->orangtua->mother_job=="Pegawai Negeri")
                                             <option value="Pegawai Negeri" selected>Pegawai Negeri</option>
                                         @else
@@ -411,7 +416,7 @@ Ubah Data Calon Siswa
                                         @if( $siswa->orangtua->mother_job=="Wiraswasta")
                                             <option value="Wiraswasta" selected>Wiraswasta</option>
                                         @else
-                                            <option value="Wiraswasta">Pegawai Negeri</option>
+                                            <option value="Wiraswasta">Wiraswasta</option>
                                         @endif
                                 </select>
                             </div>
@@ -470,7 +475,7 @@ Ubah Data Calon Siswa
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="pegawai_auliya" class="col-sm-4 control-label">Pegawai Auliya?</label>
+                            <label for="pegawai_auliya" class="col-sm-4 control-label">Pegawai Sekolah Digiyok?</label>
                             <div class="col-sm-6">
                                 <select name="pegawai_auliya" class="form-control auto_width" id="kelas" style="width:100%;" tabindex="-1" aria-hidden="true">
                                         <option value="0">Tidak</option>
@@ -496,7 +501,7 @@ Ubah Data Calon Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Informasi Wali</h6>
+                            <h6 class="font-weight-bold text-brand-green">Informasi Wali</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -598,14 +603,14 @@ Ubah Data Calon Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Sekolah Asal</h6>
+                            <h6 class="font-weight-bold text-brand-green">Sekolah Asal</h6>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label for="asal_sekolah" class="col-sm-4 control-label">Asal Sekolah<span class="text-danger">*</span></label>
                             <div class="col-sm-6">
                                 <select name="asal_sekolah" id="" class="select2 form-control auto_width" id="kelas" style="width:100%;" tabindex="-1" aria-hidden="true" required>
-                                    <option value="SIT Auliya" {{ $siswa->origin_school=="SIT Auliya"?"selected":"" }}>Sekolah Islam Terpadu Auliya</option>
+                                    <option value="Sekolah Digiyok" {{ $siswa->origin_school=="Sekolah Digiyok"?"selected":"" }}>Sekolah Digiyok</option>
                                     <option value="Sekolah Lain" {{ $siswa->origin_school!="SIT Auliya"?"selected":"" }}>Sekolah Lain</option>
                                 </select>
                             </div>
@@ -619,11 +624,11 @@ Ubah Data Calon Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Saudara Kandung</h6>
+                            <h6 class="font-weight-bold text-brand-green">Saudara Kandung</h6>
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="asal_sekolah" class="col-sm-4 control-label">Nama Saudara Kandung di Auliya</label>
+                            <label for="asal_sekolah" class="col-sm-4 control-label">Nama Saudara Kandung di Digiyok</label>
                             <div class="col-sm-6">
                                 <input type="text" class="form-control" name="saudara_nama" placeholder="Nama" value="{{ $siswa->sibling_name?$siswa->sibling_name:'-' }}">
                             </div>
@@ -631,13 +636,16 @@ Ubah Data Calon Siswa
                         <div class="form-group row">
                             <label for="kelas" class="col-sm-4 control-label">Kelas Saudara Kandung</label>
                             <div class="col-sm-6">
-                                <select name="saudara_kelas" class="select2 form-control auto_width" id="kelas" style="width:100%;" tabindex="-1" aria-hidden="true">
-                                    @foreach( $levels as $level)
+                                <select name="saudara_kelas" class="select2 form-control auto_width" id="kelas" style="width:100%;" tabindex="-1" aria-hidden="true">                                    
+                                    <option value="">== Pilih Kelas ==</option>
+                                    @foreach( $units as $unit)
+                                    @foreach($unit->levels()->select('id','level')->get() as $level)
                                     @if($siswa->sibling_level_id==$level->id)
                                         <option value="{{ $level->id }}" selected>{{ $level->level }}</option>
                                     @else
                                         <option value="{{ $level->id }}">{{ $level->level }}</option>
                                     @endif
+                                    @endforeach
                                     @endforeach
                                 </select>
                             </div>
@@ -645,7 +653,7 @@ Ubah Data Calon Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Sumber Informasi</h6>
+                            <h6 class="font-weight-bold text-brand-green">Sumber Informasi</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -653,18 +661,18 @@ Ubah Data Calon Siswa
                             <div class="col-sm-6">
                                 <select name="info_dari" class="form-control auto_width" id="kelas" style="width:100%;" tabindex="-1" aria-hidden="true" required>
                                         <option value="">== Pilih ==</option>
-                                        <option value="Orangtua Auliya" {{ $siswa->info_from=="Orangtua Auliya"?"selected":"" }}>Orangtua Auliya</option>
+                                        <option value="Orangtua Digiyok" {{ $siswa->info_from=="Orangtua Digiyok"?"selected":"" }}>Orangtua Digiyok</option>
                                         <option value="Guru/Staf" {{ $siswa->info_from=="Guru/Staf"?"selected":"" }}>Guru/Staf</option>
                                         <option value="Brosur" {{ $siswa->info_from=="Brosur"?"selected":"" }}>Brosur</option>
                                         <option value="Spanduk" {{ $siswa->info_from=="Spanduk"?"selected":"" }}>Spanduk</option>
-                                        <option value="Website dan Sosmed Auliya Keren" {{ $siswa->info_from=="Website dan Sosmed Auliya Keren"?"selected":"" }}>Website dan Sosmed Auliya Keren</option>
+                                        <option value="Website dan Sosmed Digiyok" {{ $siswa->info_from=="Website dan Sosmed Digiyok Keren"?"selected":"" }}>Website dan Sosmed Digiyok</option>
                                         <option value="Media Cetak" {{ $siswa->info_from=="Media Cetak"?"selected":"" }}>Media Cetak</option>
                                         <option value="Sering Lewat" {{ $siswa->info_from=="Sering Lewat"?"selected":"" }}>Sering Lewat</option>
                                         <option value="Teman" {{ $siswa->info_from=="Teman"?"selected":"" }}>Teman</option>
                                 </select>
                             </div>
                         </div>
-                        <div id="append_pegawai" style="display:{{ $siswa->info_from=="Guru/Staf"||$siswa->info_from=="Orangtua Auliya"?"block":"none" }}">
+                        <div id="append_pegawai" style="display:{{ $siswa->info_from=="Guru/Staf"||$siswa->info_from=="Orangtua Digiyok"?"block":"none" }}">
                             <div class="form-group row">
                                 <label for="info_nama" class="col-sm-4 control-label">Nama</label>
                                 <div class="col-sm-6">
@@ -681,7 +689,7 @@ Ubah Data Calon Siswa
                     </div>
                     <div class="col-md-12">
                         <div class="text-center mt-4">
-                            <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+                            <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
                         </div>
                     </div>
                 </div>
@@ -746,7 +754,7 @@ Ubah Data Calon Siswa
             console.log('masuk sini');
             var info_dari = this.value;
             var pegawai = false;
-            if(info_dari == "Orangtua Auliya"){
+            if(info_dari == "Orangtua Digiyok"){
                 pegawai = true;
             }else if(info_dari == "Guru/Staf"){
                 pegawai = true;
@@ -760,7 +768,7 @@ Ubah Data Calon Siswa
         $('select[name="asal_sekolah"]').on('change', function() {
             var asal_sekolah = this.value;
             var sekolah_lain = false;
-            if(asal_sekolah == "SIT Auliya"){
+            if(asal_sekolah == "Sekolah Digiyok"){
                 sekolah_lain = true;
             }
             if(sekolah_lain == true){

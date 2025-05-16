@@ -61,6 +61,11 @@ class Kelas extends Model
         return $this->hasMany('App\Models\Kbm\HistoryKelas','class_id');
     }
 
+    public function rapor()
+    {
+        return $this->hasMany('App\Models\Penilaian\NilaiRapor','class_id');
+    }
+
     public function getLevelNameAttribute()
     {
         return $this->level->level.' '.$this->namakelases->class_name;

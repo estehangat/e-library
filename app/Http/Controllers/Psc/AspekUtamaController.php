@@ -33,7 +33,8 @@ class AspekUtamaController extends Controller
 
             $indicators = $this->getIndicators();
 
-            $penempatan = Jabatan::select('id','name')->aktif()->orderBy('category_id')->orderBy('code')->orderByRaw('LENGTH(code)','ASC')->get();
+            // $penempatan = Jabatan::select('id','name')->aktif()->orderBy('category_id')->orderBy('code')->orderByRaw('LENGTH(code)','ASC')->get();
+            $penempatan = Jabatan::select('id','name')->aktif()->orderBy('category_id')->orderBy('code')->get();
 
             if($isTopManagements)
                 $folder = 'read-only';
@@ -141,8 +142,9 @@ class AspekUtamaController extends Controller
                 $penempatan = $usedCount = null;
 
                 if($indikator->is_fillable == 1 && $indikator->childs()->static()->count() < 1){
-                    $penempatan = Jabatan::select('id','name')->aktif()->orderBy('category_id')->orderBy('code')->orderByRaw('LENGTH(code)','ASC')->get();
-
+                    // $penempatan = Jabatan::select('id','name')->aktif()->orderBy('category_id')->orderBy('code')->orderByRaw('LENGTH(code)','ASC')->get();
+                    $penempatan = Jabatan::select('id','name')->aktif()->orderBy('category_id')->orderBy('code')->get();
+                    
                     $tahun = TahunAjaran::where('is_active',1)->latest()->first();
 
                     $usedCount = $indikator->nilaiDetail()->whereHas('nilai',function($q)use($tahun){$q->where('academic_year_id', $tahun->id)->where(function($q){$q->where('acc_status_id','!=',1)->orWhereNull('acc_status_id');});})->count();

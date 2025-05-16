@@ -84,7 +84,7 @@ Ubah Daftar Kelas
                     </div>
                     <div class="col-md-12">
                         <div class="text-center mt-4">
-                            <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+                            <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
                         </div>
                     </div>
                 </div>

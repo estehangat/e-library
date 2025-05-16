@@ -37,7 +37,7 @@ class KunciPsbController extends Controller
         if(in_array($request->user()->role->name,['ketuayys','pembinayys','direktur','ctl'])){
             $lock = Setting::where('name','psb_lock_status')->first();
 
-            $unit = Unit::select('id','name','psb_active')->sekolah()->get();
+            $unit = Unit::select('id','name','psb_active','new_admission_active','transfer_admission_active')->sekolah()->get();
 
             $active = $this->active;
             $route = $this->route;
@@ -119,11 +119,22 @@ class KunciPsbController extends Controller
             $lock->value = $request->lock == 'on' ? 0 : 1;
             $lock->save();
 
-            $unit = Unit::select('id','name','psb_active')->sekolah()->get();
+            $unit = Unit::select('id','name','psb_active','new_admission_active','transfer_admission_active')->sekolah()->get();
 
+            $type = ['new','transfer'];
+            
             foreach($unit as $u){
-                $inputValue = 'lock-'.strtolower($u->name);
-                $u->psb_active = $request->{$inputValue} == 'on' ? 1 : 0;
+                $counter = 0;
+                foreach($type as $t){
+                    $inputValue = 'lock-'.strtolower($u->name).'-'.$t;
+                    $attr = ($t == 'new' ? 'new' : 'transfer').'_admission_active';
+                    if($request->{$inputValue} == 'on'){
+                        $u->{$attr} = 1;
+                        $counter++;
+                    }
+                    else $u->{$attr} = 0;
+                }
+                $u->psb_active = $counter >= 1 ? 1 : 0;
                 $u->save();
             }
 

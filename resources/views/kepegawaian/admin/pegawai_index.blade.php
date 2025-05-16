@@ -1,7 +1,7 @@
 @extends('template.main.master')
 
 @section('title')
-Civitas Auliya
+Civitas
 @endsection
 
 @section('headmeta')
@@ -18,10 +18,10 @@ Civitas Auliya
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-2">
-    <h1 class="h3 mb-0 text-gray-800">Civitas Auliya</h1>
+    <h1 class="h3 mb-0 text-gray-800">Civitas</h1>
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="./">Beranda</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Civitas Auliya</li>
+        <li class="breadcrumb-item active" aria-current="page">Civitas</li>
     </ol>
 </div>
 
@@ -33,7 +33,7 @@ Civitas Auliya
                 <a class="nav-link active" href="{{ route('pegawai.index', ['status' => 'aktif']) }}">Aktif</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link text-brand-purple" href="{{ route('pegawai.index', ['status' => 'nonaktif']) }}">Nonaktif</a>
+                <a class="nav-link text-brand-green" href="{{ route('pegawai.index', ['status' => 'nonaktif']) }}">Nonaktif</a>
               </li>
             </ul>
         </div>
@@ -45,7 +45,7 @@ Civitas Auliya
         <div class="card">
             <form action="{{ route('pegawai.index') }}" id="filter-form" method="get">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Filter</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Filter</h6>
             </div>
             <div class="card-body p-3">
               <div class="row">
@@ -71,7 +71,7 @@ Civitas Auliya
                   <div class="row">
                     <div class="col-lg-10 offset-lg-2 col-md-12">
                       <div class="text-left">
-                        <button class="btn btn-sm btn-brand-purple-dark" type="submit">Terapkan</button>
+                        <button class="btn btn-sm btn-brand-green-dark" type="submit">Terapkan</button>
                       </div>
                     </div>
                   </div>
@@ -87,7 +87,7 @@ Civitas Auliya
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Civitas Auliya Aktif</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Civitas Aktif</h6>
             </div>
             <div class="card-body p-3">
               @if(Session::has('success'))
@@ -119,7 +119,7 @@ Civitas Auliya
                       <th>Unit</th>
                       <th>Jabatan</th>
                       <th>Masa Kerja</th>
-                      <th>Status Civitas Auliya</th>
+                      <th>Status Civitas</th>
                       <th>Aksi</th>
                     </tr>
                   </thead>
@@ -150,7 +150,7 @@ Civitas Auliya
                       <td>{{ $p->yearsOfService }}</td>
                       <td>{{ $p->statusPegawai->show_name }}</td>
                       <td>
-                        <a href="{{ route('pegawai.detail', ['id' => $p->id]) }}" class="btn btn-sm btn-brand-purple-dark" target="_blank"><i class="fas fa-eye"></i></a>
+                        <a href="{{ route('pegawai.detail', ['id' => $p->id]) }}" class="btn btn-sm btn-brand-green-dark" target="_blank"><i class="fas fa-eye"></i></a>
                         <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#reset-confirm" onclick="resetModal('{{ addslashes(htmlspecialchars($p->name)) }}', '{{ route('pegawai.reset', ['id' => $p->id]) }}')"><i class="fas fa-sync-alt fa-flip-horizontal"></i></a>
                       </td>
                     </tr>
@@ -161,7 +161,7 @@ Civitas Auliya
               @else
               <div class="text-center mx-3 mt-4 mb-5">
                 <h3 >Mohon Maaf,</h3>
-                <h6 class="font-weight-light mb-3">Tidak ada data Civitas Auliya aktif yang ditemukan</h6>
+                <h6 class="font-weight-light mb-3">Tidak ada data Civitas aktif yang ditemukan</h6>
               </div>
               @endif
             </div>

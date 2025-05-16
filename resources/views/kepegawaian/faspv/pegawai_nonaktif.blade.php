@@ -27,7 +27,7 @@ Pegawai
         <div class="card">
             <ul class="nav nav-pills p-3">
               <li class="nav-item">
-                <a class="nav-link text-brand-purple" href="{{ route('pegawai.index', ['status' => 'aktif']) }}">Aktif</a>
+                <a class="nav-link text-brand-green" href="{{ route('pegawai.index', ['status' => 'aktif']) }}">Aktif</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link active" href="{{ route('pegawai.index', ['status' => 'nonaktif']) }}">Nonaktif</a>
@@ -41,7 +41,7 @@ Pegawai
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Pegawai Nonaktif</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Pegawai Nonaktif</h6>
             </div>
             <div class="card-body p-3">
               @if(Session::has('success'))
@@ -108,7 +108,7 @@ Pegawai
                         @if($p->statusPhk && $p->statusPhk->status == 'aktif')
                         <a href="#" class="btn btn-sm btn-info" data-toggle="modal" data-target="#disjoin-confirm" onclick="disjoinModal('{{ addslashes(htmlspecialchars($p->name)) }}', '{{ route('pegawai.validasi', ['id' => $p->id]) }}')"><i class="fas fa-check"></i></a>
                         @endif
-                        <a href="{{ route('pegawai.detail', ['id' => $p->id]) }}" class="btn btn-sm btn-brand-purple-dark" target="_blank"><i class="fas fa-eye"></i></a>
+                        <a href="{{ route('pegawai.detail', ['id' => $p->id]) }}" class="btn btn-sm btn-brand-green-dark" target="_blank"><i class="fas fa-eye"></i></a>
                       </td>
                     </tr>
                     @endforeach

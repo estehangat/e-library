@@ -14,10 +14,10 @@ Dasbor
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+    <h1 class="h3 mb-0 text-gray-800">Beranda</h1>
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="./">Home</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Dashboard</li>
+        <li class="breadcrumb-item active" aria-current="page">Beranda</li>
     </ol>
 </div>
 <!-- Semua -->
@@ -32,7 +32,7 @@ Dasbor
                         <div class="h5 mb-0 font-weight-bold text-gray-800">{{$jmlsiswacewe + $jmlsiswalaki}}</div>
                     </div>
                     <div class="col-auto">
-                        <i class="fas fa-users fa-2x text-brand-purple"></i>
+                        <i class="fas fa-users fa-2x text-brand-green"></i>
                     </div>
                 </div>
             </div>
@@ -52,7 +52,7 @@ Dasbor
                         <div class="h5 mb-0 font-weight-bold text-gray-800">{{$jmlsiswacewe1 + $jmlsiswalaki1}}</div>
                     </div>
                     <div class="col-auto">
-                        <i class="fas fa-users fa-2x text-brand-purple"></i>
+                        <i class="fas fa-users fa-2x text-brand-green"></i>
                     </div>
                 </div>
             </div>
@@ -69,7 +69,7 @@ Dasbor
                         <div class="h5 mb-0 font-weight-bold text-gray-800">{{$jmlsiswalaki2 + $jmlsiswacewe2}}</div>
                     </div>
                     <div class="col-auto">
-                        <i class="fas fa-users fa-2x text-brand-purple"></i>
+                        <i class="fas fa-users fa-2x text-brand-green"></i>
                     </div>
                 </div>
             </div>
@@ -85,7 +85,7 @@ Dasbor
                         <div class="h5 mb-0 font-weight-bold text-gray-800">{{$jmlsiswalaki3 + $jmlsiswacewe3}}</div>
                     </div>
                     <div class="col-auto">
-                        <i class="fas fa-users fa-2x text-brand-purple"></i>
+                        <i class="fas fa-users fa-2x text-brand-green"></i>
                     </div>
                 </div>
             </div>
@@ -101,7 +101,7 @@ Dasbor
                         <div class="h5 mb-0 font-weight-bold text-gray-800">{{$jmlsiswalaki4 + $jmlsiswacewe4}}</div>
                     </div>
                     <div class="col-auto">
-                        <i class="fas fa-users fa-2x text-brand-purple"></i>
+                        <i class="fas fa-users fa-2x text-brand-green"></i>
                     </div>
                 </div>
             </div>
@@ -148,13 +148,13 @@ Dasbor
                                         @endforeach
                                     </select>
                                 </div>
-                                <button class="btn btn-brand-purple-dark btn-sm" type="submit">Saring</button>
+                                <button class="btn btn-brand-green-dark btn-sm" type="submit">Saring</button>
                             </div>
                         </form>
                     </div>
                     <div class="table-responsive">
                         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                            <h6 class="m-0 font-weight-bold text-brand-purple">Tabel Pendaftaran Siswa Baru</h6>
+                            <h6 class="m-0 font-weight-bold text-brand-green">Tabel Pendaftaran Siswa Baru</h6>
                         </div>
                         <table id="dataTable" class="table align-items-center table-flush">
                             <thead class="thead-light">
@@ -163,13 +163,13 @@ Dasbor
                                     <th rowspan="2">Unit</th>
                                     <th rowspan="2">Tahun</th>
                                     <th colspan="3">Sudah Daftar Online</th>
-                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,14,17,18,20,21,25,26]))
+                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,9,14,17,18,20,21,25,26]))
                                         <th colspan="3">Biaya Observasi</th>
                                         <th colspan="3">Wawancara</th>
                                     @endif
                                     <th colspan="3">Diterima</th>
                                     <th colspan="3">Lunas DU</th>
-                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,14,17,18,20,21,25,26]))
+                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,9,14,17,18,20,21,25,26]))
                                         <th colspan="3">Diresmikan</th>
                                         <th colspan="3">Dicadangkan</th>
                                         <th colspan="3">Pembatalan DU</th>
@@ -179,7 +179,7 @@ Dasbor
                                     <th>Internal</th>
                                     <th>Eksternal</th>
                                     <th>Total</th>
-                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,14,17,18,20,21,25,26]))
+                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,9,14,17,18,20,21,25,26]))
                                         <th>Internal</th>
                                         <th>Eksternal</th>
                                         <th>Total</th>
@@ -193,7 +193,7 @@ Dasbor
                                     <th>Internal</th>
                                     <th>Eksternal</th>
                                     <th>Total</th>
-                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,14,17,18,20,21,25,26]))
+                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,9,14,17,18,20,21,25,26]))
                                         <th>Internal</th>
                                         <th>Eksternal</th>
                                         <th>Total</th>
@@ -215,7 +215,7 @@ Dasbor
                                     <td>{{$data->register_intern}}</td>
                                     <td>{{$data->register_extern}}</td>
                                     <td><b>{{$data->register_intern+$data->register_extern}}</b></td>
-                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,14,17,18,20,21,25,26]))
+                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,9,14,17,18,20,21,25,26]))
                                         <td>{{$data->saving_seat_intern}}</td>
                                         <td>{{$data->saving_seat_extern}}</td>
                                         <td><b>{{$data->saving_seat_intern+$data->saving_seat_extern}}</b></td>
@@ -229,7 +229,7 @@ Dasbor
                                     <td>{{$data->reapply_intern}}</td>
                                     <td>{{$data->reapply_extern}}</td>
                                     <td><b>{{$data->reapply_intern+$data->reapply_extern}}</b></td>
-                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,14,17,18,20,21,25,26]))
+                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,9,14,17,18,20,21,25,26]))
                                         <td>{{$data->stored_intern}}</td>
                                         <td>{{$data->stored_extern}}</td>
                                         <td><b>{{$data->stored_intern+$data->stored_extern}}</b></td>

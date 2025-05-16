@@ -19,18 +19,10 @@ Jam Pelajaran
     </ol>
 </div>
 
-<div class="row mb-3">
+<div class="row mb-4">
     <div class="col-md-12">
         <div class="card h-100">
             <div class="card-body">
-                @if(Session::has('sukses'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <strong>Sukses!</strong> {{ Session::get('sukses') }}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                @endif
                 <div class="row">
                     <div class="col-md-8">
                         <form action="/kependidikan/kbm/pelajaran/waktu-pelajaran" method="POST">
@@ -87,54 +79,95 @@ Jam Pelajaran
                                         @endforeach
                                     </select>
                                 </div>
-                                <button type="submit" class="btn btn-brand-purple-dark">Cari</button>
+                                <button type="submit" class="btn btn-brand-green-dark">Cari</button>
                             </div>
                             <div class="text-center mt-4">
                             </div>
                         </form>
                     </div>
-                    <div class="table-responsive">
-                        <table class="table align-items-center table-flush">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th>Jam Ke</th>
-                                    <th>Jam Mulai</th>
-                                    <th>Jam Selesai</th>
-                                    <th>Keterangan</th>
-                                    @if( in_array((auth()->user()->role_id), array(1,2)))
-                                    <th>Aksi</th>
-                                    @endif
-                                </tr>
-                            </thead>
-                            <tbody>
-                            @foreach( $jams as $index => $jam )
-                                <tr>
-                                    <td>{{$index+1}}</td>
-                                    <td>{{Carbon\Carbon::parse($jam->hour_start)->format('H:i')}}</td>
-                                    <td>{{Carbon\Carbon::parse($jam->hour_end)->format('H:i')}}</td>
-                                    <td>{{$jam->description}}</td>
-                                    @if( in_array((auth()->user()->role_id), array(1,2)))
-                                    <td><button href="#" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#UbahModal{{$jam->id}}"><i class="fas fa-pen"></i></button>&nbsp;
-                                    
-                                    @if($jam->jadwalpelajarans()->count()>0)
-                                    <button href="#" class="btn btn-sm btn-danger"><i class="fas fa-trash" data-toggle="modal" data-target="#HapusModal{{$jam->id}}" disabled></i></button>
-                                    @else
-                                    <button href="#" class="btn btn-sm btn-danger"><i class="fas fa-trash" data-toggle="modal" data-target="#HapusModal{{$jam->id}}"></i></button>
-                                    @endif
-                                    </td>
-                                    @endif
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
-                    </div>
                 </div>
-                @if( in_array((auth()->user()->role_id), array(1,2,3)))
-                <div class="text-center mt-4">
-                    <button type="submit" class="btn btn-brand-purple-dark" data-toggle="modal" data-target="#TambahModal">Tambah</button>
-                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-brand-green-dark">Jam Pelajaran</h6>
+                @if(in_array((auth()->user()->role_id), array(1,2,3)))
+                <button type="button" class="m-0 float-right btn btn-brand-green-dark btn-sm" data-toggle="modal" data-target="#TambahModal">Tambah<i class="fas fa-plus-circle ml-2"></i></a>
                 @endif
             </div>
+            @if($jams && count($jams) > 0)
+            <div class="card-body">
+                @if(Session::has('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <strong>Sukses!</strong> {{ Session::get('success') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                @endif
+                <div class="table-responsive">
+                    <table class="table align-items-center table-flush">
+                        <thead class="thead-light">
+                            <tr>
+                                <th style="width: 60px">Jam Ke</th>
+                                <th>Jam Mulai</th>
+                                <th>Jam Selesai</th>
+                                <th>Keterangan</th>
+                                @if( in_array((auth()->user()->role_id), array(1,2)))
+                                <th style="width: 120px">Aksi</th>
+                                @endif
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach( $jams as $index => $jam )
+                            <tr>
+                                <td>{{$index+1}}</td>
+                                <td>{{Carbon\Carbon::parse($jam->hour_start)->format('H:i')}}</td>
+                                <td>{{Carbon\Carbon::parse($jam->hour_end)->format('H:i')}}</td>
+                                <td>{{$jam->description}}</td>
+                                @if( in_array((auth()->user()->role_id), array(1,2)))
+                                <td>
+                                    <button href="#" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#UbahModal{{$jam->id}}"><i class="fas fa-pen"></i></button>
+                                    @if($used && $used[$jam->id] < 1)
+                                    <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#HapusModal{{ $jam->id }}"><i class="fas fa-trash"></i></a>
+                                    @else
+                                    <button type="button" class="btn btn-sm btn-secondary" disabled="disabled"><i class="fas fa-trash"></i></button>
+                                    @endif
+                                </td>
+                                @endif
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            @else
+            @if(Session::has('success'))
+            <div class="alert alert-success alert-dismissible fade show m-3" role="alert">
+                <strong>Sukses!</strong> {{ Session::get('success') }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            @endif
+            @if(Session::has('danger'))
+            <div class="alert alert-danger alert-dismissible fade show m-3" role="alert">
+                <strong>Gagal!</strong> {{ Session::get('danger') }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            @endif
+            <div class="text-center mx-3 my-5">
+                <h3 class="text-center">Mohon Maaf,</h3>
+                <h6 class="font-weight-light mb-3">Tidak ada data jam pelajaran yang ditemukan</h6>
+            </div>
+            @endif
         </div>
     </div>
 </div>
@@ -254,7 +287,7 @@ Jam Pelajaran
             <input type="text" hidden value="{{$hari}}" name="hari">
             <input type="text" hidden value="{{$tingkat}}" name="level">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-primary">Tambah</button>
+                <button type="submit" class="btn btn-brand-green-dark">Tambah</button>
             </div>
         </form>
     </div>
@@ -266,7 +299,5 @@ Jam Pelajaran
 
 @section('footjs')
 <!-- Plugins and scripts required by this view-->
-<script src="{{asset('vendor/chart.js/Chart.min.js')}}"></script>
-<script src="{{asset('js/demo/chart-area-demo.js')}}"></script>
 @include('template.footjs.kbm.datatables')
 @endsection

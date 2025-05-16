@@ -16,7 +16,7 @@ Masuk @endsection
                 <div class="login100-logo m-b-5">
                    <img src="{{ asset('img/logo/logomark.png') }}">
                 </div>
-                <span class="login100-form-title">MUDA</span>
+                <span class="login100-form-subtitle p-b-27">DIGIYOK<i> Sekolah</i></span>
                 <span class="login100-form-subtitle p-b-27">LOGIN Pendaftaran Siswa Baru</span>
 
                 <div id="buttonForm" class="row mt-4" style="justify-content: center {{ $request->view == "login" ? ';display: none' : ''}}">
@@ -96,7 +96,7 @@ Masuk @endsection
                   </div>
                   <div class="text-center">
                     <div class="container-login100-form-btn">
-                      <a href="{{ route('psb.index') }}" class="btn btn-outline-brand-blue">Halaman Awal</a>
+                      <a href="{{ route('psb.index') }}" class="btn btn-outline-secondary">Halaman Awal</a>
                     </div>
                   </div>
               </div>

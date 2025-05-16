@@ -4,7 +4,7 @@
           <img src="{{ asset('img/logo/logomark.png') }}">
         </div>
         <div class="sidebar-brand-text mx-3">
-          <span class="brand-text text-brand-green">AULIYA</span>
+          <span class="brand-text text-brand-green">DIGIYOK</span>
         </div>
       </a>
       <hr class="sidebar-divider my-0">

@@ -40,6 +40,11 @@ class Semester extends Model
     {
         return $this->hasMany('App\Models\Kbm\HistoryKelas','semester_id');
     }
+    
+    public function jadwalPelajarans()
+    {
+        return $this->hasMany('App\Models\Kbm\JadwalPelajaran','semester_id');
+    }
 	
 	public function indikatorPengetahuan()
     {
@@ -49,6 +54,31 @@ class Semester extends Model
     public function tanggalRapor()
     {
         return $this->hasMany('App\Models\Penilaian\TanggalRapor','semester_id');
+    }
+
+    public function curricula()
+    {
+        return $this->hasMany('App\Models\Kbm\TingkatKurikulum','semester_id');
+    }
+
+    public function khatamTypes()
+    {
+        return $this->hasMany('App\Models\Penilaian\Kurdeka\LevelKhatamType','semester_id');
+    }
+
+    public function books()
+    {
+        return $this->hasMany('App\Models\Penilaian\Kurdeka\UnitBuku','semester_id');
+    }
+
+    public function kompetensiKategoriIklas()
+    {
+        return $this->hasMany('App\Models\Penilaian\Iklas\KompetensiKategoriIklas','semester_id');
+    }
+
+    public function objectiveElements()
+    {
+        return $this->hasMany('App\Models\Penilaian\Tk\ObjectiveElement','semester_id');
     }
     
     public function getSemesterNumberAttribute()

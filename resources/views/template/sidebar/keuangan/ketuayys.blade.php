@@ -26,6 +26,12 @@ Keuangan @endsection
           <span>APB</span>
         </a>
       </li>
+      <li class="nav-item {{ request()->routeIs('tahun-anggaran*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('tahun-anggaran.index') }}">
+          <i class="mdi mdi-calendar"></i>
+          <span>Tahun Anggaran</span>
+        </a>
+      </li>
       <li class="nav-item {{ request()->routeIs('ppa*') || request()->routeIs('proposal-ppa*') ? 'active' : '' }}">
         <a class="nav-link {{ request()->routeIs('ppa*') || request()->routeIs('proposal-ppa*') ? '' : 'collapsed' }}" href="#" data-toggle="collapse" data-target="#collapsePenempatan" aria-expanded="{{ request()->routeIs('ppa*') || request()->routeIs('proposal-ppa*') ? 'true' : 'false' }}" aria-controls="collapsePenempatan">
           <i class="mdi mdi-inbox-arrow-up"></i>

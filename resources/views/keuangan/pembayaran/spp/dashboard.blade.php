@@ -5,14 +5,7 @@ Sumbangan Pembinaan Pendidikan
 @endsection
 
 @section('sidebar')
-@php
-$role = Auth::user()->role->name;
-@endphp
-@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','keu','pembinayys','ketuayys','wakasek']))
-@include('template.sidebar.keuangan.'.$role)
-@else
-@include('template.sidebar.keuangan.employee')
-@endif
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')

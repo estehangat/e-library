@@ -18,6 +18,7 @@ use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
 use App\Imports\PegawaiImport;
 
+use App\Models\Kbm\TahunAjaran;
 use App\Models\Penempatan\Jabatan;
 use App\Models\Penempatan\JabatanUnit;
 use App\Models\Penempatan\PenempatanPegawaiDetail;
@@ -26,6 +27,7 @@ use App\Models\Rekrutmen\EvaluasiPegawai;
 use App\Models\Rekrutmen\KategoriPegawai;
 use App\Models\Rekrutmen\LatarBidangStudi;
 use App\Models\Rekrutmen\Pegawai;
+use App\Models\Rekrutmen\PegawaiUnit;
 use App\Models\Rekrutmen\PegawaiJabatan;
 use App\Models\Rekrutmen\PendidikanTerakhir;
 use App\Models\Rekrutmen\StatusPegawai;
@@ -56,7 +58,7 @@ class PegawaiController extends Controller
 
         // Setttings
         $importable = false;
-        $exportable = in_array($role,['aspv']);
+        $exportable = in_array($role,['etl','aspv']);
         $filterable = in_array($role,['admin','pembinayys','ketuayys','direktur','etl','etm','am','aspv']);
         $viewYayasan = in_array($role,['admin','pembinayys','ketuayys','direktur','etl','etm','fam','am']);
 
@@ -325,9 +327,10 @@ class PegawaiController extends Controller
         $user = new LoginUser();
         $user->username = $pegawai->nip;
         $user->password = bcrypt(Date::parse($pegawai->birth_date)->format('dmY'));
+        $user->user_id = $pegawai->id;
         $user->role_id = $position->role->id;
         $user->active_status_id = 1;
-        $pegawai->login()->save($user);
+        $user->save();
 
         Session::flash('success','Data '. $request->name .' berhasil ditambahkan');
         return redirect()->route('pegawai.index');
@@ -422,7 +425,7 @@ class PegawaiController extends Controller
             $universitas = Universitas::orderBy('name')->get();
             $penerimaan = StatusPenerimaan::all();
             $unit = Unit::all();
-            $status = StatusPegawai::pegawaiTidakTetap()->get();
+            $status = StatusPegawai::statusCalonPegawai()->get();
 
             return view('kepegawaian.etm.pegawai_ubah', compact('pegawai','jeniskelamin','pernikahan','provinsi','kabupaten','kecamatan','desa','pendidikan','latar','universitas','penerimaan','unit','status'));
         }
@@ -489,7 +492,8 @@ class PegawaiController extends Controller
                 'phone_number.regex' => 'Pastikan nomor seluler hanya mengandung angka',
                 'email.required' => 'Mohon tuliskan alamat email',
                 'recent_education.required' => 'Mohon pilih salah satu pendidikan terakhir',
-                'academic_background.required' => 'Mohon pilih salah satu latar bidang studi'
+                'academic_background.required' => 'Mohon pilih salah satu latar bidang studi',
+                'unit.required' => 'Mohon pilih minimal salah satu unit penempatan yang direkomendasikan',
             ];
 
             $this->validate($request, [
@@ -516,8 +520,19 @@ class PegawaiController extends Controller
                 'phone_number' => 'required|regex:/^[0-9]+$/',
                 'email' => 'required',
                 'recent_education' => 'required',
-                'academic_background' => 'required'
+                'academic_background' => 'required',
+                'unit' => 'required',
             ], $messages);
+
+            if($pegawai->employee_status_id != 1){
+                $messages = [
+                    'employee_status.required' => 'Mohon pilih salah satu status pegawai',
+                ];
+
+                $this->validate($request, [
+                    'employee_status' => 'required'
+                ], $messages);
+            }
 
             $region = Wilayah::where('code',$request->desa)->first();
 
@@ -551,6 +566,109 @@ class PegawaiController extends Controller
             $pegawai->recent_education_id = $request->recent_education;
             $pegawai->academic_background_id = $request->academic_background;
             $pegawai->university_id = isset($request->university) ? $request->university : null;
+            if($pegawai->employee_status_id != 1) $pegawai->employee_status_id = $request->employee_status;
+
+            // Unit changes detector
+            $diff = $add = null;
+            if($pegawai->units()->count() > 0){
+                if($pegawai->units()->pluck('unit_id')->toArray() != $request->unit){
+                    // Bisa berkurang, bisa bertambah
+                    $diff = array_diff($pegawai->units()->pluck('unit_id')->toArray(), $request->unit);
+                    $add = array_diff($request->unit, $pegawai->units()->pluck('unit_id')->toArray());
+                }
+            }else{
+                $add = $request->unit;
+            }
+
+            if($diff){
+                $tahunAktif = TahunAjaran::select('id')->where('is_active',1)->latest()->first();
+                $semesterAktif = $tahunAktif->semester()->where('is_active',1)->latest()->first();
+                $user = $pegawai->login;
+                if(in_array($pegawai->unit_id,$pegawai->units()->pluck('unit_id')->toArray())){
+                    $pegawai->unit_id = null;
+                }
+                foreach($diff as $u){
+                    $pegawaiUnit = $pegawai->units()->where('unit_id',$u)->first();
+                    // Remove relations
+
+                    // Detail Penempatan
+                    $pegawai->penempatan()->whereHas('penempatanPegawai',function($q)use($tahunAktif,$pegawaiUnit){
+                        $q->where([
+                            'academic_year_id' => $tahunAktif->id,
+                            'unit_id' => $pegawaiUnit->unit_id
+                        ]);
+                    })->whereNull('acc_status_id')->delete();
+
+                    // Detail SKBM
+                    $pegawai->skbmDetail()->whereHas('skbm',function($q)use($tahunAktif,$pegawaiUnit){
+                        $q->where([
+                            'academic_year_id' => $tahunAktif->id,
+                            'unit_id' => $pegawaiUnit->unit_id
+                        ]);
+                    })->delete();
+
+                    // Nilai PSC
+                    $pscScores = $pegawai->pscScore()->where('unit_id', $pegawaiUnit->unit_id)->whereNull('acc_status_id')->get();
+                    foreach($pscScores as $p){
+                        foreach($p->detail as $d){
+                            $d->penilai()->delete();
+                        }
+                        $p->detail()->delete();
+                    }
+                    $pegawai->pscScore()->where('unit_id', $pegawaiUnit->unit_id)->whereNull('acc_status_id')->delete();
+
+                    // Jadwal Pelajaran
+                    $pegawai->jadwalPelajarans()->where('semester_id',$semesterAktif->id)->whereIn('level_id',$pegawaiUnit->unit->levels()->select('id')->get()->pluck('id')->toArray())->delete();
+
+                    // Wali Kelas
+                    $pegawai->kelas()->where([
+                        'academic_year_id' => $tahunAktif->id,
+                        'unit_id' => $pegawaiUnit->unit_id
+                    ])->where('status','!=',3)->update([
+                        'teacher_id' => null
+                    ]);
+
+                    if(in_array($pegawai->position_id,$pegawaiUnit->jabatans->pluck('id')->toArray())){
+                        $pegawai->position_id = null;
+                        $pegawai->save();
+                        $user->role_id = 37;
+                        $user->save();
+                    }
+                    
+                    $pegawaiUnit->jabatans()->detach();
+
+                    // Substitute or remove
+                    if($add && count($add) > 0){
+                        $pegawaiUnit->unit_id = array_shift($add);
+                        $pegawaiUnit->save();
+                    }
+                    else{
+                        $pegawaiUnit->delete();
+                    }
+                }
+                $firstUnit = $pegawai->units()->has('jabatans')->first();
+                $firstPosition = null;
+                if($firstUnit) $firstPosition = $firstUnit->jabatans()->first();
+                else $firstUnit = $pegawai->units()->first();
+                if(!$pegawai->unit_id){
+                    $pegawai->unit_id = $firstUnit->unit_id;
+                    $pegawai->save();
+                }
+                if(!$pegawai->position_id && $firstPosition){
+                    $pegawai->position_id = $firstPosition->id;
+                    $pegawai->save();
+                    $user->role_id = $firstPosition->role_id;
+                    $user->save();
+                }
+            }
+            if($add && count($add) > 0){
+                foreach($add as $u){
+                    $pegawaiUnit = new PegawaiUnit();
+                    $pegawaiUnit->unit_id = $u;
+
+                    $pegawai->units()->save($pegawaiUnit);
+                }
+            }
 
             $pegawai->save();
             

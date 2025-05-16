@@ -21,7 +21,7 @@ SKBM
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Surat Keterangan Belajar Mengajar</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Surat Keterangan Belajar Mengajar</h6>
             </div>
             <div class="card-body p-3">
               @if(Session::has('success'))
@@ -62,7 +62,7 @@ SKBM
                       <td>{{ $aktif->academic_year }}</td>
                       <td>{{ Auth::user()->pegawai->unit->name }}</td>
                       <td>
-                        <span class="badge badge-brand-purple font-weight-normal" data-toggle="tooltip" data-original-title="Baru">Baru</span>
+                        <span class="badge badge-brand-green font-weight-normal" data-toggle="tooltip" data-original-title="Baru">Baru</span>
                       </td>
                       <td>
                         <a href="{{ route('skbm.tampil', ['tahunpelajaran' => $aktif->academicYearLink, 'unit' => Auth::user()->pegawai->unit->name]) }}" class="btn btn-sm btn-primary"><i class="fas fa-eye"></i></a>

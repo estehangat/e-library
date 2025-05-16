@@ -31,7 +31,7 @@ Detail Calon Pegawai
               @if($calon->gender_id == '1')
               <span class="badge badge-info font-weight-normal">{{ ucwords($calon->jenisKelamin->name) }}</span>
               @elseif($calon->gender_id == '2')
-              <span class="badge badge-brand-purple font-weight-normal">{{ ucwords($calon->jenisKelamin->name) }}</span>
+              <span class="badge badge-brand-green font-weight-normal">{{ ucwords($calon->jenisKelamin->name) }}</span>
               @endif
               @if($calon->acceptance_status_id == '1')
               <span class="badge badge-success font-weight-normal">{{ ucwords($calon->rekomendasiPenerimaan->status) }}</span>
@@ -54,7 +54,7 @@ Detail Calon Pegawai
       <div class="card-body p-4">
         <div class="row mb-3">
           <div class="col-12">
-            <h6 class="font-weight-bold text-brand-purple">Info Umum</h6>
+            <h6 class="font-weight-bold text-brand-green">Info Umum</h6>
           </div>
         </div>
         <div class="row">
@@ -174,7 +174,7 @@ Detail Calon Pegawai
         <hr>
         <div class="row mb-3">
           <div class="col-12">
-            <h6 class="font-weight-bold text-brand-purple">Info Alamat dan Kontak</h6>
+            <h6 class="font-weight-bold text-brand-green">Info Alamat dan Kontak</h6>
           </div>
         </div>
         <div class="row">
@@ -216,7 +216,7 @@ Detail Calon Pegawai
         <hr>
         <div class="row mb-3">
           <div class="col-12">
-            <h6 class="font-weight-bold text-brand-purple">Pendidikan</h6>
+            <h6 class="font-weight-bold text-brand-green">Pendidikan</h6>
           </div>
         </div>
         <div class="row">
@@ -260,7 +260,7 @@ Detail Calon Pegawai
         <hr>
         <div class="row mb-3">
           <div class="col-12">
-            <h6 class="font-weight-bold text-brand-purple">Hasil Tes</h6>
+            <h6 class="font-weight-bold text-brand-green">Hasil Tes</h6>
           </div>
         </div>
         <div class="row">
@@ -290,7 +290,7 @@ Detail Calon Pegawai
         <hr>
         <div class="row mb-3">
           <div class="col-12">
-            <h6 class="font-weight-bold text-brand-purple">Rekomendasi</h6>
+            <h6 class="font-weight-bold text-brand-green">Rekomendasi</h6>
           </div>
         </div>
         <div class="row">

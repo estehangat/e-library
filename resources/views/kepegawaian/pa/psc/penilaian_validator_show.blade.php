@@ -141,7 +141,7 @@ $role = Auth::user()->role->name;
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">PSC Pegawai</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">PSC Pegawai</h6>
             </div>
             <div class="card-body p-3">
               @if(Session::has('success'))

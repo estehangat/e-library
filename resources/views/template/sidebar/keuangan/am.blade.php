@@ -20,6 +20,12 @@ Keuangan @endsection
           <span>RKAB</span>
         </a>
       </li>
+      <li class="nav-item {{ request()->routeIs('apby*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('apby.index') }}">
+          <i class="mdi mdi-cart"></i>
+          <span>APB</span>
+        </a>
+      </li>
       <li class="nav-item {{ request()->routeIs('ppa*') || request()->routeIs('proposal-ppa*') ? 'active' : '' }}">
         <a class="nav-link {{ request()->routeIs('ppa*') || request()->routeIs('proposal-ppa*') ? '' : 'collapsed' }}" href="#" data-toggle="collapse" data-target="#collapsePenempatan" aria-expanded="{{ request()->routeIs('ppa*') || request()->routeIs('proposal-ppa*') ? 'true' : 'false' }}" aria-controls="collapsePenempatan">
           <i class="mdi mdi-inbox-arrow-up"></i>
@@ -38,6 +44,12 @@ Keuangan @endsection
             </a>
           </div>
         </div>
+      </li>
+      <li class="nav-item {{ request()->routeIs('ppb*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('ppb.index') }}">
+          <i class="mdi mdi-bank-transfer-out"></i>
+          <span>PPB</span>
+        </a>
       </li>
       <li class="nav-item {{ request()->routeIs('lppa*') ? 'active' : '' }}">
         <a class="nav-link" href="{{ route('lppa.index') }}">

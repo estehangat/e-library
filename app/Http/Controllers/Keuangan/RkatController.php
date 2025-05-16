@@ -7,13 +7,16 @@ use App\Models\Anggaran\Anggaran;
 use App\Models\Anggaran\AnggaranAkun;
 use App\Models\Anggaran\JenisAnggaran;
 use App\Models\Anggaran\KategoriAkun;
+use App\Models\Anggaran\KategoriAnggaran;
 use App\Models\Apby\Apby;
 use App\Models\Apby\ApbyDetail;
 use App\Models\Rkat\Rkat;
 use App\Models\Rkat\RkatDetail;
 use App\Models\Kbm\TahunAjaran;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 
+use Session;
 use Jenssegers\Date\Date;
 
 class RkatController extends Controller
@@ -25,15 +28,23 @@ class RkatController extends Controller
      */
     public function index(Request $request, $jenis = null, $tahun = null, $anggaran = null)
     {
+        // Override Budget Category
+        if(!$jenis) $jenis = 'apby';
+        
         $role = $request->user()->role->name;
         
         $jenisAnggaran = JenisAnggaran::all();
         $jenisAnggaranCount = null;
         foreach($jenisAnggaran as $j){
             $anggaranCount = $j->anggaran();
-            if(!in_array($request->user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv'])){
+            if(!in_array($request->user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv','am','akunspv'])){
                 if($request->user()->pegawai->unit_id == '5'){
-                    $anggaranCount = $anggaranCount->whereHas('anggaran',function($q)use($request){$q->where('position_id',$request->user()->pegawai->jabatan->group()->first()->id);});
+                    // if(in_array($role,['etl','ctl'])){
+                    //     $anggaranCount = $anggaranCount->whereHas('anggaran',function($q)use($request){$q->where('acc_position_id',$request->user()->pegawai->jabatan->first()->id);});
+                    // }
+                    // else{
+                        $anggaranCount = $anggaranCount->whereHas('anggaran',function($q)use($request){$q->where('position_id',$request->user()->pegawai->jabatan->group()->first()->id);});
+                    // }
                 }
                 else{
                     $anggaranCount = $anggaranCount->whereHas('anggaran',function($q)use($request){$q->where('unit_id',$request->user()->pegawai->unit_id);});
@@ -48,7 +59,7 @@ class RkatController extends Controller
             }
         }
         
-        $jenisAktif = $rkat = $years = $academicYears = $latest = $tahunPelajaran = $isYear = null;
+        $jenisAktif = $kategori = $rkat = $years = $academicYears = $latest = $tahunPelajaran = $isYear = $yearAttr = null;
         $yearsCount = $academicYearsCount = 0;
 
         if($jenis){
@@ -67,11 +78,11 @@ class RkatController extends Controller
                 $query->where('budgeting_type_id',$jenisAktif->id);
             });
             
-            if($role == 'am'){
-                $queryRkat = $queryRkat->whereHas('jenisAnggaranAnggaran.anggaran',function($q)use($request){
-                    $q->where('acc_position_id',$request->user()->pegawai->position_id);
-                });
-            }
+            // if(in_array($role,['etl','ctl'])){
+            //     $queryRkat = $queryRkat->whereHas('jenisAnggaranAnggaran.anggaran',function($q)use($request){
+            //         $q->where('acc_position_id',$request->user()->pegawai->position_id);
+            //     });
+            // }
 
             if($queryRkat->count() > 0){
                 $years = clone $queryRkat;
@@ -132,22 +143,60 @@ class RkatController extends Controller
                     }
                 }
                 if(!$tahun){
-                    return redirect()->route('apby.index');
+                    return redirect()->route('rkat.index');
                 }
             }
 
             if($jenisAktif){
-                $rkat = clone $queryRkat;
-                $rkat = $rkat->with('jenisAnggaranAnggaran',function($q){$q->select('id','number','budgeting_type_id','budgeting_id')->with('anggaran:id,name');})->get();
+                $kategori = KategoriAnggaran::select('id','name')->whereHas('anggarans.jenisAnggaran',function($q)use($jenisAktif){
+                    $q->where('budgeting_type_id',$jenisAktif->id);
+                })->get();
 
                 $yearAttr = $isYear ? 'year' : 'academic_year_id';
 
+                $rkat = clone $queryRkat;
+                $rkat = $rkat->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->whereHas('jenisAnggaranAnggaran.tahuns',function($q)use($yearAttr,$tahun){
+                    $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                })->with('jenisAnggaranAnggaran',function($q){$q->select('id','number','budgeting_type_id','budgeting_id')->with('anggaran:id,name');})->get();
+
                 if($anggaran){
-                    $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$rkat->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+                    $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                        $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                            $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                        });
+                    });
+
+                    if($request->user()->pegawai->unit_id == '5'){
+                        $checkAnggaran = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                            $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                            });
+                        })->where('position_id',$request->user()->pegawai->jabatan->group()->first()->id)->first();
+                    }
+                    else{
+                        $checkAnggaran = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                            $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                            });
+                        })->where('unit_id',$request->user()->pegawai->unit_id)->first();
+                    }
+                    // if(in_array($role,['etl','ctl'])){
+                    //     $anggaranAktif = $anggaranAktif->where('acc_position_id',$request->user()->pegawai->position_id);
+                    //     $checkAnggaran = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->where('acc_position_id',$request->user()->pegawai->position_id)->first();
+                    // }
+                    // elseif(in_array($request->user()->pegawai->position_id,[20,25,34,37,48,50,53,57])){
+                    if(in_array($request->user()->role->name,['pembinayys','ketuayys','direktur']) || (in_array($request->user()->role->name,['fam','faspv','am','akunspv']) && !$checkAnggaran)){
+                        $anggaranAktif = $anggaranAktif->whereIn('id',$rkat->pluck('jenisAnggaranAnggaran.anggaran')->unique()->pluck('id'));
+                    }
+                    $anggaranAktif = $anggaranAktif->first();
+
+                    if(!in_array($request->user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv','am','akunspv']) && !$checkAnggaran){
+                        $anggaranAktif = null;
+                    }
 
                     if($anggaranAktif){
                         $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
-                        $rkatAktif = !$isYear ? $anggaranAktif->rkat()->where('academic_year_id', $tahun->id)->aktif()->latest()->first() : $anggaranAktif->rkat()->where('year', $tahun)->aktif()->latest()->first();
+                        $rkatAktif = $anggaranAktif->rkat()->where($yearAttr, ($yearAttr == 'year' ? $tahun : $tahun->id))->aktif()->latest()->first();
 
                         if($rkatAktif || (!$rkatAktif && (!$isYear && $tahun->is_finance_year == 1) || ($isYear && $tahun == date('Y')))){
                             // Inti controller
@@ -158,7 +207,7 @@ class RkatController extends Controller
 
                             // Counter
                             $rkatDetail = RkatDetail::whereHas('rkat',function($q)use($yearAttr,$tahun,$jenisAktif){
-                                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->whereIn('budgeting_budgeting_type_id',$jenisAktif->anggaran()->pluck('id'))->aktif();
+                                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->whereIn('budgeting_budgeting_type_id',$jenisAktif->anggaran()->pluck('id')->unique())->aktif();
                             });
 
                             $totalPendapatan = clone $rkatDetail;
@@ -198,33 +247,53 @@ class RkatController extends Controller
                             ]);
 
                             $isPa = $anggaranAktif->anggaran->acc_position_id == $request->user()->pegawai->position_id ? true : false;
+                            $isAnggotaPa = $this->checkRole($anggaranAktif->anggaran,$role);
+
+                            $lock = Setting::where('name','budgeting_account_lock_status')->first();
                                 
-                            if(in_array($role,['direktur','fam','faspv']))
+                            if(in_array($role,['direktur','fam','faspv','am']))
                                 $folder = $role;
-                            elseif($isPa)
+                            elseif($isPa || (in_array($request->user()->pegawai->position_id,[57]) && $isAnggotaPa))
                                 $folder = 'pa';
                             else
                                 $folder = 'read-only';
 
-                            if($isKso)
-                                return view('keuangan.'.$folder.'.rkat_kso_detail', compact('jenisAnggaran','jenisAktif','tahun','tahunPelajaran','isYear','rkat','years','academicYears','anggaranAktif','rkatAktif','kategori','total'));
-                            else
-                                return view('keuangan.'.$folder.'.rkat_detail', compact('jenisAnggaran','jenisAktif','tahun','tahunPelajaran','isYear','rkat','years','academicYears','anggaranAktif','rkatAktif','kategori','total'));
+                            return view('keuangan.'.$folder.'.rkat_detail', compact('jenisAnggaran','jenisAktif','tahun','tahunPelajaran','isYear','rkat','years','academicYears','anggaranAktif','rkatAktif','kategori','total','lock','isAnggotaPa'));
                         }
                         else return redirect()->route('rkat.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
                     }
                     else return redirect()->route('rkat.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
                 }
-                if(!in_array($role,['pembinayys','ketuayys','direktur','fam','faspv','am'])){
-                    $anggaranAktif = null;
+                if(!in_array($role,['pembinayys','ketuayys','direktur','fam','faspv','am','akunspv'])){
+                    $anggaranAktif = $checkAnggaran = null;
                     if($request->user()->pegawai->unit_id == '5'){
-                        $anggaranAktif = Anggaran::where('position_id',$request->user()->pegawai->jabatan->group()->first()->id)->whereIn('id',$rkat->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+                        $anggaranAktif = Anggaran::where('position_id',$request->user()->pegawai->jabatan->group()->first()->id)->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                            $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                            });
+                        })->whereIn('id',$rkat->pluck('jenisAnggaranAnggaran.anggaran')->unique()->pluck('id'))->first();
+                        $checkAnggaran = Anggaran::where('position_id',$request->user()->pegawai->jabatan->group()->first()->id)->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                            $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                            });
+                        })->first();
                     }
                     else{
-                        $anggaranAktif = Anggaran::where('unit_id',$request->user()->pegawai->unit_id)->whereIn('id',$rkat->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+                        $anggaranAktif = Anggaran::where('unit_id',$request->user()->pegawai->unit_id)->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                            $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                            });
+                        })->whereIn('id',$rkat->pluck('jenisAnggaranAnggaran.anggaran')->unique()->pluck('id'))->first();
+                        $checkAnggaran = Anggaran::where('unit_id',$request->user()->pegawai->unit_id)->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                            $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                            });
+                        })->first();
                     }
                     if($anggaranAktif){
-                        $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
+                        $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                            })->first();
                         $rkatAktif = !$isYear ? $anggaranAktif->rkat()->where('academic_year_id',$tahun->id)->first() : $anggaranAktif->rkat()->where('year',$tahun)->first();
 
                         if(!$rkatAktif){
@@ -232,26 +301,32 @@ class RkatController extends Controller
                         }
                         return redirect()->route('rkat.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link]);
                     }
-                    else{
-                        return redirect()->route('rkat.index');
+                    elseif($checkAnggaran){
+                        $anggaranAktif = $checkAnggaran->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                                $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                            })->first();
+                        $tahun = !$isYear ? TahunAjaran::where('is_finance_year',1)->latest()->first() : Date::now('Asia/Jakarta')->format('Y');
+                        return redirect()->route('rkat.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link]);
                     }
                 }
             }
+
+            else return redirect()->route('rkat.index');
         }
-        elseif(!in_array($role,['pembinayys','ketuayys','direktur','fam','faspv'])){
+        elseif(!in_array($role,['pembinayys','ketuayys','direktur','fam','faspv','am','akunspv'])){
             $jenisAktif = JenisAnggaran::whereIn('id',$jenisAnggaranCount->collect()->where('anggaranCount','>',0)->pluck('id'))->first();
             if($jenisAktif){
                 return redirect()->route('rkat.index', ['jenis' => $jenisAktif->link]);
             }
-            else{
+            elseif($anggaranCount < 1){
                 return redirect()->route('keuangan.index');
             }
         }
 
-        if($jenis && $isKso)
-            return view('keuangan.read-only.rkat_kso_index', compact('jenisAnggaran','jenisAktif','tahun','tahunPelajaran','isYear','rkat','years','academicYears'));
-        else
-            return view('keuangan.read-only.rkat_index', compact('jenisAnggaran','jenisAktif','tahun','tahunPelajaran','isYear','rkat','years','academicYears'));
+        // if($jenis && $isKso)
+        //     return view('keuangan.read-only.rkat_kso_index', compact('jenisAnggaran','jenisAktif','kategori','tahun','tahunPelajaran','isYear','rkat','years','academicYears'));
+        // else
+            return view('keuangan.read-only.rkat_index', compact('jenisAnggaran','jenisAktif','kategori','tahun','tahunPelajaran','yearAttr','isYear','rkat','years','academicYears'));
     }
 
     /**
@@ -262,14 +337,13 @@ class RkatController extends Controller
     public function create(Request $request, $jenis, $tahun, $anggaran)
     {
         $role = $request->user()->role->name;
-        
+
         $jenisAktif = $this->hasBudgetingType($jenis, $request->user());
 
         if($jenisAktif){
             $rkat = Rkat::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
                 $query->where('budgeting_type_id',$jenisAktif->id);
             })->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
-            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$rkat->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
             $explodeJenis = explode('-',$jenis);
             $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
             $isYear = strlen($tahun) == 4 ? true : false;
@@ -278,15 +352,48 @@ class RkatController extends Controller
                 $tahun = TahunAjaran::where('academic_year',$tahun)->first();
                 if(!$tahun) return redirect()->route('rkat.index', ['jenis' => $jenisAktif->link]);
             }
-            if($anggaranAktif){
-                $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
+            $yearAttr = $isYear ? 'year' : 'academic_year_id';
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                    $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                });
+            });
+            if($request->user()->pegawai->unit_id == '5'){
+                $checkAnggaran = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                    $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                        $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                    });
+                })->where('position_id',$request->user()->pegawai->jabatan->group()->first()->id)->first();
+            }
+            else{
+                $checkAnggaran = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                    $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                        $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                    });
+                })->where('unit_id',$request->user()->pegawai->unit_id)->first();
+            }
+            // if(in_array($role,['etl','ctl'])){
+            //     $anggaranAktif = $anggaranAktif->where('acc_position_id',$request->user()->pegawai->position_id);
+            //     $checkAnggaran = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->where('acc_position_id',$request->user()->pegawai->position_id)->first();
+            // }
+            // elseif(in_array($request->user()->pegawai->position_id,[20,25,34,37,48,50,53,57])){
+            if(in_array($request->user()->role->name,['pembinayys','ketuayys','direktur']) || (in_array($request->user()->role->name,['fam','faspv','am','akunspv']) && !$checkAnggaran)){
+                $anggaranAktif = $anggaranAktif->whereIn('id',$rkat->pluck('jenisAnggaranAnggaran.anggaran')->unique()->pluck('id'));
+            }
+            $anggaranAktif = $anggaranAktif->first();
 
-                $yearAttr = $isYear ? 'year' : 'academic_year_id';
-                
-                $rkatAktif = $anggaranAktif->rkat()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->latest()->aktif()->first();
-                
-                if(($rkatAktif && $rkatAktif->detail()->count() < 1) || (!$rkatAktif && ((!$isYear && $tahun->is_finance_year == 1) || ($isYear && $tahun == date('Y'))))){
-                    if(($role == 'faspv' || ($role != 'faspv' && $request->user()->pegawai->position_id == $anggaranAktif->anggaran->acc_position_id)) && $anggaranAktif->akun()->count() > 0){
+            if(!in_array($request->user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv','am','akunspv']) && !$checkAnggaran){
+                $anggaranAktif = null;
+            }
+
+            if($anggaranAktif){
+                $lock = Setting::where('name','budgeting_account_lock_status')->first();
+                $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
+                $rkatAktif = !$isYear ? $anggaranAktif->rkat()->where('academic_year_id', $tahun->id)->aktif()->latest()->first() : $anggaranAktif->rkat()->where('year', $tahun)->aktif()->latest()->first();
+                $isAnggotaPa = $this->checkRole($anggaranAktif->anggaran,$role);
+
+                if(($lock && $lock->value == 1) && (($rkatAktif && $rkatAktif->detail()->count() < 1) || (!$rkatAktif && ((!$isYear && $tahun->is_finance_year == 1) || ($isYear && $tahun == date('Y')))))) {
+                    if(($role == 'am' || ($role != 'am' && $request->user()->pegawai->position_id == $anggaranAktif->anggaran->acc_position_id) || ($role == 'faspv' && $isAnggotaPa)) && $anggaranAktif->akun()->count() > 0){
                         // Inti function
                         if(!$rkatAktif){
                             $rkat = new Rkat();
@@ -300,7 +407,7 @@ class RkatController extends Controller
                             //Get last revision
                             $latestRkat = Rkat::where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->orderBy('revision','desc')->first();
 
-                            if($latestRkat) $rkat->revision = $latestRkat->is_finance_year == 1 ? $latestRkat->revision : ($latestRkat->revision + 1);
+                            if($latestRkat) $rkat->revision = $latestRkat->is_active == 1 ? $latestRkat->revision : ($latestRkat->revision + 1);
 
                             $rkat->save();
 
@@ -315,6 +422,9 @@ class RkatController extends Controller
                             ]));
                         }
                     }
+                }
+                elseif(!$lock || ($lock && $lock->value != 1)){
+                    Session::flash('danger','Tidak dapat membuat RKAB baru untuk anggaran '.$anggaranAktif->anggaran->name);
                 }
                 return redirect()->route('rkat.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link]);
             }
@@ -374,7 +484,6 @@ class RkatController extends Controller
             $rkat = Rkat::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
                 $query->where('budgeting_type_id',$jenisAktif->id);
             })->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
-            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$rkat->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
             $explodeJenis = explode('-',$jenis);
             $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
             $isYear = strlen($tahun) == 4 ? true : false;
@@ -383,13 +492,39 @@ class RkatController extends Controller
                 $tahun = TahunAjaran::where('academic_year',$tahun)->first();
                 if(!$tahun) return redirect()->route('rkat.index', ['jenis' => $jenisAktif->link]);
             }
+            $yearAttr = $isYear ? 'year' : 'academic_year_id';
+            if($request->user()->pegawai->unit_id == '5'){
+                $checkAnggaran = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                    $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                        $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                    });
+                })->where('position_id',$request->user()->pegawai->jabatan->group()->first()->id)->first();
+            }
+            else{
+                $checkAnggaran = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                    $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                        $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                    });
+                })->where('unit_id',$request->user()->pegawai->unit_id)->first();
+            }
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                    $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                });
+            });
+            if(in_array($request->user()->role->name,['pembinayys','ketuayys','direktur']) || (in_array($request->user()->role->name,['fam','faspv','am','akunspv']) && !$checkAnggaran)){
+                $anggaranAktif = $anggaranAktif->whereIn('id',$rkat->pluck('jenisAnggaranAnggaran.anggaran')->unique()->pluck('id'));
+            }
+            $anggaranAktif = $anggaranAktif->first();
+
+            if(!in_array($request->user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv','am','akunspv']) && !$checkAnggaran){
+                $anggaranAktif = null;
+            }
+
             if($anggaranAktif){
                 $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
-
-                $yearAttr = $isYear ? 'year' : 'academic_year_id';
-
-                $rkatAktif = $anggaranAktif->rkat()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->aktif()->latest()->first();
-
+                $rkatAktif = !$isYear ? $anggaranAktif->rkat()->where('academic_year_id', $tahun->id)->aktif()->latest()->first() : $anggaranAktif->rkat()->where('year', $tahun)->aktif()->latest()->first();
+                
                 if($rkatAktif){
                     $isPa = $anggaranAktif->anggaran->acc_position_id == $request->user()->pegawai->position_id ? true : false;
                     $isAnggotaPa = $this->checkRole($anggaranAktif->anggaran,$role);
@@ -451,7 +586,7 @@ class RkatController extends Controller
                                 }
                             }
                         }
-                        elseif(in_array($role,['fam','faspv'])){
+                        elseif(in_array($role,['am','fam'])){
                             // Inti function
                             $rkatAktifDetailClone = clone $rkatAktifDetail;
                             $rkatAktifDetailFilter = $rkatAktifDetailClone->where(function($query){
@@ -498,7 +633,30 @@ class RkatController extends Controller
                                 $rkatAktif->save();
                             }
                         }
-                        elseif(in_array($role,['kepsek','etl','ctl','am','ftm'])){
+                        elseif($isAnggotaPa && in_array($role,['faspv'])){
+                            // Inti function
+                            $rkatAktifDetailFilter = $rkatAktifDetail->where(function($query){
+                                $query->where('finance_acc_status_id','!=',1)->orWhereNull('finance_acc_status_id');
+                            })->with('akun')->get()->sortByDesc('akun.level')->all();
+                            foreach($rkatAktifDetailFilter as $detail){
+                                $isBelanja = $detail->akun->kategori->parent->name == 'Belanja' ? true : false;
+                                $inputName = 'value-'.$detail->id;
+                                $requestValue = (int)str_replace('.','',$request->{$inputName});
+                                $detail->value = $requestValue;
+                                $detail->value_pa = $requestValue;
+
+                                if((($isBelanja && $requestValue > 0) || (!$isBelanja && $requestValue != 0)) && !$detail->employee_id){
+                                    $detail->employee_id = $request->user()->pegawai->id;
+                                }
+                                
+                                $detail->save();
+
+                                $detail->fresh();
+
+                                $this->updateParentValues($rkatAktif,$detail);
+                            }
+                        }
+                        elseif(in_array($role,['kepsek','etl','etm','ctl','ftm','sdmm','ctm','ekispv','layspv','aspv'])){
                             // Inti function
                             $rkatAktifDetailFilter = $rkatAktifDetail->where(function($query){
                                 $query->where('finance_acc_status_id','!=',1)->orWhereNull('finance_acc_status_id');
@@ -558,7 +716,6 @@ class RkatController extends Controller
             $rkat = Rkat::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
                 $query->where('budgeting_type_id',$jenisAktif->id);
             })->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
-            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$rkat->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
             $explodeJenis = explode('-',$jenis);
             $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
             $isYear = strlen($tahun) == 4 ? true : false;
@@ -567,12 +724,38 @@ class RkatController extends Controller
                 $tahun = TahunAjaran::where('academic_year',$tahun)->first();
                 if(!$tahun) return redirect()->route('rkat.index', ['jenis' => $jenisAktif->link]);
             }
+            $yearAttr = $isYear ? 'year' : 'academic_year_id';
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                    $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                });
+            });
+            if($request->user()->pegawai->unit_id == '5'){
+                $checkAnggaran = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                    $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                        $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                    });
+                })->where('position_id',$request->user()->pegawai->jabatan->group()->first()->id)->first();
+            }
+            else{
+                $checkAnggaran = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereHas('jenisAnggaran',function($q)use($jenisAktif,$yearAttr,$tahun){
+                    $q->where('budgeting_type_id',$jenisAktif->id)->whereHas('tahuns',function($q)use($yearAttr,$tahun){
+                        $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                    });
+                })->where('unit_id',$request->user()->pegawai->unit_id)->first();
+            }
+            if(in_array($request->user()->role->name,['pembinayys','ketuayys','direktur']) || (in_array($request->user()->role->name,['fam','faspv','am','akunspv']) && !$checkAnggaran)){
+                $anggaranAktif = $anggaranAktif->whereIn('id',$rkat->pluck('jenisAnggaranAnggaran.anggaran')->unique()->pluck('id'));
+            }
+            $anggaranAktif = $anggaranAktif->first();
+
+            if(!in_array($request->user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv','am','akunspv']) && !$checkAnggaran){
+                $anggaranAktif = null;
+            }
+
             if($anggaranAktif){
                 $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
-
-                $yearAttr = $isYear ? 'year' : 'academic_year_id';
-
-                $rkatAktif = $anggaranAktif->rkat()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->aktif()->latest()->first();
+                $rkatAktif = !$isYear ? $anggaranAktif->rkat()->where('academic_year_id', $tahun->id)->aktif()->latest()->first() : $anggaranAktif->rkat()->where('year', $tahun)->aktif()->latest()->first();
 
                 if($rkatAktif){
                     $isPa = $anggaranAktif->anggaran->acc_position_id == $request->user()->pegawai->position_id ? true : false;
@@ -610,7 +793,7 @@ class RkatController extends Controller
                             // Generate APBY
                             $this->generateApby($anggaranAktif,$rkatAktif,$tahun);
                         }
-                        elseif($role == 'fam'){
+                        elseif($role == 'am'){
                             // Inti function
                             $rkatAktifDetailClone = clone $rkatAktifDetail;
                             $rkatAktifDetailFilter = $rkatAktifDetailClone->where(function($query){
@@ -682,7 +865,7 @@ class RkatController extends Controller
             if($parent){
                 $childs = $rkatAktif->detail()->whereHas('akun',function($query)use($parent){
                     $query->where('code','LIKE',$parent->akun->code.'.%')->where('account_category_id',$parent->akun->kategori->id);
-                })->with('akun')->get()->pluck('akun')->where('level',$parent->akun->level+1)->pluck('id');
+                })->with('akun')->get()->pluck('akun')->where('level',$parent->akun->level+1)->pluck('id')->unique();
                 $childsValue = $rkatAktif->detail()->whereHas('akun',function($query)use($childs){
                     $query->whereIn('id',$childs);
                 })->sum('value');
@@ -739,7 +922,7 @@ class RkatController extends Controller
         if($apby->revision > 1 && $anggaranAktif->jenis->isKso){
             $apbyLastRevision = $anggaranAktif->apby()->where([
                 'revision' => ($apby->revision-1),
-                'is_finance_year' => 0,
+                'is_active' => 0,
                 $yearAttr => ($yearAttr == 'year' ? $rkatAktif->year : $rkatAktif->academic_year_id)
             ])->latest()->first();
         }
@@ -814,9 +997,14 @@ class RkatController extends Controller
         $jenisAnggaranCount = null;
         foreach($jenisAnggaran as $j){
             $anggaranCount = $j->anggaran();
-            if(!in_array($user->role->name,['pembinayys','ketuayys','direktur','fam'])){
+            if(!in_array($user->role->name,['pembinayys','ketuayys','direktur','fam','am','akunspv'])){
                 if($user->pegawai->unit_id == '5'){
-                    $anggaranCount = $anggaranCount->whereHas('anggaran',function($q)use($user){$q->where('position_id',$user->pegawai->jabatan->group()->first()->id);});
+                    // if(in_array($role,['etl','ctl'])){
+                    //     $anggaranCount = $anggaranCount->whereHas('anggaran',function($q)use($user){$q->where('acc_position_id',$user->pegawai->jabatan->first()->id);});
+                    // }
+                    // else{
+                        $anggaranCount = $anggaranCount->whereHas('anggaran',function($q)use($user){$q->where('position_id',$user->pegawai->jabatan->group()->first()->id);});
+                    // }
                 }
                 else{
                     $anggaranCount = $anggaranCount->whereHas('anggaran',function($q)use($user){$q->where('unit_id',$user->pegawai->unit_id);});
@@ -841,20 +1029,41 @@ class RkatController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function checkRole($anggaran,$role){
+        // Sesuai penempatan
+        // $rolesCollection = collect([
+        //     ['unit' => 1, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
+        //     ['unit' => 2, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
+        //     ['unit' => 3, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
+        //     ['unit' => 4, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
+        //     ['unit' => 5, 'position' => 18, 'roles' => ['etl','etm']],
+        //     ['unit' => 5, 'position' => 23, 'roles' => ['ctl','ctm']],
+        //     ['unit' => 5, 'position' => 28, 'roles' => ['am','fam','faspv','fas']],
+        //     ['unit' => 5, 'position' => 32, 'roles' => ['am','aspv']],
+        //     ['unit' => 5, 'position' => 36, 'roles' => ['am','ftm','ftspv']],
+        //     ['unit' => 5, 'position' => 48, 'roles' => ['etl','ekim','ekipv']],
+        //     ['unit' => 5, 'position' => 50, 'roles' => ['etl','sdmm','sdmspv']],
+        //     ['unit' => 5, 'position' => 53, 'roles' => ['ctl','layspv']],
+        //     ['unit' => 5, 'position' => 57, 'roles' => ['am','akunspv']]
+        // ]);
+
+        // Temp
         $rolesCollection = collect([
-            ['unit' => 1, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
-            ['unit' => 2, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
-            ['unit' => 3, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
-            ['unit' => 4, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
-            ['unit' => 5, 'position' => 18, 'roles' => ['etl','etm']],
-            ['unit' => 5, 'position' => 23, 'roles' => ['ctl','ctm']],
-            ['unit' => 5, 'position' => 28, 'roles' => ['fam','faspv','fas']],
-            ['unit' => 5, 'position' => 32, 'roles' => ['am','aspv']],
-            ['unit' => 5, 'position' => 36, 'roles' => ['am','ftm','ftspv','fts']]
+            ['name' => 'TKIT', 'unit' => 1, 'position' => null, 'roles' => ['kepsek']],
+            ['name' => 'SDIT', 'unit' => 2, 'position' => null, 'roles' => ['kepsek']],
+            ['name' => 'SMPIT', 'unit' => 3, 'position' => null, 'roles' => ['kepsek']],
+            ['name' => 'SMAIT', 'unit' => 4, 'position' => null, 'roles' => ['kepsek']],
+            ['name' => 'Education Team', 'unit' => 5, 'position' => 18, 'roles' => ['etl','etm']],
+            ['name' => 'Customer Team', 'unit' => 5, 'position' => 23, 'roles' => ['ctl','ctm']],
+            ['name' => 'Finance and Accounting', 'unit' => 5, 'position' => 28, 'roles' => ['am','fam','faspv','fas']],
+            ['name' => 'Administration, Legal, and IT', 'unit' => 5, 'position' => 32, 'roles' => ['am','aspv']],
+            ['name' => 'Facilities', 'unit' => 5, 'position' => 36, 'roles' => ['am','ftm','ftspv','fts']],
+            ['name' => 'Divisi Edukasi', 'unit' => 5, 'position' => 18, 'roles' => ['etl']],
+            ['name' => 'Divisi Layanan', 'unit' => 5, 'position' => 23, 'roles' => ['ctl']],
+            ['name' => 'Divisi Umum', 'unit' => 5, 'position' => 32, 'roles' => ['am','faspv','akunspv']]
         ]);
 
         if($anggaran->unit_id == 5){
-            $roles = $rolesCollection->where('unit',$anggaran->unit_id)->where('position',$anggaran->position_id)->first();
+            $roles = $rolesCollection->where('name',$anggaran->name)->where('unit',$anggaran->unit_id)->where('position',$anggaran->position_id)->first();
         }
         else{
             $roles = $rolesCollection->where('unit',$anggaran->unit_id)->first();

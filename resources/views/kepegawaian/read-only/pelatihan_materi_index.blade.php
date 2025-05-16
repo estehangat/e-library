@@ -62,7 +62,7 @@ Materi Pelatihan
                 <a class="nav-link active" href="{{ route('pelatihan.materi.index', ['tahunajaran' => $aktif->academicYearLink, 'status' => 'aktif']) }}">Aktif</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link text-brand-purple" href="{{ route('pelatihan.materi.index', ['tahunajaran' => $aktif->academicYearLink, 'status' => 'selesai']) }}">Selesai</a>
+                <a class="nav-link text-brand-green" href="{{ route('pelatihan.materi.index', ['tahunajaran' => $aktif->academicYearLink, 'status' => 'selesai']) }}">Selesai</a>
               </li>
             </ul>
         </div>
@@ -73,7 +73,7 @@ Materi Pelatihan
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Kurikulum Materi Pelatihan</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Kurikulum Materi Pelatihan</h6>
             </div>
             <div class="card-body p-3">
               @if(count($pelatihan) > 0)
@@ -127,7 +127,7 @@ Materi Pelatihan
                         @endif
                       </td>
                       <td>
-                        <a href="{{ route('pelatihan.materi.detail', ['id' => $p->id]) }}" class="btn btn-sm btn-primary" target="_blank"><i class="fas fa-eye"></i></a>
+                        <a href="{{ route('pelatihan.materi.detail', ['id' => $p->id]) }}" class="btn btn-sm btn-brand-green-dark" target="_blank"><i class="fas fa-eye"></i></a>
                       </td>
                     </tr>
                     @endforeach

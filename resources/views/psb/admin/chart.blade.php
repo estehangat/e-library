@@ -59,7 +59,7 @@ Chart
                                     </select>
                                 </div>
                                 @endif
-                                <button class="btn btn-brand-purple-dark btn-sm" type="submit">Saring</button>
+                                <button class="btn btn-brand-green-dark btn-sm" type="submit">Saring</button>
                             </div>
                         </form>
                     </div>

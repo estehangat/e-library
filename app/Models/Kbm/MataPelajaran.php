@@ -72,7 +72,22 @@ class MataPelajaran extends Model
 	
 	public function indikatorPengetahuan()
     {
-        return $this->hasMany('App\Models\Penilaian\IndikatorPengetahuan', 'semester_id');
+        return $this->hasMany('App\Models\Penilaian\IndikatorPengetahuan', 'subject_id');
+    }
+	
+	public function tpsDescs()
+    {
+        return $this->hasMany('App\Models\Penilaian\Kurdeka\TpsDesc', 'subject_id');
+    }
+
+    public function nilaiAkhirKurdeka()
+    {
+        return $this->hasMany('App\Models\Penilaian\Kurdeka\NilaiAkhir', 'subject_id');
+    }
+    
+    public function finalScorePercentages()
+    {
+        return $this->hasMany('App\Models\Penilaian\Kurdeka\PersentaseNilaiAkhir', 'subject_id');
     }
 
     public function getAcronymAttribute()

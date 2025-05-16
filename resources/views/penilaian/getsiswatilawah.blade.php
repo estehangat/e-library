@@ -3,7 +3,7 @@
     <input type="hidden" name="class_id" id="idkelas" />
     <div class="table-responsive">
         <table class="table align-items-center table-sm" style="width:100%">
-            <thead class="bg-brand-purple text-white">
+            <thead class="bg-brand-green text-white">
                 <tr>
                     <th class="align-middle">Nama</th>
                     <th class="text-center align-middle">Nama Huruf &<br/>Tanda Baca</th>
@@ -64,12 +64,12 @@
     @if($countrapor > 0)
     @if($validasi > 0)
     <div class="text-center mt-4">
-        <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+        <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
     </div>
     @endif
     @else
     <div class="text-center mt-4">
-        <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+        <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
     </div>
     @endif
     @endif

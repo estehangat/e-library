@@ -16,8 +16,8 @@ Lupa Sandi @endsection
                 <div class="login100-logo m-b-5">
                     <img src="{{ asset('img/logo/logomark.png') }}">
                 </div>
-                <span class="login100-form-title">SISTA</span>
-                <span class="login100-form-subtitle p-b-12">Sistem Informasi SIT Auliya</span>
+                <span class="login100-form-title">MUDA</span>
+                <span class="login100-form-subtitle p-b-12">Make Ur Digital Assistant <i>for School</i></span>
 				<div class="text-center">
 					<span class="mdi mdi-email-newsletter mdi-48px text-brand-purple-dark"></span>
 				</div>

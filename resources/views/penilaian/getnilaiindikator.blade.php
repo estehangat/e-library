@@ -4,7 +4,7 @@
 
     <table class="table align-items-center table-flush">
         @foreach ($aspek as $key => $aspeks)
-        <thead class="bg-brand-purple text-white">
+        <thead class="bg-brand-green text-white">
             <tr>
                 <th colspan="2" class="text-center">Aspek Perkembangan {{$aspeks->dev_aspect}}</th>
             </tr>
@@ -51,6 +51,6 @@
         @endforeach
     </table>
     <div class="text-center mt-4">
-        <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+        <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
     </div>
 </form>

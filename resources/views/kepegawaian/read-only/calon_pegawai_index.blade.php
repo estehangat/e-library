@@ -25,7 +25,7 @@ Calon Pegawai
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Calon Pegawai Tidak Tetap Lulus Seleksi</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Calon Pegawai Tidak Tetap Lulus Seleksi</h6>
             </div>
             <div class="card-body p-3">
               @if(count($calon) > 0)
@@ -74,7 +74,7 @@ Calon Pegawai
                         @endif
                       </td>
                       <td>
-                        <a href="{{ route('calon.detail', ['id' => $c->id]) }}" class="btn btn-sm btn-brand-purple-dark" target="_blank"><i class="fas fa-eye"></i></a>
+                        <a href="{{ route('calon.detail', ['id' => $c->id]) }}" class="btn btn-sm btn-brand-green-dark" target="_blank"><i class="fas fa-eye"></i></a>
                       </td>
                     </tr>
                     @endforeach

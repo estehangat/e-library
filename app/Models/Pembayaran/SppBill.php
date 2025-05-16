@@ -44,7 +44,7 @@ class SppBill extends Model
     public function getMonthIdAttribute()
     {
         Date::setLocale('id');
-        return Date::createFromFormat('Y-m',$this->yearMonth)->format('F');
+        return Date::createFromFormat('Y-m-d',$this->yearMonth.'-01')->format('F');
     }
     
     public function getYearMonthAttribute()

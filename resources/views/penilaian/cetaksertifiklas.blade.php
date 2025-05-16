@@ -124,7 +124,7 @@ Cetak Sertifikat IKLaS
                                             <input type="hidden" name="semester" value="{{$semesteraktif->id}}">
                                             <input type="hidden" name="level_id" value="{{$siswas->kelas->level_id}}">
                                             <input type="hidden" name="major_id" value="{{$siswas->kelas->major_id}}">
-                                            <button type="submit" class="btn btn-brand-purple btn-sm"><i class="fa fas fa-print"></i> Cetak Sertifikat</button>&nbsp;
+                                            <button type="submit" class="btn btn-brand-green btn-sm"><i class="fa fas fa-print"></i> Cetak Sertifikat</button>&nbsp;
                                         </form>
                                         @elseif($sertif[$key] && $semesteraktif->semester != 'Genap')
                                         Menunggu Semester Genap

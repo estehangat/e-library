@@ -19,7 +19,7 @@ Ubah Password
 <div class="row mb-3">
     <div class="col-md-12">
         <div class="card h-100">
-        <div class="card-header py-3 bg-brand-purple-dark d-flex flex-row align-items-center justify-content-between">
+        <div class="card-header py-3 bg-brand-green-dark d-flex flex-row align-items-center justify-content-between">
             <h6 class="m-0 font-weight-bold text-white">Ubah Password</h6>
         </div>
             <div class="card-body">
@@ -67,7 +67,7 @@ Ubah Password
                     </div>
                     <div class="col-md-5">
                         <div class="text-center mt-4">
-                            <button type="submit" disabled class="btn btn-brand-purple-dark">Simpan</button>
+                            <button type="submit" disabled class="btn btn-brand-green-dark">Simpan</button>
                         </div>
                     </div>
                 </div>

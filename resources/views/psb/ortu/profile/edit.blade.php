@@ -19,7 +19,7 @@ Profil Saya
 <div class="row mb-3">
     <div class="col-md-12">
         <div class="card h-100">
-        <div class="card-header py-3 bg-brand-purple-dark d-flex flex-row align-items-center justify-content-between">
+        <div class="card-header py-3 bg-brand-green-dark d-flex flex-row align-items-center justify-content-between">
             <h6 class="m-0 font-weight-bold text-white">Profil</h6>
         </div>
             <div class="card-body">
@@ -37,7 +37,7 @@ Profil Saya
                         @endif
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Informasi Orang Tua</h6>
+                            <h6 class="font-weight-bold text-brand-green">Informasi Orang Tua</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -184,7 +184,7 @@ Profil Saya
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Informasi Wali</h6>
+                            <h6 class="font-weight-bold text-brand-green">Informasi Wali</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -260,7 +260,7 @@ Profil Saya
                     </div>
                     <div class="col-md-12">
                         <div class="text-center mt-4">
-                            <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+                            <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
                         </div>
                     </div>
                 </div>

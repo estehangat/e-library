@@ -220,7 +220,13 @@
 							@endif
 							@php
 							$i = 1;
-							$matapelajarans = $k->matapelajarans()->whereNull('is_mulok')->orderBy('subject_number');
+							$matapelajarans = $k->matapelajarans()->whereNull('is_mulok')->whereHas('jadwalPelajaran',function($q)use($rapor,$semester){
+							    $q->where([
+							        'level_id' => $rapor->kelas->level_id,
+							        'class_id' => $rapor->kelas->id,
+							        'semester_id' => $semester->id,
+							    ]);
+							})->orderBy('subject_number');
 							if($unit->name == 'SD'){
                                 $matapelajarans = $matapelajarans->whereHas('mapelKelas',function($q)use($rapor){
                                     $q->where('level_id',$rapor->kelas->level_id);
@@ -312,7 +318,13 @@
 							@endforeach
 							@php
 							$j = 'a';
-							$matapelajarans = $k->matapelajarans()->mulok()->orderBy('subject_number');
+							$matapelajarans = $k->matapelajarans()->mulok()->whereHas('jadwalPelajaran',function($q)use($rapor,$semester){
+							    $q->where([
+							        'level_id' => $rapor->kelas->level_id,
+							        'class_id' => $rapor->kelas->id,
+							        'semester_id' => $semester->id,
+							    ]);
+							})->orderBy('subject_number');
 							if($unit->name == 'SD'){
                                 $matapelajarans = $matapelajarans->whereHas('mapelKelas',function($q)use($rapor){
                                     $q->where('level_id',$rapor->kelas->level_id);
@@ -385,303 +397,173 @@
 	</div>
 	<div class="page">
 		<div class="subpage">
-			<div id="kurikulumIklas" class="m-t-22">
-				<p class="komponen-rapor">II. KURIKULUM IKLaS</p>
-				<div class="m-l-18">
-					<p class="fs-14 font-weight-bold">(Islami, Karakter Sukses, Literasi Era 4.0, Skill Abad 21)</p>
-					<div class="m-t-16 m-b-16">
-						<table class="table-border page-break-auto">
-							<tr>
-								<th style="width: 3%">
-									No
-								</th>
-								<th style="width: 34%">
-									Kompetensi
-								</th>
-								<th style="width: 21%">
-									Predikat
-								</th>
-								<th style="width: 42%">
-									Deskripsi
-								</th>
-							</tr>
-							@php
-							$category_active = null;
-							$nilai = $rapor->iklas;
-							@endphp
-
-							@foreach($iklas as $i)
-							@if($category_active != $i->iklas_cat)
-							@php
-							$category_active = $i->iklas_cat;
-							$rowspan = $iklas->where('iklas_cat',$i->iklas_cat)->count()+1;
-							@endphp
-							<tr>
-								<td class="text-center" rowspan="{{ $rowspan }}" style="vertical-align: top">{{ $i->iklas_cat }}</td>
-								<td class="font-weight-bold" colspan="3">{{ $i->competence }}</td>
-							</tr>
-							@endif
-							<tr>
-								<td>{{ $i->categoryNumber.' '.$i->category }}</td>
-								<td class="text-center">
-									@php
-									$scoreIklas = null;
-									@endphp
-                                    @if($nilai && $nilai->detail()->where('iklas_ref_id',$i->id)->count() > 0)
-                                    @php
-                                    $scoreIklas = $nilai->detail()->where('iklas_ref_id',$i->id)->first();
-                                    $stars = $scoreIklas->predicate;
-                                    @endphp
-                                    @for($j=0;$j<$stars;$j++) <i class="fas fa-star"></i>
-                                        @endfor
-                                    @endif
-								</td>
-								<td class="text-center">
-									@php
-									$descIklas = null;
-									@endphp
-									@if($scoreIklas && $scoreIklas->predicate)
-									@php
-									$descIklas = $scoreIklas->rpd()->where([
-										'level_id' => $rapor->kelas->level_id,
-							            'semester_id' => $semester->id
-									])->whereHas('RpdType',function($q){
-										$q->where('rpd_type','Nilai IKLaS');
-									})->first();
-									@endphp
-									<!-- str_replace("@kompetensi",$i->competence && $i->category ? $i->competence.' - '.$i->category : 'ini',$descIklas->description) -->
-									{{ $descIklas ? str_replace("@kompetensi",$i->competence && $i->category ? $i->competence.' - '.$i->category : 'ini',$descIklas->description) : '' }}
-									@else
-									&nbsp;
-									@endif
-								</td>
-							</tr>
-							@endforeach
-						</table>
-					</div>
-					<div class="m-t-16 m-b-16">
-						<table class="fs-11">
-							<tr>
-								<td colspan="3">
-									Catatan kriteria:
-								</td>
-							</tr>
-							<tr>
-								<td>
-									<i class="fas fa-star m-r-5"></i>Belum Terlihat
-								</td>
-								<td>
-									<i class="fas fa-star"></i>
-									<i class="fas fa-star m-r-5"></i>Terlihat
-								</td>
-								<td>
-									<i class="fas fa-star"></i>
-									<i class="fas fa-star"></i>
-									<i class="fas fa-star m-r-5"></i>Berkembang
-								</td>
-							</tr>
-							<tr>
-								<td>
-									<i class="fas fa-star"></i>
-									<i class="fas fa-star"></i>
-									<i class="fas fa-star"></i>
-									<i class="fas fa-star m-r-5"></i>Mulai Konsisten
-								</td>
-								<td>
-									<i class="fas fa-star"></i>
-									<i class="fas fa-star"></i>
-									<i class="fas fa-star"></i>
-									<i class="fas fa-star"></i>
-									<i class="fas fa-star m-r-5"></i>Konsisten
-								</td>
-							</tr>
-						</table>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="page">
-		<div class="subpage">
 			<div id="alquran" class="m-t-22">
-				<p class="komponen-rapor">III. AL QURAN</p>
+				<p class="komponen-rapor">II. AL QURAN</p>
 				<div class="m-l-18">
-					<p class="text-uppercase fs-14 font-weight-bold">A. TILAWAH</p>
+					<p class="text-uppercase fs-14 font-weight-bold">A. KHATAMAN</p>
 					<div class="m-t-16 m-b-16">
 						<table class="table-border">
 							<tr>
-								<th style="width: 3%">
-									No
+								<th style="width: 45%">
+									Capaian Tilawah
 								</th>
-								<th style="width: 82%">
-									Kompetensi
-								</th>
-								<th style="width: 15%">
-									Predikat
+								<th style="width: 55%">
+									Deskripsi
 								</th>
 							</tr>
-							@php $i = 1 @endphp
-							@foreach($tilawah as $t)
 							<tr>
-								<td class="text-center">
-									{{ $i++ }}
-								</td>
-								<td class="text-center">
-									{{ $t->tilawah_type }}
-								</td>
-								<td class="text-center">
-									@php $predicate = $rapor->tilawah ? $rapor->tilawah->detail()->where('tilawah_type_id',$t->id)->whereNotNull('predicate')->first()->predicate : null; @endphp
-									{{ $predicate ? $predicate : '' }}
-								</td>
-							</tr>
-							@endforeach
+	                            <td class="text-center" rowspan="2">
+	                            	@if(isset($capaian['khataman']['type']))
+	                            	@php $isKhatamanFilled = false @endphp
+	                            	@if($capaian['khataman']['type']->type_id == 1 && $capaian['khataman']['quran'] && count($capaian['khataman']['quran']) > 0)
+	                            	@php
+		                            $khatamanQuran = null;
+		                            $qCount = 1;
+		                            foreach($capaian['khataman']['quran'] as $c){
+		                            	if($c->jenis && $c->jenis->mem_type == 'Juz'){
+				                            $status = $c->status ? $c->status->status : null;
+				                            $surat[$qCount] = $c->juz ? $c->juz->juz : ($c->surat ? $c->surat->surah : null);
+				                            if($status && $status != 'Penuh'){
+				                                $surat[$qCount] = $surat[$qCount].' ('.$status.')';
+				                            }
+			                        	}
+			                        	elseif($c->jenis && $c->jenis->mem_type == 'Surat'){
+			                        		$surat[$qCount] = $c->surat ? $c->surat->surah.($c->verse ? ' ('.$c->verse.')' : null) : null;
+			                        	}
+			                        	if(isset($surat[$qCount])){
+			                        		if(!$khatamanQuran) $khatamanQuran = $surat[$qCount];
+			                        		else $khatamanQuran = $khatamanQuran.' - '.$surat[$qCount];
+			                        	}
+			                        	$qCount++;
+			                        }
+		                            @endphp
+	                            	{{ $khatamanQuran ? $khatamanQuran : null }}
+	                            	@php $isKhatamanFilled = true; @endphp
+	                        		@elseif($capaian['khataman']['type']->type_id == 2 && $capaian['khataman']['buku'])
+	                        		{{ $capaian['khataman']['buku'] }}
+	                        		@php $isKhatamanFilled = true; @endphp
+	                        		@endif
+	                        		{!! isset($capaian['khataman']['type']) ? ($isKhatamanFilled ? '<br>' : null).$capaian['khataman']['type']->percentage.'%' : null !!}
+	                        		@endif
+	                            </td>
+	                            <td class="text-center" style="vertical-align: middle">{!! isset($capaian['khataman']['kelancaran']['desc']) ? $capaian['khataman']['kelancaran']['desc'] : '&nbsp;' !!}</td>
+	                        </tr>
+	                        <tr>
+	                        	<td class="text-center" style="vertical-align: middle">{!! isset($capaian['khataman']['kebagusan']['desc']) ? $capaian['khataman']['kebagusan']['desc'] : '&nbsp;' !!}</td>
+	                        </tr>
 						</table>
-					</div>
-					<div class="m-t-16 m-b-16">
-						<div class="fs-11">
-							<p class="d-inline m-r-3">
-								Keterangan:
-							</p>
-							<p class="d-inline m-r-15">
-								<span class="font-weight-bold m-r-5">A</span> Sangat Baik
-							</p>
-							<p class="d-inline m-r-15">
-								<span class="font-weight-bold m-r-5">B</span>Baik
-							</p>
-							<p class="d-inline m-r-15">
-								<span class="font-weight-bold m-r-5">C</span>Cukup
-							</p>
-						</div>
 					</div>
 				</div>
 				<div class="m-l-18">
 					<p class="text-uppercase fs-14 font-weight-bold">B. HAFALAN</p>
-					<div class="m-t-16 m-b-16">
-						<table class="table-border table-target">
-							<tr>
-								<td class="font-weight-bold text-center text-uppercase" style="width: 40%">Target Tahfidz</td>
-								<td class="text-center text-uppercase" style="width: 60%">{{ $targetTahfidz && count($targetTahfidz) > 0 ? $targetTahfidz[0] : '' }}</td>
-							</tr>
-						</table>
-					</div>
+					@php
+	                $j = null;
+	                $b = $i = 1;
+	                $kategori = 'quran';
+	                @endphp
 					<div class="m-t-16 m-b-16">
 						<table class="table-border">
 							<tr>
 								<th style="width: 3%">
-									No
+									B.{{ $b++ }}
 								</th>
 								<th style="width: 42%">
-									Nama Surat
+									Capaian Hafalan Quran
 								</th>
-								<th style="width: 10%">
-									Predikat
-								</th>
-								<th style="width: 45%">
+								<th style="width: 55%">
 									Deskripsi
 								</th>
 							</tr>
-							@php $i = 1 @endphp
-							@if($rapor->tahfidz)
-							@foreach($rapor->tahfidz->detail as $t)
-							<tr>
-								<td class="text-center">
-									{{ $i }}
-								</td>
-                                @php
-                                $status = $t->status ? $t->status->status : null;
-                                $surat = $t->juz ? $t->juz->juz : ($t->surat ? $t->surat->surah : '-');
-                                if($status && $status != 'Penuh'){
-                                    $surat = $surat.' ('.$status.')';
-                                }
-                                @endphp
-                                <td class="text-center">
-                                    {{ $surat }}
-                                </td>
-								<td class="text-center">
-									{{ $t->predicate }}
-								</td>
-								@if($i == 1)
-								<td class="text-center" rowspan="{{ $rapor->tahfidz->detail()->count() }}">
-									{{ str_replace("@nama",$siswa->identitas->student_name ? $siswa->identitas->student_name : '',$rapor->tahfidz->deskripsi->description) }}
-								</td>
-								@endif
-								@php $i++ @endphp
-							</tr>
-							@endforeach
-							@endif
-							@if($i == 1)
-							<tr>
-								<td class="text-center">&nbsp;</td>
-								<td class="text-center">&nbsp;</td>
-								<td class="text-center">&nbsp;</td>
-								<td class="text-center">&nbsp;</td>
-							</tr>
-							@endif
+	                        @php
+	                        $j = 'a';
+	                        @endphp
+	                        @if($capaian[$kategori]['hafalan'] && count($capaian[$kategori]['hafalan']) > 0)
+	                        @foreach($capaian[$kategori]['hafalan'] as $c)
+	                        <tr>
+	                            <td class="text-center">{{ $i++ }}</td>
+	                            @php
+	                            $surat = null;
+	                            if($c->jenis && $c->jenis->mem_type == 'Juz'){
+		                            $status = $c->status ? $c->status->status : null;
+		                            $surat = $c->juz ? $c->juz->juz : ($c->surat ? $c->surat->surah : null);
+		                            if($status && $status != 'Penuh'){
+		                                $surat = $surat.' ('.$status.')';
+		                            }
+	                        	}
+	                        	elseif($c->jenis && $c->jenis->mem_type == 'Surat'){
+	                        		$surat = $c->surat ? $c->surat->surah.($c->verse ? ' ('.$c->verse.')' : null) : null;
+	                        	}
+	                            @endphp
+	                            <td>{!! $surat ? $surat : '&nbsp;' !!}</td>
+	                            @if($j == 'a')
+	                            <td class="text-center" rowspan="{{ count($capaian[$kategori]['hafalan']) }}" style="vertical-align: middle">{{ $capaian[$kategori]['desc'] }}</td>
+	                            @endif
+	                        </tr>
+	                        @php
+	                        $j = chr(ord($j)+1);
+	                        @endphp
+	                        @endforeach
+	                        @else
+	                        <tr>
+	                            <td class="text-center">&nbsp;</td>
+	                            <td>&nbsp;</td>
+	                            <td class="text-center">&nbsp;</td>
+	                        </tr>
+	                        @endif
 						</table>
 					</div>
-				</div>
-				<div class="m-l-18">
-					<p class="text-uppercase fs-14 font-weight-bold">C. HAFALAN HADITS DAN DOA</p>
+					@php
+	                $jenis = null;
+	                @endphp
+	                @if($kategoriList['hafalan'] && count($kategoriList['hafalan']) > 0)
+	                @foreach($kategoriList['hafalan'] as $kategori)
+	                @php
+	                $i = 1;
+	                $kategori = $kategori->mem_type;
+	                @endphp
+	                @if($jenis != $kategori)
 					<div class="m-t-16 m-b-16">
 						<table class="table-border">
 							<tr>
 								<th style="width: 3%">
-									No
+									B.{{ $b++ }}
 								</th>
-								<th style="width: 82%">
-									Hafalan
+								<th style="width: 42%">
+									Capaian Hafalan {{ $kategori }}
 								</th>
-								<th style="width: 15%">
-									Predikat
+								<th style="width: 55%">
+									Deskripsi
 								</th>
 							</tr>
-							@php
-                            $jenis = null;
-                            $i = 1;
-                            $j = null;
-                            @endphp
-                            @foreach($hafalan as $h)
-                            @php
-                            $nilaiHafalan = $rapor->hafalan && $rapor->hafalan->nilai ? $rapor->hafalan->nilai()->where('mem_type_id',$h->id) : null;
-                            @endphp
-                            @if($jenis != $h->id)
-                            <tr>
-                                @if($nilaiHafalan && $nilaiHafalan->count() > 0)
-                                <td class="text-center" rowspan="{{ $nilaiHafalan->count()+1 }}" style="vertical-align: top">{{ $i++ }}</td>
-                                @else
-                                <td class="text-center" rowspan="2" style="vertical-align: top">{{ $i++ }}</td>
-                                @endif
-                                <td class="font-weight-bold" colspan="2">{{ $h->mem_type }}</td>
-                            </tr>
-                            @php
-                            $jenis = $h->id;
-                            $j = 'a';
-                            @endphp
-                            @endif
-                            @php
-                            $nilaihafalandetail = $nilaiHafalan && $nilaiHafalan->count() > 0 ? $nilaiHafalan->get() : null;
-                            @endphp
-                            @if($nilaihafalandetail && count($nilaihafalandetail) > 0)
-                            @foreach($nilaihafalandetail as $n)
-                            <tr>
-                                <td>{{ $j }}. {{ $n->hadits_doa }}</td>
-                                <td class="text-center">
-                                    {{ $n->predicate }}
-                                </td>
-                            </tr>
-                            @php
-                            $j = chr(ord($j)+1);
-                            @endphp
-                            @endforeach
-                            @else
-                            <tr>
-                                <td>&nbsp;</td>
-                                <td class="text-center">&nbsp;</td>
-                            </tr>
-                            @endif
-                            @endforeach
+	                        @php
+	                        $jenis = $kategori;
+	                        $j = 'a';
+	                        @endphp
+	                        @endif
+	                        @if($capaian[$kategori]['hafalan'] && count($capaian[$kategori]['hafalan']) > 0)
+	                        @foreach($capaian[$kategori]['hafalan'] as $c)
+	                        <tr>
+	                            <td class="text-center">{{ $i++ }}</td>
+	                            <td>{{ $c->desc }}</td>
+	                            @if($j == 'a')
+	                            <td class="text-center" rowspan="{{ count($capaian[$kategori]['hafalan']) }}" style="vertical-align: middle">{{ $capaian[$kategori]['desc'] }}</td>
+	                            @endif
+	                        </tr>
+	                        @php
+	                        $j = chr(ord($j)+1);
+	                        @endphp
+	                        @endforeach
+	                        @else
+	                        <tr>
+	                            <td class="text-center">&nbsp;</td>
+	                            <td>&nbsp;</td>
+	                            <td class="text-center">&nbsp;</td>
+	                        </tr>
+	                        @endif
 						</table>
 					</div>
+					@endforeach
+					@endif
 				</div>
 			</div>
 		</div>
@@ -689,7 +571,7 @@
 	<div class="page">
 		<div class="subpage">
 			<div id="ekstrakurikuler" class="m-t-22">
-				<p class="komponen-rapor">IV. EKSTRAKURIKULER</p>
+				<p class="komponen-rapor">III. EKSTRAKURIKULER</p>
 				<div class="m-l-18">
 					<div class="m-t-8 m-b-16">
 						<table class="table-border">
@@ -731,7 +613,7 @@
 				</div>
 			</div>
 			<div id="prestasi" class="m-t-22">
-				<p class="komponen-rapor">V. PRESTASI</p>
+				<p class="komponen-rapor">IV. PRESTASI</p>
 				<div class="m-l-18">
 					<div class="m-t-8 m-b-16">
 						<table class="table-border">
@@ -773,7 +655,7 @@
 				</div>
 			</div>
 			<div id="ketidakhadiran" class="m-t-22">
-				<p class="komponen-rapor">VI. KEHADIRAN</p>
+				<p class="komponen-rapor">V. KEHADIRAN</p>
 				<div class="m-l-18">
 					<div class="m-t-8 m-b-16">
 						<table class="table-border" style="width: 50%">
@@ -814,7 +696,7 @@
 				</div>
 			</div>
 			<div id="catatanWaliKelas" class="m-t-22">
-				<p class="komponen-rapor">VII. CATATAN WALI KELAS</p>
+				<p class="komponen-rapor">VI. CATATAN WALI KELAS</p>
 				<div class="m-l-18">
 					<div class="m-t-8 m-b-16">
 						<table class="table-border table-catatan">
@@ -947,7 +829,13 @@
                             @endif
                             @php
                             $i = 1;
-                            $matapelajarans = $k->matapelajarans()->whereNull('is_mulok')->orderBy('subject_number');
+                            $matapelajarans = $k->matapelajarans()->whereNull('is_mulok')->whereHas('jadwalPelajaran',function($q)use($rapor,$semester){
+							    $q->where([
+							        'level_id' => $rapor->kelas->level_id,
+							        'class_id' => $rapor->kelas->id,
+							        'semester_id' => $semester->id,
+							    ]);
+							})->orderBy('subject_number');
                             if($unit->name == 'SD'){
                                 $matapelajarans = $matapelajarans->whereHas('mapelKelas',function($q)use($rapor){
                                     $q->where('level_id',$rapor->kelas->level_id);
@@ -993,7 +881,13 @@
                             @endforeach
                             @php
                             $j = 'a';
-                            $matapelajarans = $k->matapelajarans()->mulok()->orderBy('subject_number');
+                            $matapelajarans = $k->matapelajarans()->mulok()->whereHas('jadwalPelajaran',function($q)use($rapor,$semester){
+							    $q->where([
+							        'level_id' => $rapor->kelas->level_id,
+							        'class_id' => $rapor->kelas->id,
+							        'semester_id' => $semester->id,
+							    ]);
+							})->orderBy('subject_number');
                             if($unit->name == 'SD'){
                                 $matapelajarans = $matapelajarans->whereHas('mapelKelas',function($q)use($rapor){
                                     $q->where('level_id',$rapor->kelas->level_id);
@@ -1065,83 +959,8 @@
     </div>
 	<div class="page">
 		<div class="subpage">
-			<div id="lampiranKurikulumIklas">
-				<p class="komponen-rapor">II. INDIKATOR KOMPETENSI IKLaS</p>
-				<div class="m-l-18">
-					<div class="m-t-8 m-b-16">
-						<table class="table-border">
-							<tr>
-								<th style="width: 3%">
-									No
-								</th>
-								<th style="width: 37%">
-									Kompetensi
-								</th>
-								<th style="width: 60%">
-									Indikator
-								</th>
-							</tr>
-							@php
-							$category_active = null;
-							$indikators = $rapor->kelas->level->indikatorIklas;
-							@endphp
-                            @if($indikators)
-							@foreach($iklas as $i)
-							@if($category_active != $i->iklas_cat)
-							@php
-							$category_active = $i->iklas_cat;
-							$categories = $iklas->where('iklas_cat',$i->iklas_cat)->pluck('id');
-							$total_indicators = $rapor->kelas->level->indikatorIklas->detail()->whereIn('iklas_ref_id',$categories)->count();
-							$have_indicators = $rapor->kelas->level->indikatorIklas->detail()->whereIn('iklas_ref_id',$categories)->pluck('iklas_ref_id')->unique()->all();
-							$have_no_indicators = $categories->diff($have_indicators)->count();
-							$rowspan = $total_indicators + $have_no_indicators + 1;
-							@endphp
-							<tr>
-								<td class="text-center" rowspan="{{ $rowspan }}" style="vertical-align: top">{{ $i->iklas_cat }}</td>
-								<td class="font-weight-bold" colspan="2">{{ $i->competence }}</td>
-							</tr>
-							@endif
-							@php
-							$competency_active = null;
-							$indikators = $rapor->kelas->level->indikatorIklas->detail()->where('iklas_ref_id',$i->id);
-							$indikators_count = $indikators->count();
-							@endphp
-							@if($indikators_count > 0)
-							@foreach($indikators->get() as $indikator)
-							<tr>
-								@if($competency_active != $i->categoryNumber)
-								<td rowspan="{{ $indikators_count }}">{{ $i->categoryNumber.' '.$i->category }}</td>
-								@php
-								$competency_active = $i->categoryNumber;
-								$j = 'a';
-								@endphp
-								@endif
-								<td>
-									{{ $j.'. '.$indikator->indicator }}
-								</td>
-								@php
-								$j = chr(ord($j)+1);
-								@endphp
-							</tr>
-							@endforeach
-							@else
-							<tr>
-								<td>{{ $i->categoryNumber.' '.$i->category }}</td>
-								<td>&nbsp;</td>
-							</tr>
-							@endif
-							@endforeach
-							@endif
-						</table>
-					</div>
-				</div>
-			</div>
-        </div>
-    </div>
-	<div class="page">
-		<div class="subpage">
 			<div id="lampiranKurikulumTilawah">
-				<p class="komponen-rapor">III. INDIKATOR KOMPETENSI TILAWAH</p>
+				<p class="komponen-rapor">II. INDIKATOR KOMPETENSI TILAWAH</p>
 				<div class="m-l-18">
 					<div class="m-t-8 m-b-16">
 						<table class="table-border">

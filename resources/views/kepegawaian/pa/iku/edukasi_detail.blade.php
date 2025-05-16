@@ -53,7 +53,7 @@ $role = Auth::user()->role->name;
                         @endif
                         @endforeach
                       </select>
-                      <a href="{{ route('iku.'.$category->nameLc.'.index') }}" id="btn-select-year" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('iku.'.$category->nameLc.'.index') }}">Pilih</a>
+                      <a href="{{ route('iku.'.$category->nameLc.'.index') }}" id="btn-select-year" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('iku.'.$category->nameLc.'.index') }}">Pilih</a>
                     </div>
                   </div>
                 </div>
@@ -104,7 +104,7 @@ $role = Auth::user()->role->name;
                       <option value="{{ $l['link'] }}" {{ $chart == $l['link'] ? 'selected' : '' }}>{{ $l['name'] }}</option>
                       @endforeach
                     </select>
-                    <a href="{{ route('iku.edukasi.index', ['tahun' => $tahun->academicYearLink, 'unit' => $unitAktif->name]) }}" id="btn-select-chart" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('iku.edukasi.index', ['tahun' => $tahun->academicYearLink, 'unit' => $unitAktif->name]) }}">Pilih</a>
+                    <a href="{{ route('iku.edukasi.index', ['tahun' => $tahun->academicYearLink, 'unit' => $unitAktif->name]) }}" id="btn-select-chart" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('iku.edukasi.index', ['tahun' => $tahun->academicYearLink, 'unit' => $unitAktif->name]) }}">Pilih</a>
                     </div>
                   </div>
                 </div>
@@ -136,7 +136,7 @@ $role = Auth::user()->role->name;
                     <option value="{{ explode('-',$s->semester_id)[1] }}" {{ $semester->semester_id == $s->semester_id ? 'selected' : '' }}>{{ $s->semester }}</option>
                     @endforeach
                     </select>
-                    <a href="{{ route('iku.edukasi.index', ['tahun' => $tahun->academicYearLink, 'unit' => $unitAktif->name, 'chart' => $chart]) }}" id="btn-select-semester" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('iku.edukasi.index', ['tahun' => $tahun->academicYearLink, 'unit' => $unitAktif->name, 'chart' => $chart]) }}">Atur</a>
+                    <a href="{{ route('iku.edukasi.index', ['tahun' => $tahun->academicYearLink, 'unit' => $unitAktif->name, 'chart' => $chart]) }}" id="btn-select-semester" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('iku.edukasi.index', ['tahun' => $tahun->academicYearLink, 'unit' => $unitAktif->name, 'chart' => $chart]) }}">Atur</a>
                     </div>
                   </div>
                 </div>
@@ -175,7 +175,7 @@ $role = Auth::user()->role->name;
                               <span class="input-group-text""><i class="fa fa-star"></i></span>
                             </div>
                             @endif
-                            <button type="submit" class="btn btn-brand-purple ml-2 pt-2">Lihat</button>
+                            <button type="submit" class="btn btn-brand-green ml-2 pt-2">Lihat</button>
                         </div>
                     </form>
                   </div>
@@ -193,7 +193,7 @@ $role = Auth::user()->role->name;
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Grafik</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Grafik</h6>
             </div>
             <div class="card-body p-3">
                 <div class="chartWrapper">
@@ -219,7 +219,7 @@ $role = Auth::user()->role->name;
         <form action="{{ route('iku.'.$category->nameLc.'.perbarui.semua', ['tahun' => $tahun->academicYearLink,'unit' => $unitAktif->name]) }}" id="iku-form" method="post" enctype="multipart/form-data" accept-charset="utf-8">
           {{ csrf_field() }}
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">IKU {{ $category->name }}</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">IKU {{ $category->name }}</h6>
             </div>
             <div class="card-body p-3">
               @if(Session::has('success'))
@@ -375,7 +375,7 @@ $role = Auth::user()->role->name;
                 <div class="row">
                   <div class="col-12">
                     <div class="text-center">
-                      <button class="btn btn-brand-purple-dark" type="submit">Simpan Capaian</button>
+                      <button class="btn btn-brand-green-dark" type="submit">Simpan Capaian</button>
                     </div>
                   </div>
                 </div>
@@ -392,7 +392,7 @@ $role = Auth::user()->role->name;
 <div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h5 class="modal-title text-white">Ubah Bukti dan Catatan</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>

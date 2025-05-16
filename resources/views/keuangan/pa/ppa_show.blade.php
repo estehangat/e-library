@@ -2,6 +2,7 @@
 
 @section('validate')
 <input type="hidden" name="validate" value="">
+<input type="hidden" name="draft" value="{{ $ppaAktif->is_draft }}">
 @endsection
 
 @section('row')
@@ -13,18 +14,24 @@
       <td>{{ $i++ }}</td>
       <td class="detail-account">{{ $p->akun->codeName }}</td>
       <td class="detail-note">{{ $p->note }}</td>
+      @if(($apbyAktif && $apbyAktif->is_active == 1 && $apbyAktif->is_final != 1) && $ppaAktif->director_acc_status_id != 1)
+      @php
+      $apbyDetail = $p->akun->apby()->whereHas('apby',function($q)use($yearAttr,$tahun,$anggaranAktif,$accAttr){$q->where([$yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id),$accAttr => 1])->whereHas('jenisAnggaranAnggaran',function($q)use($anggaranAktif){$q->where('id',$anggaranAktif->id);})->aktif()->latest();})->where('account_id',$p->account_id)->first();
+      @endphp
+      <td>{{ $apbyDetail ? $apbyDetail->balanceWithSeparator : '-' }}</td>
+      @endif
       <td>
           @if(!$p->pa_acc_status_id)
-          <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Persetujuan {{ Auth::user()->pegawai->position_id == $anggaranAktif->anggaran->acc_position_id ? 'Anda' : $anggaranAktif->anggaran->accJabatan->name }}"></i>
+          <i class="fa fa-lg fa-question-circle text-{{ Auth::user()->pegawai->unit_id != 5 && $p->edited_employee_id != Auth::user()->pegawai->id ? 'secondary' : 'light' }}" data-toggle="tooltip" data-original-title="{{ Auth::user()->pegawai->unit_id != 5 && $p->edited_employee_id != Auth::user()->pegawai->id ? 'Diperiksa oleh TU/Wakasek. ' : null }}Menunggu Persetujuan {{ Auth::user()->pegawai->position_id == $anggaranAktif->anggaran->acc_position_id ? 'Anda' : $anggaranAktif->anggaran->accJabatan->name }}"></i>
           @elseif(!$ppaAktif->pa_acc_status_id && $p->pa_acc_status_id == 1)
-          <i class="fa fa-lg fa-check-circle text-secondary mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disetujui oleh {{ Auth::user()->pegawai->is($p->accPa) ? 'Anda' : $p->accPa->name }}<br>{{ date('d M Y H.i.s', strtotime($p->pa_acc_time)) }}"></i>
+          <i class="fa fa-lg fa-check-circle text-secondary mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disimpan oleh {{ Auth::user()->pegawai->is($p->accPa) ? 'Anda' : $p->accPa->name }}<br>{{ date('d M Y H.i.s', strtotime($p->pa_acc_time)) }}"></i>
           @elseif($ppaAktif->pa_acc_status_id == 1 && !$p->finance_acc_status_id)
-          <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Persetujuan {{ Auth::user()->pegawai->position_id == 30 ? 'Anda' : 'Finance & Accounting Supervisor' }}"></i>
+          <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Pemeriksaan {{ Auth::user()->pegawai->position_id == 33 ? 'Anda' : 'Kepala Divisi Umum' }}"></i>
           @elseif($p->finance_acc_status_id == 1 && !$p->director_acc_status_id)
           @if($p->employee_id == Auth::user()->pegawai->id && $p->edited_status_id == 1 && $p->editPegawai->is($p->accKeuangan))
-          <i class="fa fa-lg fa-check-circle text-warning mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disetujui dengan perubahan oleh {{ Auth::user()->pegawai->is($p->accKeuangan) ? 'Anda' : $p->accKeuangan->name }}<br>{{ date('d M Y H.i.s', strtotime($p->finance_acc_time)) }}<br>Awal: {{ $p->valuePaWithSeparator }}"></i>
+          <i class="fa fa-lg fa-check-circle text-warning mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disimpan dengan perubahan oleh {{ Auth::user()->pegawai->is($p->accKeuangan) ? 'Anda' : $p->accKeuangan->name }}<br>{{ date('d M Y H.i.s', strtotime($p->finance_acc_time)) }}<br>Awal: {{ $p->valuePaWithSeparator }}"></i>
           @else
-          <i class="fa fa-lg fa-check-circle text-warning mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disetujui oleh {{ Auth::user()->pegawai->is($p->accKeuangan) ? 'Anda' : $p->accKeuangan->name }}<br>{{ date('d M Y H.i.s', strtotime($p->finance_acc_time)) }}"></i>
+          <i class="fa fa-lg fa-check-circle text-warning mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disimpan oleh {{ Auth::user()->pegawai->is($p->accKeuangan) ? 'Anda' : $p->accKeuangan->name }}<br>{{ date('d M Y H.i.s', strtotime($p->finance_acc_time)) }}"></i>
           @endif
           @elseif($p->director_acc_status_id == 1)
           @if($p->employee_id == Auth::user()->pegawai->id && $p->edited_status_id == 1 && $p->editPegawai->is($p->accDirektur))
@@ -47,12 +54,16 @@
           @endif
           @endif
       </td>
-      @if(($apbyAktif && $apbyAktif->is_active == 1 && ($apbyAktif->is_final != 1 && $ppaAktif->type_id == 1)) && $isAnggotaPa && ((in_array(Auth::user()->role->name, ['fam','faspv']) && $ppaAktif->finance_acc_status_id != 1) || $ppaAktif->pa_acc_status_id != 1))
+      @if(($apbyAktif && $apbyAktif->is_active == 1 && $apbyAktif->is_final != 1)
+      && (($isAnggotaPa && !$ppaAktif->bbk) || ($isPa || (!$isAnggotaPa && in_array(Auth::user()->role->name, ['fam','faspv','am'])) && $ppaAktif->type_id == 2))
+      && ((in_array(Auth::user()->role->name, ['fam','faspv','am']) && (($ppaAktif->type_id != 2 && $ppaAktif->finance_acc_status_id != 1) || $ppaAktif->type_id == 2)) || (($ppaAktif->type_id != 2 && $ppaAktif->pa_acc_status_id != 1) || $ppaAktif->type_id == 2)))
       <td>
+    		  @if($ppaAktif->type_id == 2)
+    		  <a href="{{ route('ppa.'.($ppaAktif->is_draft == 1 ? 'draft.' : null).'ubah.proposal', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber, 'id' => $p->id]) }}" class="btn btn-sm btn-brand-green-dark"><i class="fas fa-list-ul"></i></a>
+    		  @endif
           @if($p->finance_acc_status_id != 1)
           @if($ppaAktif->type_id == 2)
-          <a href="{{ route('ppa.ubah.proposal', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber, 'id' => $p->id]) }}" class="btn btn-sm btn-brand-purple-dark"><i class="fas fa-list-ul"></i></a>
-          @if($apbyAktif->is_final != 1)
+          @if($apbyAktif->is_final != 1 && $ppaAktif->pa_acc_status_id != 1)
           <a href="#" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#edit-form" onclick="editModal('{{ route('ppa.ubah.detail', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]) }}','{{ $p->id }}')"><i class="fas fa-pen"></i></a>
           @endif
           @elseif($apbyAktif->is_final != 1)
@@ -60,8 +71,8 @@
               <i class="fa fa-pen"></i>
           </button>
           @endif
-          @if($apbyAktif->is_final != 1)
-          <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#delete-confirm" onclick="deleteModal('Pengajuan', '{{ addslashes(htmlspecialchars($p->note)) }}', '{{ route('ppa.hapus', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber, 'id' => $p->id]) }}')">
+          @if($apbyAktif->is_final != 1 && $ppaAktif->pa_acc_status_id != 1)
+          <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#delete-confirm" onclick="deleteModal('Pengajuan', '{{ addslashes(htmlspecialchars($p->note)) }}', '{{ route('ppa.hapus.detail', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber, 'submitted' => $ppaAktif->is_draft == 1 ? null : '1', 'id' => $p->id]) }}')">
               <i class="fas fa-trash"></i>
           </a>
           @endif
@@ -81,7 +92,7 @@
               @if($ppaAktif->type_id == 2)
               <button class="btn btn-secondary" type="button" data-toggle="modal" data-target="#saveAccept">Ajukan</button>
               @else
-              <button class="btn btn-brand-purple-dark" type="submit">Simpan</button>
+              <button class="btn btn-brand-green-dark" type="submit">Simpan</button>
               <button class="btn btn-secondary" type="button" data-toggle="modal" data-target="#saveAccept">Simpan & Ajukan</button>
               @endif
           </div>

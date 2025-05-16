@@ -3,7 +3,7 @@
     <input type="hidden" name="siswa_id" value="{{$siswa_id}}">
 
     <table class="table align-items-center table-flush">
-        <thead class="bg-brand-purple text-white">
+        <thead class="bg-brand-green text-white">
             <tr>
                 <th class="text-center">Aspek Perkembangan</th>
                 <th class="text-center">Predikat</th>
@@ -42,6 +42,6 @@
         </tbody>
     </table>
     <div class="text-center mt-4">
-        <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+        <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
     </div>
 </form>

@@ -9,7 +9,7 @@ PPB
 @endsection
 
 @section('sidebar')
-@include('template.sidebar.keuangan.'.Auth::user()->role->name)
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -114,7 +114,7 @@ PPB
         <div class="card">
           <input type="hidden" name="validate" value="">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">{{ $ppaAktif->jenisAnggaranAnggaran->anggaran->name }}</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">{{ $ppaAktif->jenisAnggaranAnggaran->anggaran->name }}</h6>
             </div>
 			@if($ppaAktif && ($ppaAktif->detail()->where('letris_acc_status_id',1)->count() >= $ppaAktif->detail()->count()))
 			@if($ppaAktif->director_acc_status_id != 1 && $ppaAktif->letris_acc_status_id != 1)

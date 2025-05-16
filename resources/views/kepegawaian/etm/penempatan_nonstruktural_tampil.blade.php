@@ -71,9 +71,9 @@ Penempatan Nonstruktural
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Penempatan Nonstruktural</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Penempatan Nonstruktural</h6>
                 @if(($penempatan && count($penempatan->arsip) < 1) || !$penempatan)
-                <button type="button" class="m-0 float-right btn btn-brand-purple-dark btn-sm" data-toggle="modal" data-target="#add-form">Tambah <i class="fas fa-plus-circle ml-1"></i></button>
+                <button type="button" class="m-0 float-right btn btn-brand-green-dark btn-sm" data-toggle="modal" data-target="#add-form">Tambah <i class="fas fa-plus-circle ml-1"></i></button>
                 @endif
             </div>
             <div class="card-body p-3">
@@ -142,7 +142,11 @@ Penempatan Nonstruktural
                       </td>
                       <td>
                         @if($p->acc_status_id == 1)
+                        @if(Auth::user()->role->name == 'etl')
+						<a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#delete-confirm" onclick="deleteModal('Penempatan Pegawai', '{{ addslashes(htmlspecialchars($p->pegawai->name)) }}', '{{ route('nonstruktural.hapus', ['tahunajaran' => $aktif->academicYearLink, 'unit' => $unit->name, 'id' => $p->id]) }}')"><i class="fas fa-trash"></i></a>
+						@else
                         <span class="badge badge-success font-weight-normal">Telah Disetujui</span>
+						@endif
                         @else
                         <a href="#" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#edit-form" onclick="editModal('{{ route('nonstruktural.ubah', ['tahunajaran' => $aktif->academicYearLink, 'unit' => $unit->name]) }}','{{ $p->id }}')" data-toggle="modal" data-target="#edit-form"><i class="fas fa-pen"></i></a>
                         <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#delete-confirm" onclick="deleteModal('Penempatan Pegawai', '{{ addslashes(htmlspecialchars($p->pegawai->name)) }}', '{{ route('nonstruktural.hapus', ['tahunajaran' => $aktif->academicYearLink, 'unit' => $unit->name, 'id' => $p->id]) }}')"><i class="fas fa-trash"></i></a>
@@ -168,7 +172,7 @@ Penempatan Nonstruktural
 <div class="modal fade" id="add-form" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h5 class="modal-title text-white">Tambah Penempatan Nonstruktural</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>
@@ -259,7 +263,7 @@ Penempatan Nonstruktural
               <button type="button" class="btn btn-light" data-dismiss="modal">Kembali</button>
             </div>
             <div class="col-6 text-right">
-              <input type="submit" class="btn btn-brand-purple-dark" value="Tambah">
+              <input type="submit" class="btn btn-brand-green-dark" value="Tambah">
             </div>
           </div>
         </form>
@@ -271,7 +275,7 @@ Penempatan Nonstruktural
 <div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h5 class="modal-title text-white">Ubah Penempatan Nonstruktural</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>

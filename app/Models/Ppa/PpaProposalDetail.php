@@ -81,9 +81,14 @@ class PpaProposalDetail extends Model
         return number_format($this->quantity_ori, 0, ',', '.');
     }
 
+    public function getValueOriAttribute()
+    {
+        return $this->price_ori*$this->quantity_ori;
+    }
+
     public function getValueOriWithSeparatorAttribute()
     {
-        return number_format($this->price_ori*$this->quantity_ori, 0, ',', '.');
+        return number_format($this->valueOri, 0, ',', '.');
     }
 
     public function getPricePaWithSeparatorAttribute()
@@ -96,6 +101,15 @@ class PpaProposalDetail extends Model
         return number_format($this->quantity_pa, 0, ',', '.');
     }
 
+    public function getValuePaAttribute()
+    {
+        return $this->price_pa*$this->quantity_pa;
+    }
+
+    public function getValuePaWithSeparatorAttribute()
+    {
+        return number_format($this->valuePa, 0, ',', '.');
+    }
 
     public function getPriceFamWithSeparatorAttribute()
     {
@@ -105,5 +119,15 @@ class PpaProposalDetail extends Model
     public function getQuantityFamWithSeparatorAttribute()
     {
         return number_format($this->quantity_fam, 0, ',', '.');
+    }
+
+    public function getValueFamAttribute()
+    {
+        return $this->price_fam*$this->quantity_fam;
+    }
+
+    public function getValueFamWithSeparatorAttribute()
+    {
+        return number_format($this->valueFam, 0, ',', '.');
     }
 }

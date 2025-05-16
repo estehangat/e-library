@@ -56,7 +56,7 @@ $role = Auth::user()->role->name;
                       @endif
                       @endforeach
                     </select>
-                    <a href="{{ route('psc.penilaian.index') }}" id="btn-select-year" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('psc.penilaian.index') }}">Pilih</a>
+                    <a href="{{ route('psc.penilaian.index') }}" id="btn-select-year" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('psc.penilaian.index') }}">Pilih</a>
                   </div>
                 </div>
               </div>
@@ -95,14 +95,14 @@ $role = Auth::user()->role->name;
         <div class="card h-100">
             <div class="card-body p-0">
                 <div class="row align-items-center mx-0">
-                    <div class="col-auto px-3 py-2 bg-brand-purple">
+                    <div class="col-auto px-3 py-2 bg-brand-green">
                         <i class="mdi mdi-pen mdi-24px text-white"></i>
                     </div>
                     <div class="col">
                         <div class="h6 mb-0 font-weight-bold text-gray-800">Nilai</div>
                     </div>
                     <div class="col-auto">
-                        <a href="{{ route('psc.penilaian.penilai.index', ['tahun' => $tahun->academicYearLink, 'unit' => $unitAktif->name])}}" class="btn btn-sm btn-outline-brand-purple">Pilih</a>
+                        <a href="{{ route('psc.penilaian.penilai.index', ['tahun' => $tahun->academicYearLink, 'unit' => $unitAktif->name])}}" class="btn btn-sm btn-outline-brand-green">Pilih</a>
                     </div>
                 </div>
             </div>
@@ -151,7 +151,7 @@ $role = Auth::user()->role->name;
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Daftar Pegawai</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Daftar Pegawai</h6>
             </div>
             <div class="card-body p-3">
               @if(Session::has('success'))
@@ -232,7 +232,7 @@ $role = Auth::user()->role->name;
                         @endif
                       </td>
                       <td>
-                        <a href="{{ route('psc.penilaian.validator.show', ['tahun' => $tahun->academicYearLink, 'unit' => $unitAktif->name, 'pegawai' => $p->nip]) }}" class="btn btn-sm btn-brand-purple-dark"><i class="fas fa-eye"></i></a>
+                        <a href="{{ route('psc.penilaian.validator.show', ['tahun' => $tahun->academicYearLink, 'unit' => $unitAktif->name, 'pegawai' => $p->nip]) }}" class="btn btn-sm btn-brand-green-dark"><i class="fas fa-eye"></i></a>
                       </td>
                     </tr>
                     @endforeach

@@ -50,7 +50,7 @@ $role = Auth::user()->role->name;
                         <option value="{{ $t->target->id }}" {{ $target && $t->target->id == $target->target_position_id ? 'selected' : '' }}>{{ $t->target->name }}</option>
                         @endforeach
                       </select>
-                      <a href="{{ route('psc.aspek.index') }}" id="btn-select-position" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('psc.aspek.index') }}">Pilih</a>
+                      <a href="{{ route('psc.aspek.index') }}" id="btn-select-position" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('psc.aspek.index') }}">Pilih</a>
                     </div>
                   </div>
                 </div>
@@ -66,7 +66,7 @@ $role = Auth::user()->role->name;
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Aspek Evaluasi dan IKU</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Aspek Evaluasi dan IKU</h6>
             </div>
             <div class="card-body p-3">
               <div class="table-responsive">

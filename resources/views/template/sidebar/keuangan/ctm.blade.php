@@ -14,6 +14,12 @@ Keuangan @endsection
       <div class="sidebar-heading">
         Pengelolaan Keuangan
       </div>
+      <li class="nav-item {{ request()->routeIs('rkat*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('rkat.index') }}">
+          <i class="mdi mdi-file-edit"></i>
+          <span>RKAB</span>
+        </a>
+      </li>
       <li class="nav-item {{ request()->routeIs('ppa*') || request()->routeIs('proposal-ppa*') ? 'active' : '' }}">
         <a class="nav-link {{ request()->routeIs('ppa*') || request()->routeIs('proposal-ppa*') ? '' : 'collapsed' }}" href="#" data-toggle="collapse" data-target="#collapsePenempatan" aria-expanded="{{ request()->routeIs('ppa*') || request()->routeIs('proposal-ppa*') ? 'true' : 'false' }}" aria-controls="collapsePenempatan">
           <i class="mdi mdi-inbox-arrow-up"></i>

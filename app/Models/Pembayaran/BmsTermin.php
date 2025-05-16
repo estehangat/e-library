@@ -65,7 +65,8 @@ class BmsTermin extends Model
     public function getIndexNumberAttribute()
     {
         $index = null;
-        foreach($this->bms->termin()->select('id','academic_year_id')->calon()->with('tahunPelajaran:id,academic_year_start')->get()->sortBy('tahunPelajaran.academic_year_start') as $key => $t){
+        $siswa = $this->is_student == 0 ? 'calon' : 'siswa';
+        foreach($this->bms->termin()->select('id','academic_year_id')->{$siswa}()->with('tahunPelajaran:id,academic_year_start')->get()->sortBy('tahunPelajaran.academic_year_start') as $key => $t){
             if($this->id == $t->id) $index = $key+1;
         }
         return $index;

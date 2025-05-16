@@ -9,7 +9,7 @@ APB
 @endsection
 
 @section('sidebar')
-@include('template.sidebar.keuangan.'.Auth::user()->role->name)
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -23,7 +23,7 @@ APB
     <li class="breadcrumb-item active" aria-current="page">{{ $anggaranAktif->anggaran->name }}</li>
   </ol>
 </div>
-
+{{--
 <div class="row">
     @foreach($jenisAnggaran as $j)
     @if($jenisAktif == $j)
@@ -49,14 +49,14 @@ APB
         <div class="card h-100">
             <div class="card-body p-0">
                 <div class="row align-items-center mx-0">
-                    <div class="col-auto px-3 py-2 bg-brand-purple">
+                    <div class="col-auto px-3 py-2 bg-brand-green">
                         <i class="mdi mdi-file-document-outline mdi-24px text-white"></i>
                     </div>
                     <div class="col">
                         <div class="h6 mb-0 font-weight-bold text-gray-800">{{ $j->name }}</div>
                     </div>
                     <div class="col-auto">
-                        <a href="{{ route('apby.index', ['jenis' => $j->link])}}" class="btn btn-sm btn-outline-brand-purple">Pilih</a>
+                        <a href="{{ route('apby.index', ['jenis' => $j->link])}}" class="btn btn-sm btn-outline-brand-green">Pilih</a>
                     </div>
                 </div>
             </div>
@@ -65,7 +65,7 @@ APB
     @endif
     @endforeach
 </div>
-
+--}}
 @if($jenisAktif)
 <div class="row mb-4">
   <div class="col-12">
@@ -87,7 +87,7 @@ APB
                       @endif
                       @endforeach
                     </select>
-                    <a href="{{ route('apby.index', ['jenis' => $jenisAktif->link]) }}" id="btn-select-year" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('apby.index', ['jenis' => $jenisAktif->link]) }}">Pilih</a>
+                    <a href="{{ route('apby.index', ['jenis' => $jenisAktif->link]) }}" id="btn-select-year" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('apby.index', ['jenis' => $jenisAktif->link]) }}">Pilih</a>
                     </div>
                   </div>
                 </div>
@@ -235,7 +235,7 @@ APB
           {{ csrf_field() }}
           <input type="hidden" name="validate" value="">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">{{ $anggaranAktif->anggaran->name }}</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">{{ $anggaranAktif->anggaran->name }}</h6>
                 <div class="m-0 float-right">
                 @if($apbyAktif && $apbyAktif->finance_acc_status_id == 1 && ($apbyAktif->detail()->whereHas('akun',function($q){$q->where(['is_fillable' => 1, 'is_static' => 0]);})->whereNull('director_acc_status_id')->count() > 0 || ($apbyAktif->director_acc_status_id != 1 && $apbyAktif->detail()->whereHas('akun',function($q){$q->where(['is_fillable' => 1, 'is_static' => 0]);})->whereNull('director_acc_status_id')->count() < 1)))
                 <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#acceptAll">Setujui Semua <i class="fas fa-check ml-1"></i></button>
@@ -280,9 +280,9 @@ APB
                                 @if(!$d->employee_id)
                                 <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Nominal anggaran akun ini berasal dari RKAT"></i>
                                 @elseif(!$d->finance_acc_status_id)
-                                <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Persetujuan {{ Auth::user()->pegawai->position_id == 29 ? 'Anda' : 'Finance & Accounting Manager' }}"></i>
+                                <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Pemeriksaan {{ Auth::user()->pegawai->position_id == 33 ? 'Anda' : 'Kepala Divisi Umum' }}"></i>
                                 @elseif(!$apbyAktif->finance_acc_status_id && $d->finance_acc_status_id == 1)
-                                <i class="fa fa-lg fa-check-circle text-warning mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disetujui oleh {{ Auth::user()->pegawai->is($d->accKeuangan) ? 'Anda' : $d->accKeuangan->name }}<br>{{ date('d M Y H.i.s', strtotime($d->finance_acc_time)) }}"></i>
+                                <i class="fa fa-lg fa-check-circle text-warning mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disimpan oleh {{ Auth::user()->pegawai->is($d->accKeuangan) ? 'Anda' : $d->accKeuangan->name }}<br>{{ date('d M Y H.i.s', strtotime($d->finance_acc_time)) }}"></i>
                                 @elseif($apbyAktif->finance_acc_status_id == 1 && !$d->director_acc_status_id)
                                 <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Persetujuan  {{ Auth::user()->pegawai->position_id == 17 ? 'Anda' : 'Director' }}"></i>
                                 @elseif($d->director_acc_status_id == 1)
@@ -314,7 +314,7 @@ APB
                 <div class="row">
                     <div class="col-12">
                         <div class="text-center">
-                            <button class="btn btn-brand-purple-dark" type="submit">Simpan</button>
+                            <button class="btn btn-brand-green-dark" type="submit">Simpan</button>
                             <button class="btn btn-success" type="button" data-toggle="modal" data-target="#saveAccept">Simpan & Setujui</button>
                         </div>
                     </div>

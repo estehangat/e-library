@@ -68,7 +68,7 @@
           <div class="col-12">
             <div class="custom-control custom-radio custom-control-inline">
               <input type="radio" id="editSpeakerCategory1" name="speaker_category" class="custom-control-input" value="1" {{ $pelatihan->speaker_id && !$pelatihan->speaker_name ? 'checked' : '' }} required="required" {{ $pelatihan->education_acc_status_id == 1 ? 'disabled="disabled"' : '' }}>
-              <label class="custom-control-label" for="editSpeakerCategory1">Civitas Auliya</label>
+              <label class="custom-control-label" for="editSpeakerCategory1">Civitas</label>
             </div>
             <div class="custom-control custom-radio custom-control-inline">
               <input type="radio" id="editSpeakerCategory2" name="speaker_category" class="custom-control-input" value="2" {{ $pelatihan->speaker_name ? 'checked' : '' }} required="required" {{ $pelatihan->education_acc_status_id == 1 ? 'disabled="disabled"' : '' }}>
@@ -160,7 +160,7 @@
               @endforeach
             </select>
             @if($pelatihan->education_acc_status_id != 1)
-            <button type="button" class="btn btn-brand-purple-dark btn-sm btn-select-all mt-2" data-target="position">Pilih Semua</button>
+            <button type="button" class="btn btn-brand-green-dark btn-sm btn-select-all mt-2" data-target="position">Pilih Semua</button>
             @endif
             @error('position')
             <span class="text-danger">{{ $message }}</span>
@@ -219,7 +219,7 @@
       <button type="button" class="btn btn-light" data-dismiss="modal">Kembali</button>
     </div>
     <div class="col-6 text-right">
-      <input id="save-training" type="submit" class="btn btn-brand-purple-dark" value="Simpan">
+      <input id="save-training" type="submit" class="btn btn-brand-green-dark" value="Simpan">
     </div>
   </div>
 </form>

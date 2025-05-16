@@ -9,7 +9,7 @@ PPB
 @endsection
 
 @section('sidebar')
-@include('template.sidebar.keuangan.'.Auth::user()->role->name)
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -144,7 +144,7 @@ PPB
           {{ method_field('PUT') }}
           <input type="hidden" name="validate" value="">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">{{ $ppaAktif->jenisAnggaranAnggaran->anggaran->name }}</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">{{ $ppaAktif->jenisAnggaranAnggaran->anggaran->name }}</h6>
                 @if($ppaAktif && $ppaAktif->finance_acc_status_id == 1 && $ppaAktif->bbk && $ppaAktif->bbk->bbk->director_acc_status_id != 1)
                 <div class="m-0 float-right">
                 @php $bypass = 1 @endphp
@@ -256,7 +256,7 @@ PPB
                 <div class="row">
                     <div class="col-12">
                         <div class="text-center">
-                            <button class="btn btn-brand-purple-dark" type="submit">Simpan</button>
+                            <button class="btn btn-brand-green-dark" type="submit">Simpan</button>
                         </div>
                     </div>
                 </div>

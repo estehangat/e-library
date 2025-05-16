@@ -3,8 +3,8 @@
 		var modalId = '#edit-form'; 
 		if(modal) modalId = modal;
 		
-        $('.modal-load').show();
-        $('.modal-body').hide();
+        $(modalId+' .modal-load').show();
+        $(modalId+' .modal-body').hide();
             
         $.post(route,
         {
@@ -13,8 +13,8 @@
         },
         function(response) {
             $(modalId+' .modal-body').html(response);
-            $('.modal-load').hide();
-            $('.modal-body').show();
+            $(modalId+' .modal-load').hide();
+            $(modalId+' .modal-body').show();
         });
     }
 </script>

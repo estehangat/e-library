@@ -55,7 +55,7 @@ Nilai Pengetahuan
                       @endif
                       @endforeach
                     </select>
-                    <a href="{{ route('mapel.pengetahuan.index') }}" id="btn-select-year" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('mapel.pengetahuan.index') }}">Atur</a>
+                    <a href="{{ route('mapel.pengetahuan.index') }}" id="btn-select-year" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('mapel.pengetahuan.index') }}">Atur</a>
                     </div>
                   </div>
                 </div>
@@ -88,7 +88,7 @@ Nilai Pengetahuan
                           <option value="{{ $k->id }}" {{ $kelas && $kelas->id == $k->id ? 'selected' : '' }}>{{ $k->levelName }}</option>
                           @endforeach
                         </select>
-                        <a href="{{ route('mapel.pengetahuan.index', ['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber]) }}" id="btn-select-class" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('mapel.pengetahuan.index', ['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber]) }}">Pilih</a>
+                        <a href="{{ route('mapel.pengetahuan.index', ['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber]) }}" id="btn-select-class" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('mapel.pengetahuan.index', ['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber]) }}">Pilih</a>
                     </div>
                     @endif
                   </div>
@@ -121,7 +121,7 @@ Nilai Pengetahuan
                           <option value="{{ $m->id }}" {{ $mataPelajaran && ($mataPelajaran->id == $m->id) ? 'selected' : '' }}>{{ $m->subject_name }}</option>
                           @endforeach
                         </select>
-                        <a href="{{ route('mapel.pengetahuan.index', ['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber, 'kelas' => $kelas->id]) }}" id="btn-select-subject" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('mapel.pengetahuan.index', ['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber, 'kelas' => $kelas->id]) }}">Pilih</a>
+                        <a href="{{ route('mapel.pengetahuan.index', ['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber, 'kelas' => $kelas->id]) }}" id="btn-select-subject" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('mapel.pengetahuan.index', ['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber, 'kelas' => $kelas->id]) }}">Pilih</a>
                     </div>
                   </div>
                 </div>
@@ -200,7 +200,7 @@ Nilai Pengetahuan
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Daftar Siswa</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Daftar Siswa</h6>
             </div>
             <div class="card-body p-3">
                 @if(Session::has('success'))
@@ -226,7 +226,7 @@ Nilai Pengetahuan
                 @if($jumlahKd && $rpd == 4)
                     <div class="table-responsive">
                         <table class="table align-items-center table-sm" style="width:100%">
-                            <thead class="bg-brand-purple text-white">
+                            <thead class="bg-brand-green text-white">
                                 <tr>
                                     <th>Nama</th>
                                     @php
@@ -297,7 +297,7 @@ Nilai Pengetahuan
                         <div class="col-md-4">&nbsp;</div>
                     </div>
                     <div class="text-center mt-4">
-                        <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+                        <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
                     </div>
                     @endif
                 @elseif(!$jumlahKd && $rpd < 4)

@@ -5,14 +5,7 @@
 @endsection
 
 @section('sidebar')
-@php
-$role = Auth::user()->role->name;
-@endphp
-@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','keu','pembinayys','ketuayys','wakasek']))
-@include('template.sidebar.keuangan.'.$role)
-@else
-@include('template.sidebar.keuangan.employee')
-@endif
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('headmeta')
@@ -46,7 +39,7 @@ $role = Auth::user()->role->name;
   <div class="col-12">
     <div class="card">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple-dark">Tambah</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green-dark">Tambah</h6>
       </div>
       <div class="card-body px-4 py-3">
         <form action="{{ route($route.'.store') }}" id="addItemForm" method="post" enctype="multipart/form-data" accept-charset="utf-8">
@@ -115,7 +108,7 @@ $role = Auth::user()->role->name;
             <div class="col-lg-10 col-md-12">
                 <div class="row">
                     <div class="col-lg-9 offset-lg-3 col-md-8 offset-md-4 col-12 text-left">
-                      <input type="submit" class="btn btn-sm btn-brand-purple-dark" value="Tambah">
+                      <input type="submit" class="btn btn-sm btn-brand-green-dark" value="Tambah">
                     </div>
                 </div>
             </div>
@@ -131,7 +124,7 @@ $role = Auth::user()->role->name;
   <div class="col-12">
     <div class="card shadow">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple-dark">{{ $active }}</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green-dark">{{ $active }}</h6>
       </div>
       @if(count($data) > 0)
       <div class="card-body">
@@ -219,7 +212,7 @@ $role = Auth::user()->role->name;
 <div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h5 class="modal-title text-white">Ubah</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>

@@ -5,14 +5,7 @@
 @endsection
 
 @section('sidebar')
-@php
-$role = Auth::user()->role->name;
-@endphp
-@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','keu','pembinayys','ketuayys','wakasek']))
-@include('template.sidebar.keuangan.'.$role)
-@else
-@include('template.sidebar.keuangan.employee')
-@endif
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('headmeta')
@@ -26,7 +19,7 @@ $role = Auth::user()->role->name;
   <h1 class="h3 mb-0 text-gray-800">Atur {{ $active }}</h1>
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="javascript:void(0)">Pembayaran Uang Sekolah</a></li>
-        <li class="breadcrumb-item"><a href="{{ route('bms.index')}}">Biaya Masuk Sekolah</a></li>
+        <li class="breadcrumb-item"><a href="{{ route('spp.index')}}">Sumbangan Pembinaan Pendidikan</a></li>
         <li class="breadcrumb-item active" aria-current="page">{{ $active }}</li>
     </ol>
 </div>
@@ -36,7 +29,7 @@ $role = Auth::user()->role->name;
   <div class="col-12">
     <div class="card shadow">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">Tambah</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">Tambah</h6>
       </div>
       <div class="card-body px-4 py-3">
         @if($errors->any())
@@ -178,7 +171,7 @@ $role = Auth::user()->role->name;
             <div class="col-lg-10 col-md-12">
                 <div class="row">
                     <div class="col-lg-9 offset-lg-3 col-md-8 offset-md-4 col-12 text-left">
-                      <input type="submit" class="btn btn btn-sm btn-brand-purple-dark" value="Tambah">
+                      <input type="submit" class="btn btn btn-sm btn-brand-green-dark" value="Tambah">
                     </div>
                 </div>
             </div>
@@ -194,7 +187,7 @@ $role = Auth::user()->role->name;
   <div class="col-12">
     <div class="card shadow">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple-dark">{{ $active }}</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green-dark">{{ $active }}</h6>
       </div>
       @if(count($data) > 0)
       <div class="card-body">
@@ -235,7 +228,7 @@ $role = Auth::user()->role->name;
                 <td>{{ $d->name }}</td>
                 <td>
                   @if($d->statusPegawai)
-                  <span class="badge badge-pill badge-brand-purple">Civitas</span>
+                  <span class="badge badge-pill badge-brand-green">Civitas</span>
                   @else
                   <span class="badge badge-pill badge-brand-green">Umum</span>
                   @endif
@@ -288,7 +281,7 @@ $role = Auth::user()->role->name;
 <div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h5 class="modal-title text-white">Ubah</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>

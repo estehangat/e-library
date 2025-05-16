@@ -7,6 +7,10 @@ use App\Models\Anggaran\Anggaran;
 use App\Models\Anggaran\JenisAnggaran;
 use App\Models\Apby\Apby;
 use App\Models\Apby\ApbyDetail;
+use App\Models\Ppa\Ppa;
+use App\Models\Ppa\PpaDetail;
+use App\Models\Lppa\Lppa;
+use App\Models\Lppa\LppaDetail;
 use App\Models\Kbm\TahunAjaran;
 use Illuminate\Http\Request;
 
@@ -22,13 +26,16 @@ class RealisasiController extends Controller
      */
     public function index(Request $request, $jenis = null, $tahun = null, $anggaran = null)
     {
+        // Override Budget Category
+        if(!$jenis) $jenis = 'apby';
+
         $role = $request->user()->role->name;
 
         $jenisAnggaran = JenisAnggaran::all();
         $jenisAnggaranCount = null;
         foreach($jenisAnggaran as $j){
             $anggaranCount = $j->anggaran();
-            if(!in_array($request->user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv'])){
+            if(!in_array($request->user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv','fas','akunspv'])){
                 if($request->user()->pegawai->unit_id == '5'){
                     $anggaranCount = $anggaranCount->whereHas('anggaran',function($q)use($request){$q->where('position_id',$request->user()->pegawai->jabatan->group()->first()->id);});
                 }
@@ -70,7 +77,23 @@ class RealisasiController extends Controller
                 $query->where('budgeting_type_id',$jenisAktif->id);
             });
 
+            $queryPpa = Ppa::select('id','year','academic_year_id','budgeting_budgeting_type_id','total_value')->where(function($q){
+                $q->where(function($q){
+                    $q->whereNotNull('year');
+                })->orWhere(function($q){
+                    $q->has('tahunPelajaran');
+                });
+            })->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
+                $query->where('budgeting_type_id',$jenisAktif->id);
+            });
+
             $queryApby = $isKso ? $queryApby->where('director_acc_status_id',1) : $queryApby->where('president_acc_status_id',1);
+
+            $queryPpa = $isKso ? $queryPpa->whereHas('bbk.bbk',function($query){
+                $query->where('director_acc_status_id',1);
+            }) : $queryPpa->whereHas('bbk.bbk',function($query){
+                $query->where('president_acc_status_id',1);
+            });
 
             if($queryApby->count() > 0){
                 $years = clone $queryApby;
@@ -141,6 +164,28 @@ class RealisasiController extends Controller
             if($jenisAktif){
                 $apby = clone $queryApby;
                 $apby = $apby->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->with('jenisAnggaranAnggaran',function($q){$q->select('id','number','budgeting_type_id','budgeting_id')->with('anggaran:id,name');})->aktif()->latest()->get()->sortBy('jenisAnggaranAnggaran.number');
+
+                $ppa = clone $queryPpa;
+                $ppa = $ppa->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->with('jenisAnggaranAnggaran',function($q){$q->select('id','number','budgeting_type_id','budgeting_id')->with('anggaran:id,name');})->get();
+
+                foreach($apby as $a){
+                    $ppaTotalValue = $ppa->where('budgeting_budgeting_type_id',$a->jenisAnggaranAnggaran->id)->sum('total_value');
+                    $ppbValue[$a->jenisAnggaranAnggaran->id]['used'] = number_format($ppaTotalValue, 0, ',', '.');
+                    $ppbValue[$a->jenisAnggaranAnggaran->id]['balance'] = number_format($a->total_value-$ppaTotalValue, 0, ',', '.');
+
+                    $rppas = Lppa::whereHas('ppa',function($query)use($a,$yearAttr,$tahun){
+                        $query->where([
+                            'budgeting_budgeting_type_id' => $a->jenisAnggaranAnggaran->id,
+                            $yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id)
+                        ]);
+                    })->has('detail')->with('detail:id,value')->get();
+                    $rppaTotalValue = 0;
+                    foreacH($rppas as $r){
+                        $rppaTotalValue += $r->detail()->sum('value');
+                    }
+                    $rppaValue[$a->jenisAnggaranAnggaran->id]['used'] = number_format($rppaTotalValue, 0, ',', '.');
+                    $rppaValue[$a->jenisAnggaranAnggaran->id]['balance'] = number_format($a->total_value-$rppaTotalValue, 0, ',', '.');
+                }
                 
                 $budgetings = $apby ? $apby->pluck('jenisAnggaranAnggaran') : null;
 
@@ -223,15 +268,61 @@ class RealisasiController extends Controller
                     $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$apby->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
                     if($anggaranAktif){
                         $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
-                        $apbyAktif = $anggaranAktif->apby()->whereIn('id',$apby->pluck('id'))->first();
+                        $apbyAktif = $anggaranAktif->apby()->whereIn('id',$apby->pluck('id')->unique())->first();
 
                         if($apbyAktif){
                             // Inti controller
 
+                            $ppaDetail = PpaDetail::whereHas('ppa',function($q)use($anggaranAktif,$yearAttr,$tahun,$isKso){
+                                $q->where([
+                                    'budgeting_budgeting_type_id' => $anggaranAktif->id,
+                                    $yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id)
+                                ])->whereHas('bbk.bbk',function($q)use($isKso){
+                                    $q->when($isKso,function($q){
+                                        $q->where('director_acc_status_id',1);
+                                    },function($q){
+                                        $q->where('president_acc_status_id',1);
+                                    });
+                                });
+                            });
+
+                            $apbyDetail = $apbyAktif->detail()->whereHas('akun.kategori.parent',function($q){$q->where('name','Belanja');});
+                            $ppbValue = null;
+
+                            if($apbyDetail->count() > 0){
+                                foreach($apbyDetail->with('akun')->get()->sortBy('akun.sort_order')->all() as $d){
+                                    $ppaTotalValue = clone $ppaDetail;
+                                    $ppaTotalValue = $ppaTotalValue->when($d->akun->is_fillable < 1,function($q)use($d){
+                                        $q->whereHas('akun',function($q)use($d){$q->where('code','LIKE',$d->akun->code.'%')->where('is_fillable',1);});
+                                    },function($q)use($d){
+                                        $q->where('account_id',$d->akun->id);
+                                    })->sum('value');
+                                    $ppbValue[$d->akun->id]['used'] = number_format($ppaTotalValue, 0, ',', '.');
+                                    $ppbValue[$d->akun->id]['balance'] = number_format($d->value-$ppaTotalValue, 0, ',', '.');
+
+                                    $rppaTotalValue = LppaDetail::whereHas('lppa',function($q)use($anggaranAktif,$yearAttr,$tahun){
+                                        $q->whereHas('ppa',function($q)use($anggaranAktif,$yearAttr,$tahun){
+                                            $q->where([
+                                                'budgeting_budgeting_type_id' => $anggaranAktif->id,
+                                                $yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id)
+                                            ]);
+                                        });
+                                    })->when($d->akun->is_fillable < 1,function($q)use($d){
+                                        $q->whereHas('ppaDetail.akun',function($q)use($d){$q->where('code','LIKE',$d->akun->code.'%')->where('is_fillable',1);});
+                                    },function($q)use($d){
+                                        $q->whereHas('ppaDetail',function($q)use($d){
+                                            $q->where('account_id',$d->akun->id);
+                                        });
+                                    })->sum('value');
+                                    $rppaValue[$d->akun->id]['used'] = number_format($rppaTotalValue, 0, ',', '.');
+                                    $rppaValue[$d->akun->id]['balance'] = number_format($d->value-$rppaTotalValue, 0, ',', '.');
+                                }
+                            }
+
                             $totalAnggaran = 0;
 
                             // Counter
-                            $apbyDetail = ApbyDetail::whereHas('apby',function($q)use($apby){$q->whereIn('id',$apby->pluck('id'));});
+                            $apbyDetail = ApbyDetail::whereHas('apby',function($q)use($apby){$q->whereIn('id',$apby->pluck('id')->unique());});
 
                             $totalPendapatan = clone $apbyDetail;
                             $totalPendapatan = $totalPendapatan->whereHas('akun',function($q){
@@ -269,7 +360,7 @@ class RealisasiController extends Controller
                                 'operasionalPembiayaan' => $totalPendapatan - $totalBelanja + $totalPembiayaan
                             ]);
 
-                            return view('keuangan.read-only.realisasi_detail', compact('jenisAnggaran','jenisAnggaranCount','jenisAktif','tahun','tahunPelajaran','isYear','apby','years','academicYears','isKso','anggaranAktif','apbyAktif','total'));
+                            return view('keuangan.read-only.realisasi_detail', compact('jenisAnggaran','jenisAnggaranCount','jenisAktif','tahun','tahunPelajaran','isYear','apby','ppbValue','rppaValue','years','academicYears','isKso','anggaranAktif','apbyAktif','total'));
                         }
                         else return redirect()->route('realisasi.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
                     }
@@ -277,7 +368,8 @@ class RealisasiController extends Controller
                 }
             }
         }
-        elseif(!in_array($role,['pembinayys','ketuayys','direktur','fam','faspv'])){
+        elseif(!in_array($role,['pembinayys','ketuayys','direktur','fam','faspv','fas','akunspv'])){
+            return 'coba';
             $jenisAktif = JenisAnggaran::whereIn('id',$jenisAnggaranCount->collect()->where('anggaranCount','>',0)->pluck('id'))->first();
             if($jenisAktif){
                 return redirect()->route('realisasi.index', ['jenis' => $jenisAktif->link]);
@@ -287,7 +379,7 @@ class RealisasiController extends Controller
             }
         }
 
-        return view('keuangan.read-only.realisasi_index', compact('jenisAnggaran','jenisAnggaranCount','jenisAktif','tahun','tahunPelajaran','isYear','apby','years','academicYears','isKso','budgetings','datasets','total'));
+        return view('keuangan.read-only.realisasi_index', compact('jenisAnggaran','jenisAnggaranCount','jenisAktif','tahun','tahunPelajaran','isYear','apby','ppbValue','rppaValue','years','academicYears','isKso','budgetings','datasets','total'));
     }
 
     /**

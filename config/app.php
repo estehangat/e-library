@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'MUDA'),
+    'name' => env('APP_NAME', 'MUDA for School'),
 
     /*
     |--------------------------------------------------------------------------
@@ -183,6 +183,8 @@ return [
 		Elibyy\TCPDF\ServiceProvider::class,
 		//QrCode
 		SimpleSoftwareIO\QrCode\QrCodeServiceProvider::class,
+		//DataTables
+		Yajra\DataTables\DataTablesServiceProvider::class,
 
     ],
 
@@ -239,6 +241,8 @@ return [
         'PDF' => Barryvdh\DomPDF\Facade::class,
 		'LaravelPDF' => Elibyy\TCPDF\Facades\TCPDF::class,
 		'QrCode' => SimpleSoftwareIO\QrCode\Facades\QrCode::class,
+		'DataTables' => Yajra\DataTables\Facades\DataTables::class,
+        'NumberHelper' => App\Helpers\NumberHelper::class,
     ],
 
 ];

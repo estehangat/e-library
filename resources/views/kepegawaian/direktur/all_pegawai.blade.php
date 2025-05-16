@@ -25,7 +25,7 @@ Pegawai
                 <a class="nav-link active" href="#">Aktif</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link text-brand-purple" href="#">Nonaktif</a>
+                <a class="nav-link text-brand-green" href="#">Nonaktif</a>
               </li>
             </ul>
         </div>
@@ -36,8 +36,8 @@ Pegawai
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Pegawai Aktif</h6>
-                <a class="m-0 float-right btn btn-brand-purple-dark btn-sm" href="#">Tambah <i class="fas fa-plus-circle ml-1"></i></a>
+                <h6 class="m-0 font-weight-bold text-brand-green">Pegawai Aktif</h6>
+                <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="#">Tambah <i class="fas fa-plus-circle ml-1"></i></a>
             </div>
             <div class="card-body p-3">
               @if(Session::has('success'))

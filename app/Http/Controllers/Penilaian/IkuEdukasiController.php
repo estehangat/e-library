@@ -24,7 +24,7 @@ class IkuEdukasiController extends Controller
 
         $isWali = $request->user()->pegawai->kelas()->first();
 
-        if($request->user()->pegawai->unit_id == 1 || (!in_array($role,['kepsek','wakasek','pembinayys','ketuayys','direktur','etl']) && !$isWali)){
+        if($request->user()->pegawai->unit_id == 1 || (!in_array($role,['kepsek','wakasek','pembinayys','ketuayys','direktur','etl','etm']) && !$isWali)){
             return redirect()->route('kependidikan.index');
         }
 
@@ -41,7 +41,7 @@ class IkuEdukasiController extends Controller
             $semester = Semester::where('semester_id',$tahun->academic_year.'-'.$semester)->first();
             if($semester){
                 $kelasList = $semester->tahunAjaran->kelas();
-                if(in_array($role,['pembinayys','ketuayys','direktur','etl'])){
+                if(in_array($role,['pembinayys','ketuayys','direktur','etl','etm'])){
                     $kelasList = $kelasList->where('unit_id','!=',1);
                 }
                 else{
@@ -49,7 +49,7 @@ class IkuEdukasiController extends Controller
                 }
                 $kelasList = $kelasList->with('level:id,level','namakelases:id,class_name')->get()->sortBy('levelName',SORT_NATURAL);
                 if($kelas){
-                    if(in_array($role,['pembinayys','ketuayys','direktur','etl'])){
+                    if(in_array($role,['pembinayys','ketuayys','direktur','etl','etm'])){
                         $kelas = $semester->tahunAjaran->kelas()->where('id',$kelas);
                     }
                     else{
@@ -116,7 +116,7 @@ class IkuEdukasiController extends Controller
         else{
             $semester = Semester::aktif()->first();
             $kelasList = $semester->tahunAjaran->kelas();
-            if(in_array($role,['pembinayys','ketuayys','direktur','etl'])){
+            if(in_array($role,['pembinayys','ketuayys','direktur','etl','etm'])){
                 $kelasList = $kelasList->where('unit_id','!=',1);
             }
             else{

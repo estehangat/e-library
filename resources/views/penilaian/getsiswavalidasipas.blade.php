@@ -73,7 +73,7 @@
                     <a href="{{ route('paskepsek.akhir',['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber, 'kelas' => $siswas->kelas->id, 'id' => $siswas->student_id])}}" class="btn btn-sm btn-secondary" target="_blank"><i class="fa fa-print"></i> Cetak Halaman Akhir</a>&nbsp;
                     @endif
                     @if($siswas->report_status_id == 0 && $siswas->report_status_pts_id == 1 && auth()->user()->role->name == 'kepsek')
-                    <a href="/kependidikan/penilaiankepsek/pas/validasi/{{$siswas->siswa->id}}"><button type="button" class="btn btn-brand-purple btn-sm"><i class="fa fa-check"></i> Validasi</button></a>
+                    <a href="/kependidikan/penilaiankepsek/pas/validasi/{{$siswas->siswa->id}}"><button type="button" class="btn btn-brand-green btn-sm"><i class="fa fa-check"></i> Validasi</button></a>
                     @endif
                 </form>
             </td>

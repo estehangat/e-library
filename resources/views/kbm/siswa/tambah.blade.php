@@ -21,7 +21,7 @@ Tambah Siswa
 <div class="row mb-3">
     <div class="col-md-12">
         <div class="card h-100">
-        <div class="card-header py-3 bg-brand-purple-dark d-flex flex-row align-items-center justify-content-between">
+        <div class="card-header py-3 bg-brand-green-dark d-flex flex-row align-items-center justify-content-between">
             <h6 class="m-0 font-weight-bold text-white">Form Tambah SIswa</h6>
         </div>
             <div class="card-body">
@@ -31,7 +31,7 @@ Tambah Siswa
                     <div class="col-md-8">
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Program Siswa</h6>
+                            <h6 class="font-weight-bold text-brand-green">Program Siswa</h6>
                             </div>
                         </div>
                         <div class="form-group">
@@ -57,7 +57,7 @@ Tambah Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Informasi Umum Siswa</h6>
+                            <h6 class="font-weight-bold text-brand-green">Informasi Umum Siswa</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -181,7 +181,7 @@ Tambah Siswa
                         <hr>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Informasi Alamat Siswa</h6>
+                            <h6 class="font-weight-bold text-brand-green">Informasi Alamat Siswa</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -277,7 +277,7 @@ Tambah Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Informasi Orang Tua</h6>
+                            <h6 class="font-weight-bold text-brand-green">Informasi Orang Tua</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -424,7 +424,7 @@ Tambah Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Informasi Wali</h6>
+                            <h6 class="font-weight-bold text-brand-green">Informasi Wali</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -500,7 +500,7 @@ Tambah Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Sekolah Asal</h6>
+                            <h6 class="font-weight-bold text-brand-green">Sekolah Asal</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -518,11 +518,11 @@ Tambah Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Saudara Kandung</h6>
+                            <h6 class="font-weight-bold text-brand-green">Saudara Kandung</h6>
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="asal_sekolah" class="col-sm-4 control-label">Nama Saudara Kandung di Auliya</label>
+                            <label for="asal_sekolah" class="col-sm-4 control-label">Nama Saudara Kandung</label>
                             <div class="col-sm-6">
                                 <input type="text" class="form-control" name="saudara_nama" placeholder="Nama">
                             </div>
@@ -541,7 +541,7 @@ Tambah Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Sumber Informasi</h6>
+                            <h6 class="font-weight-bold text-brand-green">Sumber Informasi</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -549,11 +549,10 @@ Tambah Siswa
                             <div class="col-sm-6">
                                 <select name="info_dari" class="select2 form-control select2-hidden-accessible auto_width" id="kelas" style="width:100%;" tabindex="-1" aria-hidden="true">
                                         <option value="">== Pilih ==</option>
-                                        <option value="Orangtua Auliya">Orangtua Auliya</option>
+                                        <option value="Orangtua">Orangtua</option>
                                         <option value="Guru/Staf">Guru/Staf</option>
                                         <option value="Brosur">Brosur</option>
                                         <option value="Spanduk">Spanduk</option>
-                                        <option value="Website dan Sosmed Auliya Keren">Website dan Sosmed Auliya Keren</option>
                                         <option value="Media Cetak">Media Cetak</option>
                                         <option value="Sering Lewat">Sering Lewat</option>
                                         <option value="Teman">Teman</option>
@@ -575,7 +574,7 @@ Tambah Siswa
                     </div>
                     <div class="col-md-12">
                         <div class="text-center mt-4">
-                            <button type="submit" class="btn btn-brand-purple-dark">Tambah</button>
+                            <button type="submit" class="btn btn-brand-green-dark">Tambah</button>
                         </div>
                     </div>
                 </div>

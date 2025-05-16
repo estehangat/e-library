@@ -9,7 +9,7 @@
 @endsection
 
 @section('headmeta')
-<link href="{{ asset('public/buttons.dataTables.min.css') }}" rel="stylesheet">
+<!-- DataTables -->
 <link href="{{ asset('vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
 <meta name="csrf-token" content="{{ Session::token() }}" />
 @endsection
@@ -19,7 +19,7 @@
 @endsection
 
 @section('content')
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
+<div class="d-sm-flex align-items-center justify-content-between mb-2">
     @if(Request::path()!='kependidikan/kbm/siswa/alumni')
         <h1 class="h3 mb-0 text-gray-800">Siswa Aktif</h1>
     @else
@@ -31,22 +31,14 @@
     </ol>
 </div>
 
-<div class="row mb-3">
+@if(Request::path()!='kependidikan/kbm/siswa/alumni')
+<div class="row mb-4">
     <div class="col-md-12">
         <div class="card h-100">
             <div class="card-body">
-                @if(Session::has('sukses'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <strong>Sukses!</strong> {{ Session::get('sukses') }}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                @endif
                 <div class="row">
-                    @if(Request::path()!='kependidikan/kbm/siswa/alumni')
                     <div class="col-md-8">
-                        <div class="form-group row">
+                        <div class="form-group row mb-0">
                             <label for="kelas" class="col-sm-3 control-label">Tingkat Kelas</label>
                             <div class="col-sm-5">
                                 <select id="filterlevel" onchange="filterData()" name="level" class="select2 form-control select2-hidden-accessible auto_width" id="kelas" style="width:100%;" tabindex="-1" aria-hidden="true">
@@ -60,47 +52,68 @@
                                     @endforeach
                                 </select>
                             </div>
-                            {{-- <button class="btn btn-brand-purple-dark btn-sm" type="button">Saring</button> --}}
+                            {{-- <button class="btn btn-brand-green-dark btn-sm" type="button">Saring</button> --}}
                         </div>
                     </div>
-                    @endif
-                    <div class="table-responsive">
-                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                            @if(Request::path()!='kependidikan/kbm/siswa/alumni')
-                                <h6 class="m-0 font-weight-bold text-brand-purple">Siswa Aktif</h6>
-                            @else
-                                <h6 class="m-0 font-weight-bold text-brand-purple">Siswa Alumni</h6>
-                            @endif
-                            @if(!in_array((auth()->user()->role->name), ['fam','faspv']))
-                            <a id="download" class="btn btn-success btn-sm" href="{{\Request::url()}}/download">Ekspor <i class="fas fa-file-export"></i></a>
-                            @endif
-                            @if( in_array((auth()->user()->role_id), array(1,5)))
-                            <a class="m-0 float-right btn btn-brand-purple-dark btn-sm" href="/kependidikan/kbm/siswa/tambah">Tambah <i class="fas fa-plus"></i></a>
-                            @endif
-                        </div>
-                        <table id="dataTable" class="table align-items-center table-flush">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th>NIPD</th>
-                                    <th>NISN</th>
-                                    <th>Nama</th>
-                                    <th>Tanggal Lahir</th>
-                                    <th>Jenis Kelamin</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>NIPD</td>
-                                    <td>NISN</td>
-                                    <td>Nama</td>
-                                    <td>Tanggal Lahir</td>
-                                    <td>Jenis Kelamin</td>
-                                    <td>Aksi</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                @if(Request::path()!='kependidikan/kbm/siswa/alumni')
+                <h6 class="m-0 font-weight-bold text-brand-green">Siswa Aktif</h6>
+                @else
+                <h6 class="m-0 font-weight-bold text-brand-green">Siswa Alumni</h6>
+                @endif
+                @if(!in_array((auth()->user()->role->name), ['fam','faspv','lay']) || (in_array((auth()->user()->role_id), array(1,5))))
+                <div class="float-right">
+                @if(!in_array((auth()->user()->role->name), ['fam','faspv','lay']))
+                <a id="download" class="m-0 btn btn-success btn-sm" href="{{\Request::url()}}/download">Ekspor<i class="fas fa-file-export ml-2"></i></a>
+                @endif
+                @if( in_array((auth()->user()->role_id), array(1,5)))
+                <a class="m-0 btn btn-brand-green-dark btn-sm" href="/kependidikan/kbm/siswa/tambah">Tambah<i class="fas fa-plus ml-2"></i></a>
+                @endif
+                </div>
+                @endif
+            </div>
+            <div class="card-body">
+                @if(Session::has('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <strong>Sukses!</strong> {{ Session::get('success') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                @endif
+                @if(Session::has('danger'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>Gagal!</strong> {{ Session::get('danger') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                @endif
+                <div class="table-responsive">                        
+                    <table id="dataTable" class="table align-items-center table-flush">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>NIPD</th>
+                                <th>NISN</th>
+                                <th>Nama</th>
+                                <th>Tanggal Lahir</th>
+                                <th>Jenis Kelamin</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -189,8 +202,15 @@
 @endsection
 
 @section('footjs')
+<!-- Page level plugins -->
+
 <!-- DataTables -->
-<script type="text/javascript" src="{{asset('plugin/dataTables/datatables.min.js')}}"></script>   
+<script src="{{ asset('vendor/datatables/jquery.dataTables.min.js') }}"></script>
+<script src="{{ asset('vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
+
+<!-- Page level custom scripts -->
+@include('template.footjs.kbm.datatables')
+
 <script type="text/javascript">
     $(document).ready(function(){
         filterData();

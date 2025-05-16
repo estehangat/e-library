@@ -42,7 +42,7 @@ Ubah Calon Pegawai
           <input id="id" type="hidden" name="id" required="required" value="{{ $calon->id }}">
           <div class="row mb-4">
             <div class="col-12">
-              <h6 class="font-weight-bold text-brand-purple">Info Umum</h6>
+              <h6 class="font-weight-bold text-brand-green">Info Umum</h6>
             </div>
           </div>
           <div class="row">
@@ -92,7 +92,7 @@ Ubah Calon Pegawai
                     <div class="input-group mt-3">
                       <input type="text" class="form-control @error('photo') is-invalid @enderror" disabled placeholder="Ubah foto..." id="file">
                       <div class="input-group-append">
-                        <button type="button" class="browse btn btn-brand-purple-dark">Pilih</button>
+                        <button type="button" class="browse btn btn-brand-green-dark">Pilih</button>
                       </div>
                     </div>
                     <small id="photoHelp" class="form-text text-muted">Ekstensi .jpg, .jpeg, .png dan maksimum 5 MB</small>
@@ -288,7 +288,7 @@ Ubah Calon Pegawai
           <hr>
           <div class="row mb-4">
             <div class="col-12">
-              <h6 class="font-weight-bold text-brand-purple">Info Alamat dan Kontak</h6>
+              <h6 class="font-weight-bold text-brand-green">Info Alamat dan Kontak</h6>
             </div>
           </div>
           <div class="row">
@@ -472,7 +472,7 @@ Ubah Calon Pegawai
           <hr>
           <div class="row mb-4">
             <div class="col-12">
-              <h6 class="font-weight-bold text-brand-purple">Pendidikan</h6>
+              <h6 class="font-weight-bold text-brand-green">Pendidikan</h6>
             </div>
           </div>
           <div class="row">
@@ -548,7 +548,7 @@ Ubah Calon Pegawai
           <hr>
           <div class="row mb-4">
             <div class="col-12">
-              <h6 class="font-weight-bold text-brand-purple">Hasil Tes</h6>
+              <h6 class="font-weight-bold text-brand-green">Hasil Tes</h6>
             </div>
           </div>
           <div class="row">
@@ -588,7 +588,7 @@ Ubah Calon Pegawai
           <hr>
           <div class="row mb-4">
             <div class="col-12">
-              <h6 class="font-weight-bold text-brand-purple">Rekomendasi</h6>
+              <h6 class="font-weight-bold text-brand-green">Rekomendasi</h6>
             </div>
           </div>
           <div class="row">
@@ -708,7 +708,7 @@ Ubah Calon Pegawai
           <div class="row">
             <div class="col-lg-10 col-md-12">
               <div class="text-right">
-                <button class="btn btn-brand-purple-dark" type="submit">Simpan</button>
+                <button class="btn btn-brand-green-dark" type="submit">Simpan</button>
               </div>
             </div>
           </div>

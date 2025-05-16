@@ -23,15 +23,17 @@
 @endsection
 
 @section('buttons')
-@if((($isYear && $tahun == date('Y')) || (!$isYear && $tahun->is_finance_year == 1)) && $isAnggotaPa && $apbyAktif && $apbyAktif->is_active == 1)
+@if((($isYear && $tahun == date('Y')) || (!$isYear && $tahun->is_finance_year == 1)) && Auth::user()->unit_id != 5 && $isAnggotaPa && $apbyAktif && $apbyAktif->is_active == 1)
 <div class="m-0 float-right btn-group">
-    <a class="btn btn-brand-purple-dark btn-sm" href="{{ route('ppa.buat', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link]) }}">Buat Pengajuan <i class="fas fa-plus-circle ml-1"></i></a>
-    <button type="button" class="btn btn-brand-purple-dark btn-sm dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-        <span class="sr-only">Toggle Dropdown</span>
+    @if($creatable)
+    <button type="button" class="btn btn-brand-green-dark btn-sm" data-toggle="modal" data-target="#createModal">
+      Buat Pengajuan <i class="fas fa-plus-circle ml-1"></i>
     </button>
-    <div class="dropdown-menu dropdown-menu-right">
-        <a class="dropdown-item" href="{{ route('ppa.buat', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'type' => 'proposal']) }}">Buat dari Proposal</a>
-    </div>
+    @else
+    <button type="button" class="btn btn-secondary btn-sm" disabled>
+      Buat Pengajuan <i class="fas fa-plus-circle ml-1"></i>
+    </button>
+    @endif
 </div>
 @endif
 @endsection

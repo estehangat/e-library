@@ -4535,9 +4535,6 @@ input[type="button"].btn-block {
 
 .custom-file-input:lang(en)~.custom-file-label::after {
   content: "Browse";
-  color: #fff;
-  background-color: #6777EF;
-  border-color: #6777EF;
 }
 
 .custom-file-input~.custom-file-label[data-browse]::after {
@@ -4558,8 +4555,6 @@ input[type="button"].btn-block {
   background-color: #fff;
   border: 1px solid #d1d3e2;
   border-radius: 0.25rem;
-  -webkit-box-shadow: 0 0.125rem 0.25rem 0 rgba(58, 59, 69, 0.2) !important;
-  box-shadow: 0 0.125rem 0.25rem 0 rgba(58, 59, 69, 0.2) !important;
 }
 
 .custom-file-label::after {
@@ -4752,10 +4747,7 @@ input[type="button"].btn-block {
 .custom-control-label::before,
 .custom-file-label,
 .custom-select {
-  -webkit-transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
-  transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
   transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-  transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, -webkit-box-shadow 0.15s ease-in-out;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Keuangan;
 use App\Http\Controllers\Controller;
 use App\Models\Anggaran\Anggaran;
 use App\Models\Anggaran\JenisAnggaran;
+use App\Models\Anggaran\KategoriAnggaran;
 use App\Models\Lppa\Lppa;
 use App\Models\Ppa\Ppa;
 use App\Models\Ppa\PpaDetail;
@@ -31,13 +32,16 @@ class LppaController extends Controller
      */
     public function index(Request $request, $jenis = null, $tahun = null, $anggaran = null)
     {
+        // Override Budget Category
+        if(!$jenis) $jenis = 'apby';
+
         $role = $request->user()->role->name;
 
         $jenisAnggaran = JenisAnggaran::all();
         $jenisAnggaranCount = null;
         foreach($jenisAnggaran as $j){
             $anggaranCount = $j->anggaran();
-            if(!in_array($request->user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv','fas'])){
+            if(!in_array($request->user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv','fas','am','akunspv'])){
                 if($request->user()->pegawai->unit_id == '5'){
                     $anggaranCount = $anggaranCount->whereHas('anggaran',function($q)use($request){$q->where('position_id',$request->user()->pegawai->jabatan->group()->first()->id);});
                 }
@@ -55,14 +59,19 @@ class LppaController extends Controller
             }
         }
         
-        $jenisAktif = $allPpa = $years = $academicYears = $latest = $tahunPelajaran = $isYear = $yearAttr = null;
+        $jenisAktif = $kategori = $allPpa = $years = $academicYears = $latest = $tahunPelajaran = $isYear = $yearAttr = null;
         $yearsCount = $academicYearsCount = 0;
 
         if($jenis){
             $explodeJenis = explode('-',$jenis);
             $isKso = count($explodeJenis) > 1 && $explodeJenis[1] == 'kso'? true : false;
             $jenisAktif = JenisAnggaran::where('link',$jenis)->whereIn('id',$jenisAnggaranCount->collect()->where('anggaranCount','>',0)->pluck('id'))->first();
-            if(!$jenisAktif) return redirect()->route('lppa.index');
+            if(!$jenisAktif){
+                if($jenisAnggaranCount->where('id',1)->first()['anggaranCount'] < 1){
+                    return view('keuangan.read-only.lppa_index', compact('jenisAnggaran','jenisAktif','kategori','tahun','tahunPelajaran','isYear','yearAttr','allPpa','years','academicYears'));
+                }
+                else return redirect()->route('lppa.index');
+            }
 
             $queryPpa = Ppa::where(function($q){
                 $q->where(function($q){
@@ -74,11 +83,11 @@ class LppaController extends Controller
                 $query->where('budgeting_type_id',$jenisAktif->id);
             })->where('finance_acc_status_id',1)->has('lppa');
             
-            if($role == 'am'){
-                $queryPpa = $queryPpa->whereHas('jenisAnggaranAnggaran.anggaran',function($q)use($request){
-                    $q->where('acc_position_id',$request->user()->pegawai->position_id);
-                });
-            }
+            // if(in_array($role,['etl','ctl'])){
+            //     $queryPpa = $queryPpa->whereHas('jenisAnggaranAnggaran.anggaran',function($q)use($request){
+            //         $q->where('acc_position_id',$request->user()->pegawai->position_id);
+            //     });
+            // }
 
             if($queryPpa->count() > 0){
                 $years = clone $queryPpa;
@@ -150,18 +159,23 @@ class LppaController extends Controller
             $anggaranCount = $jenisAktif ? $jenisAktif->anggaran()->whereHas('ppa',function($q){$q->where('finance_acc_status_id',1)->has('lppa');})->count() : 0;
 
             if($anggaranCount > 0){
+                $kategori = KategoriAnggaran::select('id','name')->whereHas('anggarans.jenisAnggaran',function($q)use($jenisAktif){
+                    $q->where('budgeting_type_id',$jenisAktif->id);
+                })->get();
                 $allPpa = clone $queryPpa;
-                $allPpa = $allPpa->with('jenisAnggaranAnggaran',function($q){$q->select('id','number','budgeting_type_id','budgeting_id')->with('anggaran:id,name');})->get();
+                $allPpa = $allPpa->whereHas('jenisAnggaranAnggaran.tahuns',function($q)use($yearAttr,$tahun){
+                    $q->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id));
+                })->with('jenisAnggaranAnggaran',function($q){$q->select('id','number','budgeting_type_id','budgeting_id')->with('anggaran:id,name');})->get();
 
                 if($anggaran){
-                    $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+                    $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->unique()->pluck('id'))->first();
                     if($anggaranAktif){
                         $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
 
                         $ppaAcc = $anggaranAktif->ppa()->where($yearAttr,($yearAttr == 'year' ? $tahun : $tahun->id))->whereNotNull('finance_acc_status_id');
 
-                        if($ppaAcc->count() > 0 || ($ppaAcc->count() < 1 && !in_array($role,['pembinayys','ketuayys','direktur','fam','faspv','fas']))){
-                            $exceptionRoles = ['pembinayys','ketuayys','direktur','fam','faspv','fas'];
+                        if($ppaAcc->count() > 0 || ($ppaAcc->count() < 1 && !in_array($role,['pembinayys','ketuayys','direktur','fam','faspv','fas','am','akunspv']))){
+                            $exceptionRoles = ['pembinayys','ketuayys','direktur','fam','faspv','fas','am','akunspv'];
                             $isAnggotaPa = $this->checkRole($anggaranAktif->anggaran,$role);
                             if(in_array($role,$exceptionRoles) || (!in_array($role,$exceptionRoles) && $isAnggotaPa)){
                                 $lppa = Lppa::whereHas('ppa',function($query)use($anggaranAktif,$yearAttr,$tahun){
@@ -188,13 +202,13 @@ class LppaController extends Controller
                     }
                     else return redirect()->route('lppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun]);
                 }
-                if(!in_array($role,['pembinayys','ketuayys','direktur','fam','faspv','fas','am'])){
+                if(!in_array($role,['pembinayys','ketuayys','direktur','fam','faspv','fas','am','akunspv'])){
                     $anggaranAktif = null;
                     if($request->user()->pegawai->unit_id == '5'){
-                        $anggaranAktif = Anggaran::where('position_id',$request->user()->pegawai->jabatan->group()->first()->id)->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+                        $anggaranAktif = Anggaran::where('position_id',$request->user()->pegawai->jabatan->group()->first()->id)->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->unique()->pluck('id'))->first();
                     }
                     else{
-                        $anggaranAktif = Anggaran::where('unit_id',$request->user()->pegawai->unit_id)->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+                        $anggaranAktif = Anggaran::where('unit_id',$request->user()->pegawai->unit_id)->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->unique()->pluck('id'))->first();
                     }
                     if($anggaranAktif){
                         $anggaranAktif = $anggaranAktif->jenisAnggaran()->where('budgeting_type_id',$jenisAktif->id)->first();
@@ -210,7 +224,7 @@ class LppaController extends Controller
 
             else return redirect()->route('lppa.index');
         }
-        elseif(!in_array($role,['pembinayys','ketuayys','direktur','fam','faspv','fas'])){
+        elseif(!in_array($role,['pembinayys','ketuayys','direktur','fam','faspv','fas','am','akunspv'])){
             $jenisAktif = JenisAnggaran::whereIn('id',$jenisAnggaranCount->collect()->where('anggaranCount','>',0)->pluck('id'))->first();
             if($jenisAktif){
                 return redirect()->route('lppa.index', ['jenis' => $jenisAktif->link]);
@@ -220,10 +234,10 @@ class LppaController extends Controller
             }
         }
 
-        if($jenis && $isKso)
-            return view('keuangan.read-only.lppa_kso_index', compact('jenisAnggaran','jenisAktif','tahun','tahunPelajaran','isYear','yearAttr','allPpa','years','academicYears'));
-        else
-            return view('keuangan.read-only.lppa_index', compact('jenisAnggaran','jenisAktif','tahun','tahunPelajaran','isYear','yearAttr','allPpa','years','academicYears'));
+        // if($jenis && $isKso)
+        //     return view('keuangan.read-only.lppa_kso_index', compact('jenisAnggaran','jenisAktif','kategori','tahun','tahunPelajaran','isYear','yearAttr','allPpa','years','academicYears'));
+        // else
+            return view('keuangan.read-only.lppa_index', compact('jenisAnggaran','jenisAktif','kategori','tahun','tahunPelajaran','isYear','yearAttr','allPpa','years','academicYears'));
     }
 
     /**
@@ -266,7 +280,7 @@ class LppaController extends Controller
             $allPpa = Ppa::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
                 $query->where('budgeting_type_id',$jenisAktif->id);
             })->where('finance_acc_status_id',1)->has('lppa')->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
-            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->unique()->pluck('id'))->first();
             $isKso = $jenisAktif->isKso;
             $isYear = strlen($tahun) == 4 ? true : false;
             if(!$isYear){
@@ -282,7 +296,7 @@ class LppaController extends Controller
                 $ppaAcc = $anggaranAktif->ppa()->where([$yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id), 'finance_acc_status_id' => 1]);
 
                 if($ppaAcc->count() > 0){
-                    $exceptionRoles = ['pembinayys','ketuayys','direktur','fam','faspv','fas'];
+                    $exceptionRoles = ['pembinayys','ketuayys','direktur','fam','faspv','fas','am','akunspv'];
                     $isAnggotaPa = $this->checkRole($anggaranAktif->anggaran,$role);
                     if(in_array($role,$exceptionRoles) || (!in_array($role,$exceptionRoles) && $isAnggotaPa)){
                         // Inti function
@@ -290,7 +304,7 @@ class LppaController extends Controller
 
                         $apbyAktif = $isKso ? $apbyAktif->where('director_acc_status_id',1)->first() : $apbyAktif->where('president_acc_status_id',1)->first();
 
-                        $lppaAktif = Lppa::where('number','LIKE',$nomor.'%')->whereHas('ppa',function($query)use($anggaranAktif,$yearAttr,$tahun){
+                        $lppaAktif = Lppa::where('number','LIKE',$nomor.'/%')->whereHas('ppa',function($query)use($anggaranAktif,$yearAttr,$tahun){
                             $query->where([
                                 'budgeting_budgeting_type_id' => $anggaranAktif->id,
                                 $yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id),
@@ -301,20 +315,23 @@ class LppaController extends Controller
                         if($lppaAktif){
                             $isPa = $anggaranAktif->anggaran->acc_position_id == $request->user()->pegawai->position_id ? true : false;
 
+                            $editable = $lppaAktif->detail()->where('acc_status_id',1)->count() >= ($lppaAktif->detail()->count()) ? true : false;
+
                             $notifikasi = Notifikasi::where(['id' => $request->notif_id,'user_id' => $request->user()->id])->first();
 
                             if($notifikasi){
                                 $notifikasi->update(['is_active' => 0]);
                             }
 
-                            if(in_array($role,['fam','faspv']))
+                            if(in_array($role,['am']))
                                 $folder = $role;
-                            elseif($role == 'fas') $folder = 'read-only';
+                            elseif(in_array($role,['faspv'])) $folder = 'fam';
+                            elseif(in_array($role,['fam','fas'])) $folder = 'read-only';
                             elseif($isPa) $folder = 'pa';
                             elseif($isAnggotaPa) $folder = 'anggota-pa';
                             else $folder = 'read-only';
 
-                            return view('keuangan.'.$folder.'.lppa_show', compact('jenisAnggaran','jenisAktif','tahun','isYear','anggaranAktif','apbyAktif','lppaAktif','isPa','isAnggotaPa','isKso'));
+                            return view('keuangan.'.$folder.'.lppa_show', compact('jenisAnggaran','jenisAktif','tahun','isYear','anggaranAktif','apbyAktif','lppaAktif','isPa','isAnggotaPa','isKso','editable'));
                         }
                         else return redirect()->route('lppa.index', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link]);
                     }
@@ -357,7 +374,7 @@ class LppaController extends Controller
             $allPpa = Ppa::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
                 $query->where('budgeting_type_id',$jenisAktif->id);
             })->where('finance_acc_status_id',1)->has('lppa')->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
-            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->unique()->pluck('id'))->first();
             $isKso = $jenisAktif->isKso;
             $isYear = strlen($tahun) == 4 ? true : false;
             if(!$isYear){
@@ -373,13 +390,13 @@ class LppaController extends Controller
                 $ppaAcc = $anggaranAktif->ppa()->where([$yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id), 'finance_acc_status_id' => 1]);
 
                 if($ppaAcc->count() > 0){
-                    $exceptionRoles = ['pembinayys','ketuayys','direktur','fam','faspv'];
+                    $exceptionRoles = ['pembinayys','ketuayys','direktur','fam','faspv','am'];
                     $isAnggotaPa = $this->checkRole($anggaranAktif->anggaran,$role);
                     if(in_array($role,$exceptionRoles) || (!in_array($role,$exceptionRoles) && $isAnggotaPa)){
                         // Inti function
                         $lppaAktif = null;
 
-                        $lppaAktif = Lppa::where('number','LIKE',$nomor.'%')->whereHas('ppa',function($query)use($anggaranAktif,$yearAttr,$tahun){
+                        $lppaAktif = Lppa::where('number','LIKE',$nomor.'/%')->whereHas('ppa',function($query)use($anggaranAktif,$yearAttr,$tahun){
                             $query->where([
                                 'budgeting_budgeting_type_id' => $anggaranAktif->id,
                                 $yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id),
@@ -390,7 +407,7 @@ class LppaController extends Controller
                         if($lppaAktif){
                             if($lppaAktif->detail()->count() > 0){
                                 $isPa = $anggaranAktif->anggaran->acc_position_id == $request->user()->pegawai->position_id ? true : false;
-                                if(in_array($role,['fam','faspv'])){
+                                if(in_array($role,['faspv'])){
                                     // Inti function
                                     $lppaAktifDetail = $lppaAktif->detail();
 
@@ -402,18 +419,21 @@ class LppaController extends Controller
                                         if($isAnggotaPa || (!$isAnggotaPa && $editable)){
                                             $lppaAktifDetailClone = clone $lppaAktifDetail;
                                             foreach($lppaAktifDetailClone->get() as $detail){
-                                                $inputName = 'value-'.$detail->id;
-                                                $checkName = 'receipt-'.$detail->id;
-                                                $requestValue = (int)str_replace('.','',$request->{$inputName});
-                                                if(isset($detail->value) && ($detail->employee_id != $request->user()->pegawai->id) && $detail->value != $requestValue){
-                                                    $detail->edited_employee_id = $request->user()->pegawai->id;
-                                                    $detail->edited_status_id = 1;
-                                                }
-                                                $detail->value = $requestValue;
-                                                if($request->{$checkName} == 'on')
-                                                    $detail->receipt_status_id = 1;
-                                                else
+                                                if($detail->ppaDetail->value == 0){
+                                                    $detail->value = 0;
                                                     $detail->receipt_status_id = 2;
+                                                }
+                                                else{
+                                                    $inputName = 'value-'.$detail->id;
+                                                    $checkName = 'receipt-'.$detail->id;
+                                                    $requestValue = (int)str_replace('.','',$request->{$inputName});
+                                                    if(isset($detail->value) && ($detail->employee_id != $request->user()->pegawai->id) && $detail->value != $requestValue){
+                                                        $detail->edited_employee_id = $request->user()->pegawai->id;
+                                                        $detail->edited_status_id = 1;
+                                                    }
+                                                    $detail->value = $requestValue;
+                                                    $detail->receipt_status_id = $request->{$checkName} == 'on' ? 1 : 2;
+                                                }
                                                 if(!isset($detail->employee_id)){
                                                     $detail->employee_id = $request->user()->pegawai->id;
                                                 }
@@ -482,18 +502,21 @@ class LppaController extends Controller
 
                                         $lppaAktifDetailClone = clone $lppaAktifDetail;
                                         foreach($lppaAktifDetailClone->get() as $detail){
-                                            $inputName = 'value-'.$detail->id;
-                                            $checkName = 'receipt-'.$detail->id;
-                                            $requestValue = (int)str_replace('.','',$request->{$inputName});
-                                            if(isset($detail->value) && ($detail->employee_id != $request->user()->pegawai->id) && $detail->value != $requestValue){
-                                                $detail->edited_employee_id = $request->user()->pegawai->id;
-                                                $detail->edited_status_id = 1;
-                                            }
-                                            $detail->value = $requestValue;
-                                            if($request->{$checkName} == 'on')
-                                                $detail->receipt_status_id = 1;
-                                            else
+                                            if($detail->ppaDetail->value == 0){
+                                                $detail->value = 0;
                                                 $detail->receipt_status_id = 2;
+                                            }
+                                            else{
+                                                $inputName = 'value-'.$detail->id;
+                                                $checkName = 'receipt-'.$detail->id;
+                                                $requestValue = (int)str_replace('.','',$request->{$inputName});
+                                                if(isset($detail->value) && ($detail->employee_id != $request->user()->pegawai->id) && $detail->value != $requestValue){
+                                                    $detail->edited_employee_id = $request->user()->pegawai->id;
+                                                    $detail->edited_status_id = 1;
+                                                }
+                                                $detail->value = $requestValue;
+                                                $detail->receipt_status_id = $request->{$checkName} == 'on' ? 1 : 2;
+                                            }
                                             if(!isset($detail->employee_id)){
                                                 $detail->employee_id = $request->user()->pegawai->id;
                                             }
@@ -515,10 +538,10 @@ class LppaController extends Controller
                                             Session::flash('success','Perubahan data RPPA berhasil disimpan');
 
                                             if(isset($request->validate) && $request->validate == 'validate'){
-                                                $fam = Jabatan::where('code','22.11')->first();
+                                                $akunspv = Jabatan::where('code','22.14')->first();
 
-                                                if($fam){
-                                                    $user = $fam->role->loginUsers()->aktif();
+                                                if($akunspv){
+                                                    $user = $akunspv->role->loginUsers()->aktif();
                                                     if($user->count() > 0){
                                                         foreach($user->get() as $u){
                                                             Notifikasi::create([
@@ -545,18 +568,21 @@ class LppaController extends Controller
 
                                         $lppaAktifDetailClone = clone $lppaAktifDetail;
                                         foreach($lppaAktifDetailClone->get() as $detail){
-                                            $inputName = 'value-'.$detail->id;
-                                            $checkName = 'receipt-'.$detail->id;
-                                            $requestValue = (int)str_replace('.','',$request->{$inputName});
-                                            if(isset($detail->value) && ($detail->employee_id != $request->user()->pegawai->id) && $detail->value != $requestValue){
-                                                $detail->edited_employee_id = $request->user()->pegawai->id;
-                                                $detail->edited_status_id = 1;
-                                            }
-                                            $detail->value = $requestValue;
-                                            if($request->{$checkName} == 'on')
-                                                $detail->receipt_status_id = 1;
-                                            else
+                                            if($detail->ppaDetail->value == 0){
+                                                $detail->value = 0;
                                                 $detail->receipt_status_id = 2;
+                                            }
+                                            else{
+                                                $inputName = 'value-'.$detail->id;
+                                                $checkName = 'receipt-'.$detail->id;
+                                                $requestValue = (int)str_replace('.','',$request->{$inputName});
+                                                if(isset($detail->value) && ($detail->employee_id != $request->user()->pegawai->id) && $detail->value != $requestValue){
+                                                    $detail->edited_employee_id = $request->user()->pegawai->id;
+                                                    $detail->edited_status_id = 1;
+                                                }
+                                                $detail->value = $requestValue;
+                                                $detail->receipt_status_id = $request->{$checkName} == 'on' ? 1 : 2;
+                                            }
                                             if(!isset($detail->employee_id)){
                                                 $detail->employee_id = $request->user()->pegawai->id;
                                             }
@@ -613,7 +639,7 @@ class LppaController extends Controller
             $allPpa = Ppa::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
                 $query->where('budgeting_type_id',$jenisAktif->id);
             })->where('finance_acc_status_id',1)->has('lppa')->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
-            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->unique()->pluck('id'))->first();
             $isKso = $jenisAktif->isKso;
             $isYear = strlen($tahun) == 4 ? true : false;
             if(!$isYear){
@@ -629,7 +655,7 @@ class LppaController extends Controller
                 $ppaAcc = $anggaranAktif->ppa()->where([$yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id), 'finance_acc_status_id' => 1]);
 
                 if($ppaAcc->count() > 0){
-                    $exceptionRoles = ['pembinayys','ketuayys','direktur','fam','faspv'];
+                    $exceptionRoles = ['pembinayys','ketuayys','direktur','fam','faspv','am','akunspv'];
                     $isAnggotaPa = $this->checkRole($anggaranAktif->anggaran,$role);
                     if(in_array($role,$exceptionRoles) || (!in_array($role,$exceptionRoles) && $isAnggotaPa)){
                         // Inti function
@@ -637,7 +663,7 @@ class LppaController extends Controller
 
                         $apbyAktif = $isKso ? $apbyAktif->where('director_acc_status_id',1)->first() : $apbyAktif->where('president_acc_status_id',1)->first();
 
-                        $lppaAktif = Lppa::where('number','LIKE',$nomor.'%')->whereHas('ppa',function($query)use($anggaranAktif,$yearAttr,$tahun){
+                        $lppaAktif = Lppa::where('number','LIKE',$nomor.'/%')->whereHas('ppa',function($query)use($anggaranAktif,$yearAttr,$tahun){
                             $query->where([
                                 'budgeting_budgeting_type_id' => $anggaranAktif->id,
                                 $yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id),
@@ -716,7 +742,7 @@ class LppaController extends Controller
             $allPpa = Ppa::select('id','budgeting_budgeting_type_id')->whereHas('jenisAnggaranAnggaran',function($query)use($jenisAktif){
                 $query->where('budgeting_type_id',$jenisAktif->id);
             })->where('finance_acc_status_id',1)->has('lppa')->with('jenisAnggaranAnggaran',function($q){$q->select('id','budgeting_id')->with('anggaran:id');})->get();
-            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->pluck('id'))->first();
+            $anggaranAktif = Anggaran::where('name','LIKE',str_replace('-',' ',$anggaran))->whereIn('id',$allPpa->pluck('jenisAnggaranAnggaran.anggaran')->unique()->pluck('id'))->first();
             $isKso = $jenisAktif->isKso;
             $isYear = strlen($tahun) == 4 ? true : false;
             if(!$isYear){
@@ -733,7 +759,7 @@ class LppaController extends Controller
 
                 if($ppaAcc->count() > 0){
                     // Inti function
-                    $lppaAktif = Lppa::where('number','LIKE',$nomor.'%')->whereHas('ppa',function($query)use($anggaranAktif,$yearAttr,$tahun){
+                    $lppaAktif = Lppa::where('number','LIKE',$nomor.'/%')->whereHas('ppa',function($query)use($anggaranAktif,$yearAttr,$tahun){
                         $query->where([
                             'budgeting_budgeting_type_id' => $anggaranAktif->id,
                             $yearAttr => ($yearAttr == 'year' ? $tahun : $tahun->id),
@@ -745,16 +771,16 @@ class LppaController extends Controller
                         // Inti function
                         $spreadsheet = new Spreadsheet();
 
-                        $spreadsheet->getProperties()->setCreator('SIT Auliya')
+                        $spreadsheet->getProperties()->setCreator('Sekolah MUDA')
                         ->setLastModifiedBy($request->user()->pegawai->name)
-                        ->setTitle("Data Laporan Pertanggungjawaban Penggunaan Anggaran Auliya Nomor ".$lppaAktif->number)
-                        ->setSubject("Laporan Pertanggungjawaban Penggunaan Anggaran Auliya Nomor ".$lppaAktif->number)
-                        ->setDescription("Rekapitulasi Data Laporan Pertanggungjawaban Penggunaan Anggaran Auliya Nomor ".$lppaAktif->number)
-                        ->setKeywords("Laporan, Realisasi, Pertanggungjawaban, Penggunaan, Anggaran, LPPA, RPPA, Auliya");
+                        ->setTitle("Data Laporan Pertanggungjawaban Penggunaan Anggaran MUDA Nomor ".$lppaAktif->number)
+                        ->setSubject("Laporan Pertanggungjawaban Penggunaan Anggaran MUDA Nomor ".$lppaAktif->number)
+                        ->setDescription("Rekapitulasi Data Laporan Pertanggungjawaban Penggunaan Anggaran MUDA Nomor ".$lppaAktif->number)
+                        ->setKeywords("Laporan, Realisasi, Pertanggungjawaban, Penggunaan, Anggaran, LPPA, RPPA, MUDA");
 
                         $spreadsheet->setActiveSheetIndex(0)
                         ->setCellValue('B1', 'LAPORAN PERTANGGUNGJAWABAN PENGGUNAAN ANGGARAN')
-                        ->setCellValue('B2', 'YAYASAN AULIYA INSAN UTAMA')
+                        ->setCellValue('B2', 'YAYASAN MUDA INCOMSO')
                         ->setCellValue('A4', 'No. LPPA')
                         ->setCellValue('C4', ':')
                         ->setCellValue('D4', $lppaAktif->number ? $lppaAktif->number : '-')
@@ -779,8 +805,8 @@ class LppaController extends Controller
 
                         // Logo
                         $logo = new Drawing;
-                        $logo->setName('Logo Auliya');
-                        $logo->setDescription('Logo Auliya');
+                        $logo->setName('Logo MUDA');
+                        $logo->setDescription('Logo MUDA');
                         $logo->setPath('./img/logo/logo-vertical.png');
                         $logo->setHeight(76);
                         $logo->setOffsetX(9);
@@ -1120,7 +1146,7 @@ class LppaController extends Controller
         $ppa->budgeting_budgeting_type_id = $oldPpa->budgeting_budgeting_type_id;
 
         // Number Generator
-        $lastPpa = $oldPpa->jenisAnggaranAnggaran->ppa()->where($yearAttr, ($yearAttr == 'year' ? $oldPpa->year : $oldPpa->academic_year_id))->latest()->first();
+        $lastPpa = $oldPpa->jenisAnggaranAnggaran->ppa()->where($yearAttr, ($yearAttr == 'year' ? $oldPpa->year : $oldPpa->academic_year_id))->submitted()->latest()->first();
 
         $lastNumber = $lastPpa && $lastPpa->firstNumber ? $lastPpa->firstNumber+1 : 1;
 
@@ -1129,6 +1155,7 @@ class LppaController extends Controller
 
         $ppa->number = $lastNumber.'/PPA/'.$roman_month.'/'.$year.'/'.strtoupper(str_replace(' ','',$oldPpa->jenisAnggaranAnggaran->anggaran->name));
         $ppa->employee_id = Auth::user()->pegawai->id;
+        $ppa->submitted_at = Date::now('Asia/Jakarta');
         $ppa->save();
 
         $ppa->fresh();
@@ -1162,7 +1189,7 @@ class LppaController extends Controller
         $jenisAnggaranCount = null;
         foreach($jenisAnggaran as $j){
             $anggaranCount = $j->anggaran();
-            if(!in_array($user->role->name,['pembinayys','ketuayys','direktur','fam','faspv','fas'])){
+            if(!in_array($user->role->name,['pembinayys','ketuayys','direktur','fam','faspv','fas','am','akunspv'])){
                 if($user->pegawai->unit_id == '5'){
                     $anggaranCount = $anggaranCount->whereHas('anggaran',function($q)use($user){$q->where('position_id',$user->pegawai->jabatan->group()->first()->id);});
                 }
@@ -1190,15 +1217,18 @@ class LppaController extends Controller
      */
     public function checkRole($anggaran,$role){
         $rolesCollection = collect([
-            ['unit' => 1, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
-            ['unit' => 2, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
-            ['unit' => 3, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
-            ['unit' => 4, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
-            ['unit' => 5, 'position' => 18, 'roles' => ['etl','etm']],
-            ['unit' => 5, 'position' => 23, 'roles' => ['ctl','ctm']],
-            ['unit' => 5, 'position' => 28, 'roles' => ['fam','faspv','fas']],
-            ['unit' => 5, 'position' => 32, 'roles' => ['am','aspv']],
-            ['unit' => 5, 'position' => 36, 'roles' => ['am','ftm','ftspv','fts']]
+            ['name' => 'TKIT', 'unit' => 1, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
+            ['name' => 'SDIT', 'unit' => 2, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
+            ['name' => 'SMPIT', 'unit' => 3, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
+            ['name' => 'SMAIT', 'unit' => 4, 'position' => null, 'roles' => ['kepsek','wakasek','keu']],
+            ['name' => 'Education Team', 'unit' => 5, 'position' => 18, 'roles' => ['etl','etm']],
+            ['name' => 'Customer Team', 'unit' => 5, 'position' => 23, 'roles' => ['ctl','ctm']],
+            ['name' => 'Finance and Accounting', 'unit' => 5, 'position' => 28, 'roles' => ['am','fam','faspv','fas']],
+            ['name' => 'Administration, Legal, and IT', 'unit' => 5, 'position' => 32, 'roles' => ['am','aspv']],
+            ['name' => 'Facilities', 'unit' => 5, 'position' => 36, 'roles' => ['am','ftm','ftspv','fts']],
+            ['name' => 'Divisi Edukasi', 'unit' => 5, 'position' => 18, 'roles' => ['etl']],
+            ['name' => 'Divisi Layanan', 'unit' => 5, 'position' => 23, 'roles' => ['ctl']],
+            ['name' => 'Divisi Umum', 'unit' => 5, 'position' => 32, 'roles' => ['am']]
         ]);
 
         if($anggaran->unit_id == 5){

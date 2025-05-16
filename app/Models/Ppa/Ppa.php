@@ -158,4 +158,14 @@ class Ppa extends Model
     {
         return $query->where('type_id',2);
     }
+
+    public function scopeDraft($query)
+    {
+        return $query->where('is_draft',1);
+    }
+
+    public function scopeSubmitted($query)
+    {
+        return $query->where('is_draft',0);
+    }
 }

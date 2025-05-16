@@ -12,7 +12,7 @@ Pilih Sistem @endsection
 @section('content')
     <div class="wrap-menu100 card mb-4">
         <div class="card-body px-5 pt-5 pb-4">
-          <h3 class="mt-3 mb-2 font-weight-bold text-brand-purple">Selamat datang, Calon Siswa Baru!</h3>
+          <h3 class="mt-3 mb-2 font-weight-bold text-brand-green">Selamat datang, Calon Siswa Baru!</h3>
           <span>Sebelum mulai, pilih salah satu unit yang Anda tuju</span>
             <div class="row mt-4">
               <form action="/psb/pendaftaran" method="POST">

@@ -9,11 +9,11 @@ Lihat Data Siswa
 @endsection
 
 @section('content')
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
+<div class="d-sm-flex align-items-center justify-content-between mb-2">
     <h1 class="h3 mb-0 text-gray-800">Lihat Data Calon Siswa</h1>
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="javascript:void(0)">Penerimaan Siswa Baru</a></li>
-        <li class="breadcrumb-item"><a href="/kependidikan/kbm/siswa">Calon Siswa</a></li>
+        <li class="breadcrumb-item"><a href="javascript:void(0)">Calon Siswa</a></li>
         <li class="breadcrumb-item active" aria-current="page">Lihat</li>
     </ol>
 </div>
@@ -21,7 +21,7 @@ Lihat Data Siswa
 <div class="row mb-3">
     <div class="col-md-12">
         <div class="card h-100">
-        <div class="card-header py-3 bg-brand-purple-dark d-flex flex-row align-items-center justify-content-between">
+        <div class="card-header py-3 bg-brand-green-dark d-flex flex-row align-items-center justify-content-between">
             <h6 class="m-0 font-weight-bold text-white">Form Lihat Calon Siswa</h6>
         </div>
         @if(Session::has('success'))
@@ -39,7 +39,7 @@ Lihat Data Siswa
                     <div class="col-md-8">
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Tahun Ajaran</h6>
+                            <h6 class="font-weight-bold text-brand-green">Tahun Ajaran</h6>
                             </div>
                         </div>
                         <div class="form-group">
@@ -64,6 +64,7 @@ Lihat Data Siswa
                             </div>
                         </div>
                         @endif
+                        @if(!in_array(Auth::user()->role->name,['am','aspv','cspv','lay']))
                         <div class="form-group">
                             <div class="row mb-3">
                             <div class="col-lg-3 col-md-4 col-10">
@@ -71,15 +72,16 @@ Lihat Data Siswa
                             <div class="col-md-4">
                                 <div class="text-center mt-4">
                                     <input type="hidden" name="siswa_id" value="{{$siswa->id}}">
-                                    <button type="button" class="btn btn-brand-purple-dark" data-toggle="modal" data-target="#UbahTahunAkademik" data-id="{{$siswa->id}}">Ubah Tahun Ajaran</button>
+                                    <button type="button" class="btn btn-brand-green-dark" data-toggle="modal" data-target="#UbahTahunAkademik" data-id="{{$siswa->id}}">Ubah Tahun Ajaran</button>
                                 </div>
                             </div>
                             </div>
                         </div>
+                        @endif
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Program Siswa</h6>
+                            <h6 class="font-weight-bold text-brand-green">Program Siswa</h6>
                             </div>
                         </div>
                         <div class="form-group">
@@ -100,13 +102,13 @@ Lihat Data Siswa
                                     <label for="unit" class="form-control-label">Kelas <span class="text-danger">*</span></label>
                                 </div>
                                 <div class="col-md-4">
-                                    <input type="text" class="form-control" value="{{ $siswa->level->level }}" disabled>
+                                    <input type="text" class="form-control" value="{{ $siswa->level ? $siswa->level->level : '-'}}" disabled>
                                 </div>
                             </div>
                         </div>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Informasi Umum Siswa</h6>
+                            <h6 class="font-weight-bold text-brand-green">Informasi Umum Siswa</h6>
                             </div>
                         </div>
                         @if ($siswa->status_id != 5)
@@ -116,7 +118,7 @@ Lihat Data Siswa
                                 <div class="col-lg-3 col-md-4 col-10"></div>
                                 <div class="col-md-4">
                                     <div class="text-center mt-4">
-                                        <a class="btn btn-brand-purple-dark" href="{{route('kependidikan.psb.calonsiswa.edit',$siswa->id)}}">Ubah data siswa</a>
+                                        <a class="btn btn-brand-green-dark" href="{{route('kependidikan.psb.calonsiswa.edit',$siswa->id)}}">Ubah data siswa</a>
                                     </div>
                                 </div>
                             </div>
@@ -131,7 +133,7 @@ Lihat Data Siswa
                             </div>
                             <div class="col-md-4">
                                 <div class="text-center mt-4">
-                                    <a class="btn btn-brand-purple-dark" href="{{route('kependidikan.psb.calonsiswa.edit',$siswa->id)}}">Ubah data siswa</a>
+                                    <a class="btn btn-brand-green-dark" href="{{route('kependidikan.psb.calonsiswa.edit',$siswa->id)}}">Ubah data siswa</a>
                                 </div>
                             </div>
                             </div>
@@ -192,13 +194,13 @@ Lihat Data Siswa
                         <div class="form-group row">
                             <label for="kelas" class="col-sm-4 control-label">Kelas</label>
                             <div class="col-sm-6">
-                                <input type="text" class="form-control" name="tanggal_masuk" placeholder="" value="{{ $siswa->level->level }}" disabled>
+                                <input type="text" class="form-control" name="tanggal_masuk" placeholder="" value="{{ $siswa->level ? $siswa->level->level : '-' }}" disabled>
                             </div>
                         </div>
                         <hr>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Informasi Alamat Siswa</h6>
+                            <h6 class="font-weight-bold text-brand-green">Informasi Alamat Siswa</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -261,7 +263,7 @@ Lihat Data Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Informasi Orang Tua</h6>
+                            <h6 class="font-weight-bold text-brand-green">Informasi Orang Tua</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -420,7 +422,7 @@ Lihat Data Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Informasi Wali</h6>
+                            <h6 class="font-weight-bold text-brand-green">Informasi Wali</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -498,7 +500,7 @@ Lihat Data Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Sekolah Asal</h6>
+                            <h6 class="font-weight-bold text-brand-green">Sekolah Asal</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -516,7 +518,7 @@ Lihat Data Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Saudara Kandung</h6>
+                            <h6 class="font-weight-bold text-brand-green">Saudara Kandung</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -536,7 +538,7 @@ Lihat Data Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Sumber Informasi</h6>
+                            <h6 class="font-weight-bold text-brand-green">Sumber Informasi</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -571,7 +573,7 @@ Lihat Data Siswa
                     </div>
                     <!-- <div class="col-md-12">
                         <div class="text-center mt-4">
-                            <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+                            <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
                         </div>
                     </div> -->
                 </div>
@@ -609,6 +611,29 @@ Lihat Data Siswa
                         <option value="Genap" {{ $siswa->semester&&$siswa->semester->semester=='Genap'?'selected':''}}>Genap</option>
                     </select>
                 </div>
+                @if($siswa->status_id == 5)
+                <div class="form-group">
+                  <label for="year_spp" class="col-form-label">Tahun Mulai SPP</label>
+                  <input type="number" name="year_spp" class="form-control" id="year_spp" value="{{ $siswa->year_spp ? $siswa->year_spp : date('Y') }}" min="2000" required>
+                </div>
+                <div class="form-group">
+                    <label for="month_spp" class="col-form-label">Bulan Mulai SPP</label>
+                    <select name="month_spp" class="select2 form-control select2-hidden-accessible auto_width" id="month_spp" style="width:100%;" tabindex="-1" aria-hidden="true" required>
+                        <option value="1" {{ $siswa->month_spp == '1' ? 'selected' : null }}>Januari</option>
+                        <option value="2" {{ $siswa->month_spp == '2' ? 'selected' : null }}>Februari</option>
+                        <option value="3" {{ $siswa->month_spp == '3' ? 'selected' : null }}>Maret</option>
+                        <option value="4" {{ $siswa->month_spp == '4' ? 'selected' : null }}>April</option>
+                        <option value="5" {{ $siswa->month_spp == '5' ? 'selected' : null }}>Mei</option>
+                        <option value="6" {{ $siswa->month_spp == '6' ? 'selected' : null }}>Juni</option>
+                        <option value="7" {{ $siswa->month_spp == '7' ? 'selected' : null }}>Juli</option>
+                        <option value="8" {{ $siswa->month_spp == '8' ? 'selected' : null }}>Agustus</option>
+                        <option value="9" {{ $siswa->month_spp == '9' ? 'selected' : null }}>September</option>
+                        <option value="10" {{ $siswa->month_spp == '10' ? 'selected' : null }}>Oktober</option>
+                        <option value="11" {{ $siswa->month_spp == '11' ? 'selected' : null }}>November</option>
+                        <option value="12" {{ $siswa->month_spp == '12' ? 'selected' : null }}>Desember</option>
+                    </select>
+                </div>
+                @endif
             </div>
             <div class="modal-footer justify-content-center" style="display:block">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>

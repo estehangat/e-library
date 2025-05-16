@@ -31,6 +31,51 @@ class NilaiRapor extends Model
         return $this->hasMany('App\Models\Penilaian\NilaiKeterampilan', 'score_id');
     }
 
+    public function nilaiAkhirKurdeka()
+    {
+        return $this->hasMany('App\Models\Penilaian\Kurdeka\NilaiAkhir', 'report_score_id');
+    }
+
+    public function formatifKualitatif()
+    {
+        return $this->hasMany('App\Models\Penilaian\Tk\FormatifKualitatif', 'report_score_id');
+    }
+
+    public function nilaiIklas()
+    {
+        return $this->hasMany('App\Models\Penilaian\Iklas\NilaiIklas', 'report_score_id');
+    }
+
+    public function khatamKurdeka()
+    {
+        return $this->hasOne('App\Models\Penilaian\Kurdeka\Khatam', 'report_score_id');
+    }
+
+    public function khatamQuran()
+    {
+        return $this->hasMany('App\Models\Penilaian\Kurdeka\KhatamQuran', 'report_score_id');
+    }
+
+    public function khatamBuku()
+    {
+        return $this->hasOne('App\Models\Penilaian\Kurdeka\KhatamBuku', 'report_score_id');
+    }
+
+    public function quranKurdeka()
+    {
+        return $this->hasMany('App\Models\Penilaian\Kurdeka\Quran', 'report_score_id');
+    }
+
+    public function hafalanKurdeka()
+    {
+        return $this->hasMany('App\Models\Penilaian\Kurdeka\Hafalan', 'report_score_id');
+    }
+
+    public function deskripsiKurdeka()
+    {
+        return $this->hasMany('App\Models\Penilaian\Kurdeka\Deskripsi', 'report_score_id');
+    }
+
     public function iklas()
     {
         return $this->hasOne('App\Models\Penilaian\NilaiIklas', 'score_id');

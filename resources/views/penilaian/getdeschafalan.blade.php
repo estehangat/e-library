@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-md-12">
-        <a class="m-0 float-right btn btn-brand-purple-dark btn-sm mb-2" href="javascript:void(0)" data-toggle="modal" data-target="#TambahModal">Tambah <i class="fas fa-plus"></i></a>
+        <a class="m-0 float-right btn btn-brand-green-dark btn-sm mb-2" href="javascript:void(0)" data-toggle="modal" data-target="#TambahModal">Tambah <i class="fas fa-plus"></i></a>
     </div>
 </div>
 <div class="table-responsive">

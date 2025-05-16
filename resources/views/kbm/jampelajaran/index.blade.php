@@ -58,7 +58,7 @@ Jam Pelajaran
                                         @endforeach
                                     </select>
                                 </div>
-                                <button type="submit" class="btn btn-brand-purple-dark">Cari</button>
+                                <button type="submit" class="btn btn-brand-green-dark">Cari</button>
                             </div>
                             <div class="text-center mt-4">
                             </div>
@@ -74,7 +74,5 @@ Jam Pelajaran
 
 @section('footjs')
 <!-- Plugins and scripts required by this view-->
-<script src="{{asset('vendor/chart.js/Chart.min.js')}}"></script>
-<script src="{{asset('js/demo/chart-area-demo.js')}}"></script>
 @include('template.footjs.kbm.datatables')
 @endsection

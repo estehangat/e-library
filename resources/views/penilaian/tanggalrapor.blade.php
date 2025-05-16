@@ -35,7 +35,7 @@ Pengaturan Tanggal Rapor
     <h1 class="h3 mb-0 text-gray-800">Pengaturan Tanggal LTS dan Rapor</h1>
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="javascript:void(0)">Penilaian</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Jumlah NH</li>
+        <li class="breadcrumb-item active" aria-current="page">Tanggal LTS dan Rapor</li>
     </ol>
 </div>
 
@@ -62,7 +62,7 @@ Pengaturan Tanggal Rapor
                                 </div>
                             </div>
                             <div class="text-center mt-4">
-                                <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+                                <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
                             </div>
                         </form>
                     </div>

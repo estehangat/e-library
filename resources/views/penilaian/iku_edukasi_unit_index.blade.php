@@ -68,7 +68,7 @@ Ledger Unit
                       <option value="{{ $l['link'] }}" {{ $ledger == $l['link'] ? 'selected' : '' }}>{{ $l['name'] }}</option>
                       @endforeach
                     </select>
-                    <a href="{{ route('penilaian.ikuEdukasi.unit') }}" id="btn-select-ledger" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('penilaian.ikuEdukasi.unit') }}">Pilih</a>
+                    <a href="{{ route('penilaian.ikuEdukasi.unit') }}" id="btn-select-ledger" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('penilaian.ikuEdukasi.unit') }}">Pilih</a>
                     </div>
                   </div>
                 </div>
@@ -101,7 +101,7 @@ Ledger Unit
                       <option value="{{ $u->name }}" {{ $unit && $unit->id == $u->id ? 'selected' : '' }}>{{ $u->name }}</option>
                       @endforeach
                     </select>
-                    <a href="{{ route('penilaian.ikuEdukasi.unit', ['ledger' => $ledger]) }}" id="btn-select-unit" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('penilaian.ikuEdukasi.unit', ['ledger' => $ledger]) }}">Pilih</a>
+                    <a href="{{ route('penilaian.ikuEdukasi.unit', ['ledger' => $ledger]) }}" id="btn-select-unit" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('penilaian.ikuEdukasi.unit', ['ledger' => $ledger]) }}">Pilih</a>
                     </div>
                     @endif
                   </div>
@@ -135,7 +135,7 @@ Ledger Unit
                       @endif
                       @endforeach
                     </select>
-                    <a href="{{ route('penilaian.ikuEdukasi.unit', ['ledger' => $ledger, 'unit' => $unit->name]) }}" id="btn-select-year" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('penilaian.ikuEdukasi.unit', ['ledger' => $ledger, 'unit' => $unit->name]) }}">Atur</a>
+                    <a href="{{ route('penilaian.ikuEdukasi.unit', ['ledger' => $ledger, 'unit' => $unit->name]) }}" id="btn-select-year" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('penilaian.ikuEdukasi.unit', ['ledger' => $ledger, 'unit' => $unit->name]) }}">Atur</a>
                     </div>
                   </div>
                 </div>

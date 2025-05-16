@@ -17,8 +17,8 @@
     <div class="col-md-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Nama Kelas</h6>
-                <a class="m-0 float-right btn btn-brand-purple-dark btn-sm" href="/penilaian/tambahpredikatsikap">Tambah <i class="fas fa-plus"></i></a>
+                <h6 class="m-0 font-weight-bold text-brand-green">Nama Kelas</h6>
+                <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="/penilaian/tambahpredikatsikap">Tambah <i class="fas fa-plus"></i></a>
             </div>
             <div class="table-responsive">
                 <table class="table align-items-center table-flush">

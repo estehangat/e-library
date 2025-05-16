@@ -21,12 +21,13 @@ Nama Kelas
     <div class="col-md-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Nama Kelas</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Nama Kelas</h6>
                 @if( in_array((auth()->user()->role_id), array(1,2)))
-                <a class="m-0 float-right btn btn-brand-purple-dark btn-sm" href="/kependidikan/kbm/kelas/nama-kelas/tambah">Tambah <i class="fas fa-plus"></i></a>
+                <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="/kependidikan/kbm/kelas/nama-kelas/tambah">Tambah <i class="fas fa-plus"></i></a>
                 @endif
             </div>
-            <div class="table-responsive">
+            <div class="card-body">
+                <div class="table-responsive">
                 <table class="table align-items-center table-flush">
                     <thead class="thead-light">
                         <tr>
@@ -57,6 +58,7 @@ Nama Kelas
                     @endforeach
                     </tbody>
                 </table>
+            </div>
             </div>
             <div class="card-footer"></div>
         </div>

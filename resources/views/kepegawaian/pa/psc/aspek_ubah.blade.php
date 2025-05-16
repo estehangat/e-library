@@ -82,7 +82,7 @@
       <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Kembali</button>
     </div>
     <div class="col-6 text-right">
-      <input id="save-indicator" type="submit" class="btn btn-brand-purple-dark btn-sm" value="Ubah">
+      <input id="save-indicator" type="submit" class="btn btn-brand-green-dark btn-sm" value="Ubah">
     </div>
   </div>
 </form>

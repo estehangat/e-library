@@ -141,7 +141,7 @@ $role = Auth::user()->role->name;
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Laporan Prestasi Kerja</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Laporan Prestasi Kerja</h6>
                 @if($nilai && $nilai->acc_status_id == 1)
                 <div class="m-0 float-right">
                   <a href="{{ route('psc.laporan.pegawai.unduh', ['tahun' => $tahun->academicYearLink, 'unit' => $unitAktif->name, 'pegawai' => $nilai->pegawai->nip]) }}" class="btn btn-brand-green-dark btn-sm">Ekspor <i class="fas fa-file-download ml-1"></i></a>

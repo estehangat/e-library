@@ -9,7 +9,7 @@ PPB
 @endsection
 
 @section('sidebar')
-@include('template.sidebar.keuangan.'.Auth::user()->role->name)
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -23,7 +23,7 @@ PPB
     <li class="breadcrumb-item active" aria-current="page">{{ $bbkAktif->firstNumber }}</li>
   </ol>
 </div>
-
+{{--
 <div class="row">
     @foreach($jenisAnggaran as $j)
     @php
@@ -53,14 +53,14 @@ PPB
         <div class="card h-100">
             <div class="card-body p-0">
                 <div class="row align-items-center mx-0">
-                    <div class="col-auto px-3 py-2 bg-brand-purple">
+                    <div class="col-auto px-3 py-2 bg-brand-green">
                         <i class="mdi mdi-file-document-outline mdi-24px text-white"></i>
                     </div>
                     <div class="col">
                         <div class="h6 mb-0 font-weight-bold text-gray-800">{{ $j->name }}</div>
                     </div>
                     <div class="col-auto">
-                        <a href="{{ route('ppb.index', ['jenis' => $j->link])}}" class="btn btn-sm btn-outline-brand-purple">Pilih</a>
+                        <a href="{{ route('ppb.index', ['jenis' => $j->link])}}" class="btn btn-sm btn-outline-brand-green">Pilih</a>
                     </div>
                 </div>
             </div>
@@ -88,7 +88,7 @@ PPB
     @endif
     @endforeach
 </div>
-
+--}}
 @if($jenisAktif)
 <div class="row mb-4">
   <div class="col-12">
@@ -164,7 +164,7 @@ PPB
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Daftar PPA</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Daftar PPA</h6>
                 <div class="m-0 float-right">
                 @if($bbkAktif && $bbkAktif->director_acc_status_id != 1)
                 @if($acceptable)
@@ -175,6 +175,11 @@ PPB
                 @endif
                 </div>
             </div>
+                @if(!$acceptZeroValues && $bbkAktif && $bbkAktif->director_acc_status_id != 1 && $bbkAktif->detail()->whereHas('ppa.detail',function($q){$q->where('value','<=',0);})->count() > 0)
+                <div class="alert alert-warning mx-3" role="alert">
+                  PPB ini belum dapat disetujui karena masih ada detail pengajuan 0
+                </div>
+                @endif
                 @if(Session::has('success'))
                 <div class="alert alert-success alert-dismissible fade show mx-3" role="alert">
                   <strong>Sukses!</strong> {{ Session::get('success') }}
@@ -249,6 +254,11 @@ PPB
                                     <a href="{{ route('ppb.ubah', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'nomor' => $bbkAktif->firstNumber, 'ppa' => $b->ppa->id]) }}" class="btn btn-sm btn-warning">
                                         <i class="fas fa-pen"></i>
                                     </a>
+                                    @if($bbkAktif->detail()->count() > 1)
+                                    <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#delete-confirm" onclick="deleteModal('PPB', '{{ addslashes(htmlspecialchars('PPA No. '.$b->ppa->number)) }}', '{{ route('ppb.tunda', ['jenis' => $jenisAktif->link, 'tahun' => $tahun->academicYearLink, 'nomor' => $bbkAktif->firstNumber, 'ppa' => $b->ppa->id]) }}')">
+                                        <i class="fas fa-history"></i>
+                                    </a>
+                                    @endif
                                 </td>
                                 @endif
                             </tr>
@@ -260,7 +270,7 @@ PPB
                 <div class="text-center mx-3 my-5">
                     <h3 class="text-center">Mohon Maaf,</h3>
                     <h6 class="font-weight-light mb-3">Tidak ada data PPA yang ditemukan</h6>
-                </div>
+            </div>
                 @endif
                 <div class="card-footer"></div>
         </div>
@@ -268,6 +278,10 @@ PPB
 </div>
 @endif
 <!--Row-->
+
+@if($bbkAktif->director_acc_status_id != 1 && $bbkAktif->detail()->count() > 1)
+@include('template.modal.konfirmasi_tunda')
+@endif
 
 @if($bbkAktif && $bbkAktif->director_acc_status_id != 1 && $acceptable)
 <div class="modal fade" id="acceptAll" tabindex="-1" role="dialog" aria-labelledby="setujuiModalLabel" aria-hidden="true" style="display: none;">
@@ -304,4 +318,7 @@ PPB
 <!-- Plugins and scripts required by this view-->
 @include('template.footjs.kepegawaian.tooltip')
 @include('template.footjs.keuangan.change-year')
+@if($bbkAktif->director_acc_status_id != 1 && $bbkAktif->detail()->count() > 1)
+@include('template.footjs.modal.get_delete')
+@endif
 @endsection

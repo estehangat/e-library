@@ -66,7 +66,13 @@ class JamPelajaranController extends Controller
 
         $jams = JamPelajaran::where('level_id',$tingkat)->where('day',$hari)->orderBy('hour_start','asc')->get();
 
-        return view('kbm.jampelajaran.find',compact('levels','jams','kelas','tingkat','hari'));
+        $used = null;
+        foreach($jams as $jam){
+            if($jam->jadwalpelajarans()->count() > 0) $used[$jam->id] = 1;
+            else $used[$jam->id] = 0;
+        }
+
+        return view('kbm.jampelajaran.find',compact('levels','jams','kelas','tingkat','hari','used'));
     }
 
 
@@ -109,7 +115,7 @@ class JamPelajaranController extends Controller
 
         $pesan = 'Tambah jam pelajaran kelas '.$kelas->level.' hari '.$request->hari.' Berhasil';
 
-        return redirect('/kependidikan/kbm/pelajaran/waktu-pelajaran/'.$kelas->id.'/'.$request->hari)->with('sukses',$pesan);
+        return redirect('/kependidikan/kbm/pelajaran/waktu-pelajaran/'.$kelas->id.'/'.$request->hari)->with('success',$pesan);
         dd($request);
 
 
@@ -176,7 +182,7 @@ class JamPelajaranController extends Controller
 
         // dd($pesan);
 
-        return redirect('/kependidikan/kbm/pelajaran/waktu-pelajaran/'.$kelas->id.'/'.$jampel->day)->with('sukses',$pesan);
+        return redirect('/kependidikan/kbm/pelajaran/waktu-pelajaran/'.$kelas->id.'/'.$jampel->day)->with('success',$pesan);
     }
 
     /**
@@ -191,6 +197,6 @@ class JamPelajaranController extends Controller
     	$kelas = JamPelajaran::find($id);
         $kelas->delete();
         
-        return redirect('/kependidikan/kbm/pelajaran/waktu-pelajaran/')->with('sukses','Hapus Jam Pelajaran Berhasil');
+        return redirect('/kependidikan/kbm/pelajaran/waktu-pelajaran/')->with('success','Hapus Jam Pelajaran Berhasil');
     }
 }

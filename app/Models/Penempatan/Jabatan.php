@@ -77,6 +77,11 @@ class Jabatan extends Model
         return $this->hasMany('App\Models\Iku\IkuAspectPosition','position_id');
     }
 
+    public function budgetUsers()
+    {
+        return $this->hasMany('App\Models\Anggaran\Anggaran','acc_position_id');
+    }
+
     public function scopeGroup($query){
         if(strlen($this->code) > 3){
             return $query->where('code',substr($this->code,0,strlen($this->code)-3));

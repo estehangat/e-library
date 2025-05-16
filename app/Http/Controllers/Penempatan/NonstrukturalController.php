@@ -355,21 +355,33 @@ class NonstrukturalController extends Controller
         $unit = Unit::where('name',$unit)->first();
 
         if($aktif && $unit){
-            if($request->user()->role->name == 'etm'){
+            if(in_array($request->user()->role->name,['etl','etm'])){
                 $detail = PenempatanPegawaiDetail::find($id);
                 
-                if($detail && $detail->acc_status_id != 1){
+                if($detail){
                     $penempatan_id = $detail->penempatanPegawai->id;
 
-                    $detail->delete();
+                    if($request->user()->role->name == 'etm'){
+                        if($detail->acc_status_id != 1){
+                            $detail->forceDelete();
+                            Session::flash('success','Data berhasil dihapus');
+                        }
+                        else Session::flash('danger','Data gagal dihapus');
+                    }
+
+                    if($request->user()->role->name == 'etl'){
+                        if($detail->acc_status_id == 1){
+                            $detail->delete();
+                            Session::flash('success','Data berhasil dihapus');
+                        }
+                        else Session::flash('danger','Data gagal dihapus');
+                    }
 
                     $penempatan = PenempatanPegawai::find($penempatan_id);
 
                     if($penempatan->show->count() < 1){
                         $penempatan->delete();
                     }
-
-                    Session::flash('success','Data berhasil dihapus');
                 }
                 else Session::flash('danger','Data gagal dihapus');
 

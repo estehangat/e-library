@@ -1,9 +1,9 @@
 
-@if( in_array((auth()->user()->role_id), array(1,2,8,11,12,13,18,25,26)))
+@if( in_array((auth()->user()->role_id), array(1,2,8,11,12,13,18,25,26,29,50)))
 <div class="sidebar-heading">
     Pembayaran Uang Sekolah
 </div>
-@if(in_array(auth()->user()->role_id,array(25)))
+@if(in_array(auth()->user()->role_id,array(25,26,29,50)))
 <li class="nav-item {{ request()->is('keuangan/pemindahan-transaksi*') ? 'active' : '' }}">
     <a class="nav-link {{ request()->is('keuangan/pemindahan-transaksi*') ? 'active' : '' }}" href="{{url('/keuangan/pemindahan-transaksi')}}">
         <i class="mdi mdi-arrow-left-right-bold"></i>
@@ -31,7 +31,7 @@
           <i class="mdi mdi-credit-card"></i>
           <span>Virtual Account BMS</span>
         </a>
-        @if(in_array(Auth::user()->role->name,['pembinayys','ketuayys','dir','fam']))
+        @if(in_array(Auth::user()->role->name,['pembinayys','ketuayys','dir','fam','am']))
         <a class="collapse-item {{ request()->routeIs('bms.nominal*') ? 'active' : '' }}" href="{{ route('bms.nominal.index') }}">
           <i class="mdi mdi-tag"></i>
           <span>Nominal BMS</span>
@@ -69,7 +69,7 @@
           <i class="mdi mdi-credit-card"></i>
           <span>Virtual Account SPP</span>
         </a>
-        @if(in_array(Auth::user()->role->name,['pembinayys','ketuayys','dir','fam']))
+        @if(in_array(Auth::user()->role->name,['pembinayys','ketuayys','dir','fam','am']))
         <a class="collapse-item {{ request()->routeIs('spp.potongan*') ? 'active' : '' }}" href="{{ route('spp.potongan.index') }}">
           <i class="mdi mdi-ticket-percent"></i>
           <span>Potongan SPP</span>
@@ -84,6 +84,12 @@
           <i class="mdi mdi-book-arrow-left"></i>
           <span>Lap. Pembayaran SPP</span>
         </a>
+		@if(in_array(Auth::user()->role->name,['faspv','akunspv']))
+        <a class="collapse-item {{ request()->routeIs('spp.generator*') ? 'active' : '' }}" href="{{ route('spp.generator.index') }}">
+          <i class="mdi mdi-cog-refresh"></i>
+          <span>SPP Generator</span>
+        </a>
+        @endif
       </div>
     </div>
 </li>

@@ -30,45 +30,47 @@ Daftar Kelas
             </div>
             @endif
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Daftar Kelas</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Daftar Kelas</h6>
                 @if( in_array((auth()->user()->role_id), array(1,2)))
-                <a class="m-0 float-right btn btn-brand-purple-dark btn-sm" href="/kependidikan/kbm/kelas/daftar-kelas/tambah">Tambah <i class="fas fa-plus"></i></a>
+                <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="/kependidikan/kbm/kelas/daftar-kelas/tambah">Tambah <i class="fas fa-plus"></i></a>
                 @endif
             </div>
-            <div class="table-responsive">
-                <table id="dataTable" class="table align-items-center table-flush">
-                    <thead class="thead-light">
-                        <tr>
-                            <th>#</th>
-                            <th>Kelas</th>
-                            <th>Nama Kelas</th>
-                            <th>Wali Kelas</th>
-                            @if( in_array((auth()->user()->role_id), array(1,2)))
-                            <th>Aksi</th>
-                            @endif
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach( $kelases as $index => $kelas)
-                        <tr>
-                            <td>{{$index+1}}</td>
-                            <td>{{ $kelas->level->level }} {{$kelas->major_id==null?'':$kelas->jurusan->major_name}}</td>
-                            <td>{{ $kelas->namakelases->class_name }}</td>
-                            <td>{{ $kelas->walikelas->name }}</td>
-                            @if( in_array((auth()->user()->role_id), array(1,2)))
-                            <td><a href="/kependidikan/kbm/kelas/daftar-kelas/ubah/{{ $kelas->id }}" class="btn btn-sm btn-warning"><i class="fas fa-pen"></i></a>&nbsp;
-                            
-                            @if($kelas->siswa()->count()>0)
-                            <button href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#HapusModal{{ $kelas->id }}" disabled><i class="fas fa-trash"></i></button>
-                            @else
-                            <button href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#HapusModal{{ $kelas->id }}"><i class="fas fa-trash"></i></button>
-                            @endif
-                            </td>
-                            @endif
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="dataTable" class="table align-items-center table-flush">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Kelas</th>
+                                <th>Nama Kelas</th>
+                                <th>Wali Kelas</th>
+                                @if( in_array((auth()->user()->role_id), array(1,2)))
+                                <th>Aksi</th>
+                                @endif
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach( $kelases as $index => $kelas)
+                            <tr>
+                                <td>{{$index+1}}</td>
+                                <td>{{ $kelas->level->level }} {{$kelas->major_id==null?'':$kelas->jurusan->major_name}}</td>
+                                <td>{{ $kelas->namakelases->class_name }}</td>
+                                <td>{{ $kelas->walikelas ? $kelas->walikelas->name : '-' }}</td>
+                                @if( in_array((auth()->user()->role_id), array(1,2)))
+                                <td><a href="/kependidikan/kbm/kelas/daftar-kelas/ubah/{{ $kelas->id }}" class="btn btn-sm btn-warning"><i class="fas fa-pen"></i></a>&nbsp;
+                                
+                                @if($kelas->siswa()->count()>0)
+                                <button href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#HapusModal{{ $kelas->id }}" disabled><i class="fas fa-trash"></i></button>
+                                @else
+                                <button href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#HapusModal{{ $kelas->id }}"><i class="fas fa-trash"></i></button>
+                                @endif
+                                </td>
+                                @endif
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <div class="card-footer"></div>
         </div>

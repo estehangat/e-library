@@ -9,19 +9,20 @@ Ubah Data Siswa
 @endsection
 
 @section('content')
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
+<div class="d-sm-flex align-items-center justify-content-between mb-2">
     <h1 class="h3 mb-0 text-gray-800">Ubah Data Siswa</h1>
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="javascript:void(0)">Belajar Mengajar</a></li>
-        <li class="breadcrumb-item"><a href="/kependidikan/kbm/siswa">Siswa</a></li>
+        <li class="breadcrumb-item"><a href="/kependidikan/kbm/siswa/{{ $siswa->is_lulus == 1 ? 'alumni' : 'aktif' }}">Siswa</a></li>
+        <li class="breadcrumb-item"><a href="/kependidikan/kbm/siswa/lihat/{{ $siswa->id }}">{{ $siswa->id }}</a></li>
         <li class="breadcrumb-item active" aria-current="page">Ubah</li>
     </ol>
 </div>
 
-<div class="row mb-3">
+<div class="row mb-4">
     <div class="col-md-12">
         <div class="card h-100">
-        <div class="card-header py-3 bg-brand-purple-dark d-flex flex-row align-items-center justify-content-between">
+        <div class="card-header py-3 bg-brand-green-dark d-flex flex-row align-items-center justify-content-between">
             <h6 class="m-0 font-weight-bold text-white">Form Ubah Siswa</h6>
         </div>
             <div class="card-body">
@@ -41,7 +42,7 @@ Ubah Data Siswa
                     <div class="col-md-8">
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Program Siswa</h6>
+                            <h6 class="font-weight-bold text-brand-green">Program Siswa</h6>
                             </div>
                         </div>
                         <div class="form-group">
@@ -64,7 +65,7 @@ Ubah Data Siswa
                                 @enderror
                                 @else
                                 <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" id="unitOpt{{ $siswa->unit->id }}" name="unit" class="custom-control-input" value="{{ $siswa->unit->id }}" required="required" checked disabled>
+                                <input type="radio" id="unitOpt{{ $siswa->unit->id }}" name="unit" class="custom-control-input" value="{{ $siswa->unit->id }}" required="required" checked readonly>
                                 <label class="custom-control-label" for="unitOpt{{ $siswa->unit->id }}">{{ $siswa->unit->name }}</label>
                                 </div>
                                 @endif
@@ -74,7 +75,7 @@ Ubah Data Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Informasi Umum Siswa</h6>
+                            <h6 class="font-weight-bold text-brand-green">Informasi Umum Siswa</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -194,6 +195,7 @@ Ubah Data Siswa
                                 </select>
                             </div>
                         </div>
+                        @if($siswa->is_lulus != 1)
                         <div class="form-group row">
                             <label for="kelas" class="col-sm-4 control-label">Kelas</label>
                             <div class="col-sm-6">
@@ -209,10 +211,11 @@ Ubah Data Siswa
                                 </select>
                             </div>
                         </div>
+                        @endif
                         <hr>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Informasi Alamat Siswa</h6>
+                            <h6 class="font-weight-bold text-brand-green">Informasi Alamat Siswa</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -333,14 +336,14 @@ Ubah Data Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Informasi Orang Tua</h6>
+                            <h6 class="font-weight-bold text-brand-green">Informasi Orang Tua</h6>
                             </div>
                         </div>
                         @php
                         $employeeId = $siswa && $siswa->identitas && $siswa->identitas->orangtua? $siswa->identitas->orangtua->employee_id : null;
                         @endphp
                         <div class="form-group row">
-                            <label for="employeeOpt" class="col-sm-4 control-label">Sivitas Akademika?</label>
+                            <label for="employeeOpt" class="col-sm-4 control-label">Civitas Auliya?</label>
                             <div class="col-sm-6">
                                 <div class="custom-control custom-radio custom-control-inline">
                                   <input type="radio" id="employeeOpt2" name="employeeOpt" class="custom-control-input" value="no" required="required" {{ !$employeeId ? 'checked' : null }}>
@@ -365,12 +368,14 @@ Ubah Data Siswa
                                 </div>
                             </div>
                         </div>
+                        @if( in_array((auth()->user()->role_id), array(1,7,30,31)))
                         <div class="form-group row">
                             <label for="nama_ayah" class="col-sm-4 control-label">Nama Ayah</label>
                             <div class="col-sm-6">
                                 <input type="text" class="form-control" name="nama_ayah" placeholder="Nama Ayah" value="{{ $siswa->identitas->orangtua->father_name }}">
                             </div>
                         </div>
+                        @endif
                         @if( in_array((auth()->user()->role_id), array(1,30,31)))
                         <div class="form-group row">
                             <label for="nik_ayah" class="col-sm-4 control-label">NIK Ayah</label>
@@ -379,12 +384,14 @@ Ubah Data Siswa
                             </div>
                         </div>
                         @endif
+                        @if( in_array((auth()->user()->role_id), array(1,7,30,31)))
                         <div class="form-group row">
                             <label for="hp_ayah" class="col-sm-4 control-label">No HP Ayah</label>
                             <div class="col-sm-6">
                                 <input type="number" class="form-control" name="hp_ayah" placeholder="No HP Ayah" value="{{ $siswa->identitas->orangtua->father_phone }}">
                             </div>
                         </div>
+                        @endif
                         @if( in_array((auth()->user()->role_id), array(1,30,31)))
                         <div class="form-group row">
                             <label for="email_ayah" class="col-sm-4 control-label">email Ayah</label>
@@ -409,7 +416,7 @@ Ubah Data Siswa
                                         @if( $siswa->identitas->orangtua->father_job=="Wiraswasta")
                                             <option value="Wiraswasta" selected>Wiraswasta</option>
                                         @else
-                                            <option value="Wiraswasta">Pegawai Negeri</option>
+                                            <option value="Wiraswasta">Wiraswasta</option>
                                         @endif
                                 </select>
                             </div>
@@ -456,12 +463,14 @@ Ubah Data Siswa
                             </div>
                         </div>
                         @endif
+                        @if( in_array((auth()->user()->role_id), array(1,7,30,31)))
                         <div class="form-group row">
                             <label for="nama_ibu" class="col-sm-4 control-label">Nama Ibu</label>
                             <div class="col-sm-6">
                                 <input type="text" class="form-control" name="nama_ibu" placeholder="Nama Ibu" value="{{ $siswa->identitas->orangtua->mother_name }}">
                             </div>
                         </div>
+                        @endif
                         @if( in_array((auth()->user()->role_id), array(1,30,31)))
                         <div class="form-group row">
                             <label for="nik_ibu" class="col-sm-4 control-label">NIK Ibu</label>
@@ -470,12 +479,14 @@ Ubah Data Siswa
                             </div>
                         </div>
                         @endif
+                        @if( in_array((auth()->user()->role_id), array(1,7,30,31)))
                         <div class="form-group row">
                             <label for="hp_ibu" class="col-sm-4 control-label">No HP Ibu</label>
                             <div class="col-sm-6">
                                 <input type="number" class="form-control" name="hp_ibu" placeholder="No HP Ibu" value="{{ $siswa->identitas->orangtua->mother_phone }}">
                             </div>
                         </div>
+                        @endif
                         @if( in_array((auth()->user()->role_id), array(1,30,31)))
                         <div class="form-group row">
                             <label for="email_ibu" class="col-sm-4 control-label">email Ibu</label>
@@ -500,7 +511,7 @@ Ubah Data Siswa
                                         @if( $siswa->identitas->orangtua->mother_job=="Wiraswasta")
                                             <option value="Wiraswasta" selected>Wiraswasta</option>
                                         @else
-                                            <option value="Wiraswasta">Pegawai Negeri</option>
+                                            <option value="Wiraswasta">Wiraswasta</option>
                                         @endif
                                 </select>
                             </div>
@@ -545,31 +556,35 @@ Ubah Data Siswa
                                 </select>
                             </div>
                         </div>
+                        @endif
+                        @if( in_array((auth()->user()->role_id), array(1,7,30,31)))
                         <div class="form-group row">
                             <label for="alamat_ortu" class="col-sm-4 control-label">Alamat Orang Tua</label>
                             <div class="col-sm-6">
                                 <input type="text" class="form-control" name="alamat_ortu" placeholder="Alamat Orang Tua" value="{{ $siswa->identitas->orangtua->parent_address }}">
                             </div>
                         </div>
-                        @endif
                         <div class="form-group row">
                             <label for="no_hp_ortu" class="col-sm-4 control-label">No HP Alternatif</label>
                             <div class="col-sm-6">
                                 <input type="number" class="form-control" name="no_hp_ortu" placeholder="08222*****" value="{{ $siswa->identitas->orangtua->parent_phone_number }}">
                             </div>
-                        </div>
+                        </div>                        
+                        @endif
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Informasi Wali</h6>
+                            <h6 class="font-weight-bold text-brand-green">Informasi Wali</h6>
                             </div>
                         </div>
+                        @if( in_array((auth()->user()->role_id), array(1,7,30,31)))
                         <div class="form-group row">
                             <label for="nama_wali" class="col-sm-4 control-label">Nama Wali</label>
                             <div class="col-sm-6">
                                 <input type="text" class="form-control" name="nama_wali" placeholder="Nama Wali" value="{{ $siswa->identitas->orangtua->guardian_name }}">
                             </div>
                         </div>
+                        @endif
                         @if( in_array((auth()->user()->role_id), array(1,30,31)))
                         <div class="form-group row">
                             <label for="nik_wali" class="col-sm-4 control-label">NIK Wali</label>
@@ -578,12 +593,14 @@ Ubah Data Siswa
                             </div>
                         </div>
                         @endif
+                        @if( in_array((auth()->user()->role_id), array(1,7,30,31)))
                         <div class="form-group row">
                             <label for="hp_wali" class="col-sm-4 control-label">No HP Wali</label>
                             <div class="col-sm-6">
                                 <input type="number" class="form-control" name="hp_wali" placeholder="No HP Wali" value="{{ $siswa->identitas->orangtua->guardian_phone_number }}">
                             </div>
                         </div>
+                        @endif
                         @if( in_array((auth()->user()->role_id), array(1,30,31)))
                         <div class="form-group row">
                             <label for="email_wali" class="col-sm-4 control-label">email Wali</label>
@@ -663,7 +680,7 @@ Ubah Data Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Sekolah Asal</h6>
+                            <h6 class="font-weight-bold text-brand-green">Sekolah Asal</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -681,11 +698,11 @@ Ubah Data Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Saudara Kandung</h6>
+                            <h6 class="font-weight-bold text-brand-green">Saudara Kandung</h6>
                             </div>
                         </div>
                         <div class="form-group row">
-                            <label for="asal_sekolah" class="col-sm-4 control-label">Nama Saudara Kandung di Auliya</label>
+                            <label for="asal_sekolah" class="col-sm-4 control-label">Nama Saudara Kandung</label>
                             <div class="col-sm-6">
                                 <input type="text" class="form-control" name="saudara_nama" placeholder="Nama" value="{{ $siswa->sibling_name?$siswa->sibling_name:'-' }}">
                             </div>
@@ -707,7 +724,7 @@ Ubah Data Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Sumber Informasi</h6>
+                            <h6 class="font-weight-bold text-brand-green">Sumber Informasi</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -716,11 +733,10 @@ Ubah Data Siswa
                                 <select name="info_dari" class="select2 form-control select2-hidden-accessible auto_width" id="kelas" style="width:100%;" tabindex="-1" aria-hidden="true">
                                         <option value="{{ $siswa->info_from }}">{{ $siswa->info_from }}</option>
                                         <option value="">== Pilih ==</option>
-                                        <option value="Orangtua Auliya">Orangtua Auliya</option>
+                                        <option value="Orangtua">Orangtua</option>
                                         <option value="Guru/Staf">Guru/Staf</option>
                                         <option value="Brosur">Brosur</option>
                                         <option value="Spanduk">Spanduk</option>
-                                        <option value="Website dan Sosmed Auliya Keren">Website dan Sosmed Auliya Keren</option>
                                         <option value="Media Cetak">Media Cetak</option>
                                         <option value="Sering Lewat">Sering Lewat</option>
                                         <option value="Teman">Teman</option>
@@ -742,7 +758,7 @@ Ubah Data Siswa
                     </div>
                     <div class="col-md-12">
                         <div class="text-center mt-4">
-                            <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+                            <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
                         </div>
                     </div>
                 </div>

@@ -52,7 +52,8 @@ class AspekEvaluasiController extends Controller
 
             $indicators = $this->getIndicators($target->target_position_id);
 
-            $penempatan = Jabatan::select('id','name')->aktif()->orderBy('category_id')->orderBy('code')->orderByRaw('LENGTH(code)','ASC')->get();
+            // $penempatan = Jabatan::select('id','name')->aktif()->orderBy('category_id')->orderBy('code')->orderByRaw('LENGTH(code)','ASC')->get();
+            $penempatan = Jabatan::select('id','name')->aktif()->orderBy('category_id')->orderBy('code')->get();
 
             $lock = Setting::where('name','psc_aspect_lock_status')->first();
 
@@ -188,7 +189,8 @@ class AspekEvaluasiController extends Controller
                     $skip = 2;
                     $limit = $count - $skip;
                     $indicators = PscIndicator::static()->whereNull('parent_id')->where('level',1)->skip($skip)->take($limit)->get();
-                    $penempatan = Jabatan::select('id','name')->aktif()->orderBy('category_id')->orderBy('code')->orderByRaw('LENGTH(code)','ASC')->get();
+                    // $penempatan = Jabatan::select('id','name')->aktif()->orderBy('category_id')->orderBy('code')->orderByRaw('LENGTH(code)','ASC')->get();
+                    $penempatan = Jabatan::select('id','name')->aktif()->orderBy('category_id')->orderBy('code')->get();                    
                     
                     $tahun = TahunAjaran::where('is_active',1)->latest()->first();
 

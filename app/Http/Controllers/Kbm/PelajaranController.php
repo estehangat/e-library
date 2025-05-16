@@ -42,6 +42,7 @@ class PelajaranController extends Controller
         // inisialisasi
         $smsaktif = Semester::where('is_active',1)->first();
         $kkm = [];
+        $used = null;
         foreach($mapellist as $index => $mapel){
             if(Auth::user()->role_id == 5){
                 $checkkkm = KkmPelajaran::where('subject_id',$mapel->subject_id)->where('semester_id',$smsaktif->id)->first();
@@ -54,10 +55,13 @@ class PelajaranController extends Controller
             }else{
                 $kkm[$index] = 'Belum diatur';
             }
+            
+            if($mapel->jadwalPelajaran()->count() > 0 || $mapel->skbmDetail()->count() > 0) $used[$mapel->id] = 1;
+            else $used[$mapel->id] = 0;
         }
         // dd($mapellist[0]);
 
-        return view('kbm.matapelajaran.index',compact('mapellist','unit','kkm','smsaktif'));
+        return view('kbm.matapelajaran.index',compact('mapellist','unit','kkm','smsaktif','used'));
     }
 
     public function create()
@@ -75,26 +79,39 @@ class PelajaranController extends Controller
 
         $unit = Auth::user()->pegawai->unit_id;
 
+        $messages = [
+            'nama_mapel.required' => 'Mohon tuliskan nama mata pelajaran',
+            'kode_mapel.required' => 'Mohon tuliskan kode mata pelajaran',
+            'nomor_mapel.required' => 'Mohon tuliskan nomor urut mata pelajaran',
+            'nomor_mapel.numeric' => 'Pastikan nomor urut mata pelajaran hanya mengandung angka',
+            'nomor_mapel.min' => 'Pastikan nomor urut mata pelajaran minimal 1',
+            'kmp_id.required' => 'Mohon pilih salah satu kelompok mata pelajaran',
+            'kkm.required' => 'Mohon tentukan KKM mata pelajaran ini',
+            'kkm.numeric' => 'Pastikan KKM hanya mengandung angka',
+            'kkm.min' => 'Pastikan KKM dalam rentang 51-100',
+            'kkm.max' => 'Pastikan KKM dalam rentang 51-100',
+        ];
+
         // validate dari form tambah
         if($unit == 1){
             $request->validate([
                 'nama_mapel' => 'required',
                 'kmp_id' => 'required',
-            ]);
+            ], $messages);
             // create to table
             MataPelajaran::create([
                 'subject_name' => $request->nama_mapel,
-                'subject_acronym' => $request->kode_mapel,
                 'group_subject_id' => $request->kmp_id,
                 'unit_id' => $unit,
             ]);
         }else{
             $request->validate([
                 'nama_mapel' => 'required',
-                'nomor_mapel' => 'required',
+                'kode_mapel' => 'required',
+                'nomor_mapel' => 'required|numeric|min:1',
                 'kmp_id' => 'required',
-                'kkm' => 'required',
-            ]);
+                'kkm' => 'required|numeric|min:51|max:100',
+            ], $messages);
 
             if($request->kkm <= 50){
                 return redirect()->back()->with('error', 'KKM Harus Lebih Dari 50');
@@ -104,11 +121,11 @@ class PelajaranController extends Controller
             $mapel = MataPelajaran::create([
                 'subject_number' => $request->nomor_mapel,
                 'subject_name' => $request->nama_mapel,
-                'subject_code' => $request->kode_mapel,
+                'subject_acronym' => $request->kode_mapel,
                 'group_subject_id' => $request->kmp_id,
                 'kkm' => $request->kkm,
                 'unit_id' => $unit,
-                'is_mulok' => $request->mulok
+                'is_mulok' => $request->mulok == 1 ? $request->mulok : null
             ]);
 
             // check semester yg sedang aktif
@@ -132,7 +149,7 @@ class PelajaranController extends Controller
         }
 
 
-        return redirect('/kependidikan/kbm/pelajaran/mata-pelajaran')->with('sukses','Tambah Mata Pelajaran Berhasil');
+        return redirect('/kependidikan/kbm/pelajaran/mata-pelajaran')->with('success','Tambah Mata Pelajaran Berhasil');
     }
 
     public function edit($id)
@@ -164,10 +181,23 @@ class PelajaranController extends Controller
     {
         $unit = Auth::user()->pegawai->unit_id;
 
+        $messages = [
+            'nama_mapel.required' => 'Mohon tuliskan nama mata pelajaran',
+            'kode_mapel.required' => 'Mohon tuliskan kode mata pelajaran',
+            'nomor_mapel.required' => 'Mohon tuliskan nomor urut mata pelajaran',
+            'nomor_mapel.numeric' => 'Pastikan nomor urut mata pelajaran hanya mengandung angka',
+            'nomor_mapel.min' => 'Pastikan nomor urut mata pelajaran minimal 1',
+            'kmp_id.required' => 'Mohon pilih salah satu kelompok mata pelajaran',
+            'kkm.required' => 'Mohon tentukan KKM mata pelajaran ini',
+            'kkm.numeric' => 'Pastikan KKM hanya mengandung angka',
+            'kkm.min' => 'Pastikan KKM dalam rentang 51-100',
+            'kkm.max' => 'Pastikan KKM dalam rentang 51-100',
+        ];
+
         // validate dari form tambah
         if(Auth::user()->role_id == 5){
             $request->validate([
-                'kkm' => 'required',
+                'kkm' => 'required|numeric|min:51|max:100',
             ]);            
 
             if($request->kkm <= 50){
@@ -207,9 +237,10 @@ class PelajaranController extends Controller
         }else{
             // dd($request);
             $request->validate([
-                'nomor_mapel' => 'required',
+                'kode_mapel' => 'required',
+                'nomor_mapel' => 'required|numeric|min:1',
                 'kmp_id' => 'required',
-                'kkm' => 'required',
+                'kkm' => 'required|numeric|min:51|max:100',
             ]);
 
             if($request->kkm <= 50){
@@ -217,8 +248,12 @@ class PelajaranController extends Controller
             }
             
             $mapel = MataPelajaran::find($id);
-            $mapel->subject_number = $request->nomor_mapel;
-            $mapel->group_subject_id = $request->kmp_id;
+            $mapel->subject_acronym = $request->kode_mapel;
+            if(in_array(auth()->user()->role_id, array(1,2))){
+                $mapel->subject_number = $request->nomor_mapel;
+                $mapel->group_subject_id = $request->kmp_id;
+            }
+            $mapel->is_mulok = $request->mulok == 1 ? $request->mulok : null;
             $mapel->kkm = $request->kkm;
             $mapel->save();
 
@@ -240,10 +275,10 @@ class PelajaranController extends Controller
                 ]);
             }
 
-            if($unit == 2){
+            if(in_array(auth()->user()->role_id, array(1,2)) && $unit == 2){
                 MapelKelas::where('subject_id',$id)->delete();
 
-                $kelases = $request->input('kelas');
+                $kelases = $request->kelas;
                 foreach($kelases as $kelas){
                     MapelKelas::create([
                         'level_id' => $kelas,
@@ -254,7 +289,7 @@ class PelajaranController extends Controller
 
         }
 
-        return redirect('/kependidikan/kbm/pelajaran/mata-pelajaran')->with('sukses','Ubah Mata Pelajaran Berhasil');
+        return redirect('/kependidikan/kbm/pelajaran/mata-pelajaran')->with('success','Ubah Mata Pelajaran Berhasil');
     }
 
     public function destroy($id)
@@ -263,7 +298,7 @@ class PelajaranController extends Controller
     	$mapel = MataPelajaran::find($id);
         $mapel->delete();
         
-        return redirect('/kependidikan/kbm/pelajaran/mata-pelajaran')->with('sukses','Hapus Mata Pelajaran Berhasil');
+        return redirect('/kependidikan/kbm/pelajaran/mata-pelajaran')->with('success','Hapus Mata Pelajaran Berhasil');
     }
 
     // BAGIAN KELOMPOK MATA PELAJARAN
@@ -307,7 +342,7 @@ class PelajaranController extends Controller
         // dd($kmp);
 
         // return with create success notification
-        return redirect('/kependidikan/kbm/pelajaran/kelompok-mata-pelajaran')->with('sukses','Tambah Kelompok Mata Pelajaran Berhasil');
+        return redirect('/kependidikan/kbm/pelajaran/kelompok-mata-pelajaran')->with('success','Tambah Kelompok Mata Pelajaran Berhasil');
     }
     
     public function kelompokMataPelajaranHapus($id)
@@ -317,7 +352,7 @@ class PelajaranController extends Controller
     	$kmp->delete();
 
         // return with destroy success notification
-        return redirect('/kependidikan/kbm/pelajaran/kelompok-mata-pelajaran')->with('sukses','Hapus Kelompok Mata Pelajaran Berhasil');
+        return redirect('/kependidikan/kbm/pelajaran/kelompok-mata-pelajaran')->with('success','Hapus Kelompok Mata Pelajaran Berhasil');
     }
     
     public function kelompokMataPelajaranUbah($id, Request $request)
@@ -335,6 +370,6 @@ class PelajaranController extends Controller
         $kmp->save();
 
         // update success notification
-        return redirect('/kependidikan/kbm/pelajaran/kelompok-mata-pelajaran')->with('sukses','Ubah Kelompok Mata Pelajaran Berhasil');
+        return redirect('/kependidikan/kbm/pelajaran/kelompok-mata-pelajaran')->with('success','Ubah Kelompok Mata Pelajaran Berhasil');
     }
 }

@@ -104,7 +104,7 @@
                 <tr>
                     <td>NIS/NSS/NDS</td>
                     <td>:</td>
-                    <td>&nbsp;</td>
+                    <td>{!! $unit->nis ? $unit->nis : '&nbsp;' !!}</td>
                 </tr>
                 @if($unit->id == 2)
                 @if(in_array($riwayatKelas->level->level,['1','2']))

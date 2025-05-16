@@ -9,7 +9,7 @@ PPB
 @endsection
 
 @section('sidebar')
-@include('template.sidebar.keuangan.'.Auth::user()->role->name)
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -23,7 +23,7 @@ PPB
     <li class="breadcrumb-item active" aria-current="page">{{ $bbkAktif->firstNumber }}</li>
   </ol>
 </div>
-
+{{--
 <div class="row">
     @foreach($jenisAnggaran as $j)
     @php
@@ -53,14 +53,14 @@ PPB
         <div class="card h-100">
             <div class="card-body p-0">
                 <div class="row align-items-center mx-0">
-                    <div class="col-auto px-3 py-2 bg-brand-purple">
+                    <div class="col-auto px-3 py-2 bg-brand-green">
                         <i class="mdi mdi-file-document-outline mdi-24px text-white"></i>
                     </div>
                     <div class="col">
                         <div class="h6 mb-0 font-weight-bold text-gray-800">{{ $j->name }}</div>
                     </div>
                     <div class="col-auto">
-                        <a href="{{ route('ppb.index', ['jenis' => $j->link])}}" class="btn btn-sm btn-outline-brand-purple">Pilih</a>
+                        <a href="{{ route('ppb.index', ['jenis' => $j->link])}}" class="btn btn-sm btn-outline-brand-green">Pilih</a>
                     </div>
                 </div>
             </div>
@@ -88,7 +88,7 @@ PPB
     @endif
     @endforeach
 </div>
-
+--}}
 @if($jenisAktif)
 <div class="row mb-4">
   <div class="col-12">
@@ -164,7 +164,7 @@ PPB
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Daftar PPA</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Daftar PPA</h6>
                 @if($bbkAktif && $bbkAktif->director_acc_status_id == 1)
                 <div class="m-0 float-right">
                 <a href="{{ route('ppb.ekspor',['jenis' => $jenisAktif->link, 'tahun' => $tahun->academicYearLink, 'nomor' => $bbkAktif->firstNumber]) }}" class="btn btn-brand-green-dark btn-sm">Ekspor <i class="fas fa-file-export ml-1"></i></a>
@@ -197,9 +197,6 @@ PPB
                                 <th>Jumlah Perintah Bayar</th>
                                 <th>Nomor Rekening Tujuan</th>
                                 <th>Status</th>
-                                @if($bbkAktif->detail()->where('ppa_value','<=',0)->count() > 0)
-                                <th style="width: 120px">Aksi</th>
-                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -242,15 +239,6 @@ PPB
                                     -
                                     @endif
                                 </td>
-                                @if($bbkAktif->detail()->where('ppa_value','<=',0)->count() > 0)
-                                <td>
-                                    @if($b->ppa_value <= 0)
-                                    <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#delete-confirm" onclick="deleteModal('PPA', '{{ addslashes(htmlspecialchars('PPA No. '.$b->ppa->number)) }}', '{{ route('ppb.hapus', ['jenis' => $jenisAktif->link, 'tahun' => $tahun->academicYearLink, 'nomor' => $bbkAktif->firstNumber, 'ppa' => $b->ppa->id]) }}')">
-                                        <i class="fas fa-times"></i>
-                                    </a>
-                                    @endif
-                                </td>
-                                @endif
                             </tr>
                             @endforeach
                         </tbody>
@@ -269,17 +257,10 @@ PPB
 @endif
 <!--Row-->
 
-@if($bbkAktif && $bbkAktif->detail()->where('ppa_value','<=',0)->count() > 0)
-@include('template.modal.konfirmasi_hapus')
-@endif
-
 @endsection
 
 @section('footjs')
 <!-- Plugins and scripts required by this view-->
 @include('template.footjs.kepegawaian.tooltip')
 @include('template.footjs.keuangan.change-year')
-@if($bbkAktif && $bbkAktif->detail()->where('ppa_value','<=',0)->count() > 0)
-@include('template.footjs.modal.get_delete')
-@endif
 @endsection

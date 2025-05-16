@@ -135,6 +135,10 @@ class DaftarUlangPsbController extends Controller
         $bms_candidate->register_nominal = str_replace('.','',$request->bms_daftar_ulang);
         $bms_candidate->register_remain = str_replace('.','',$request->bms_daftar_ulang) - $bms_candidate->register_paid;
         $bms_candidate->save();
+        $bms_candidate->fresh();
+        if($bms_candidate->register_remain <= 0){
+            RegisterCounterService::addCounter($bms_candidate->candidate_student_id,'reapply');
+        }
         return redirect()->back()->with('success','Ubah nominal daftar ulang berhasil');
     }
 

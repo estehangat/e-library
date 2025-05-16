@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Keuangan\Spp\LaporanSppMasukanCollection;
 use Illuminate\Http\Request;
 
+use App\Models\Kbm\TahunAjaran;
 use App\Models\Pembayaran\ExchangeTransaction;
 use App\Models\Pembayaran\ExchangeTransactionTarget;
 use App\Models\Pembayaran\SppTransaction;
@@ -36,60 +37,121 @@ class PembayaranSppController extends Controller
     {
         $levels = Level::all();
         $level = 'semua';
-        if($request->unit_id){
-            $unit_id = $request->unit_id;
-        }else{
-            $unit_id = auth()->user()->pegawai->unit_id;
-        }
+        // if($request->unit_id){
+        //     $unit_id = $request->unit_id;
+        // }else{
+        //     $unit_id = auth()->user()->pegawai->unit_id;
+        // }
 
-        if($request->tahun){
-            $year = $request->tahun;
-        }else{
-            $year = date("Y");
-        }
+        // if($request->tahun){
+        //     $year = $request->tahun;
+        // }else{
+        //     $year = date("Y");
+        // }
 
-        if($unit_id == 5){
-            $levels = Level::where('unit_id',1)->get();
-            $unit_id = 1;
-        }else{
-            $levels = Level::where('unit_id',$unit_id)->get();
-        }
+        // if($unit_id == 5){
+        //     $levels = Level::where('unit_id',1)->get();
+        //     $unit_id = 1;
+        // }else{
+        //     $levels = Level::where('unit_id',$unit_id)->get();
+        // }
         
-        // $month = $request->bulan;
-        if($request->bulan){
-            $month = $request->bulan;
-            $datas = SppTransaction::where('unit_id',$unit_id)->where('year',$year)->orderBy('created_at','desc')->where('month',$month)->get();
-            // dd($datas);
-            if($unit_id == 5){
-                $units = Unit::all();
-            }else{
-                $units = Unit::find(auth()->user()->pegawai->unit_id);
-            }
-        }else{
-            $month = null;
-            if($unit_id == 5){
-                $datas = SppTransaction::orderBy('created_at','desc')->where('year',$year)->get();
-                $units = Unit::all();
-            }else{
-                $datas = SppTransaction::where('unit_id',$unit_id)->orderBy('created_at','desc')->where('year',$year)->get();
-                $units = Unit::find(auth()->user()->pegawai->unit_id);
-            }
-            // dd($datas);
+        // // $month = $request->bulan;
+        // if($request->bulan){
+        //     $month = $request->bulan;
+        //     $datas = SppTransaction::where('unit_id',$unit_id)->where('year',$year)->orderBy('created_at','desc')->where('month',$month)->get();
+        //     // dd($datas);
+        //     if($unit_id == 5){
+        //         $units = Unit::all();
+        //     }else{
+        //         $units = Unit::find(auth()->user()->pegawai->unit_id);
+        //     }
+        // }else{
+        //     $month = null;
+        //     if($unit_id == 5){
+        //         $datas = SppTransaction::orderBy('created_at','desc')->where('year',$year)->get();
+        //         $units = Unit::all();
+        //     }else{
+        //         $datas = SppTransaction::where('unit_id',$unit_id)->orderBy('created_at','desc')->where('year',$year)->get();
+        //         $units = Unit::find(auth()->user()->pegawai->unit_id);
+        //     }
+        //     // dd($datas);
+        // }
+        // $year_now = date("Y");
+        // $years = array();
+        // $year_increment = 2019;
+        // while($year_increment <= $year_now){
+        //     $year_obj = new stdClass();
+        //     $year_obj->year=$year_increment;
+        //     array_push($years,$year_obj);
+        //     $year_increment+=1;
+        // }
+
+        // Use Academic Year
+        $year = $request->year;
+        $years = $academicYears = null;
+        $isYear = false;
+
+        $queryData = SppTransaction::query();
+
+        if($queryData->count() > 0){
+            $years = clone $queryData;
+            $yearsCount = $years->whereNotNull('year')->count();
+            $years = $years->whereNotNull('year')->orderBy('year')->pluck('year')->unique();
+
+            $academicYears = TahunAjaran::select('id','academic_year','academic_year_start','academic_year_end')->where('academic_year_start','>=',$years->min())->where('academic_year_end','<=',$years->max())->orderBy('academic_year')->get();
         }
-        $year_now = date("Y");
-        $years = array();
-        $year_increment = 2019;
-        while($year_increment <= $year_now){
-            $year_obj = new stdClass();
-            $year_obj->year=$year_increment;
-            array_push($years,$year_obj);
-            $year_increment+=1;
+
+        $tahunPelajaran = TahunAjaran::where('is_active',1)->latest()->take(1)->get();
+
+        if($academicYears && $academicYears->count() > 0){
+            $tahunPelajaran = TahunAjaran::where(function($q)use($academicYears){
+                $q->where(function($q){
+                    $q->where('is_active',1);
+                })->orWhere(function($q)use($academicYears){
+                    $q->whereIn('id',$academicYears);
+                });
+            })->orderBy('created_at')->get();
+        }
+
+        if(!$isYear){
+            if($year){
+                $year = str_replace("-","/",$year);
+                $year = TahunAjaran::where('academic_year',$year)->first();
+            }
+            else{
+                // Default Value
+                $year = TahunAjaran::where('is_active',1)->latest()->first();
+            }
+            if(!$year) return redirect()->route($this->route.'.index');
+        }
+        else{
+            // Default Value
+            if(!$year){
+                if($yearsCount > 0){
+                    $year = $years->last();
+                }
+                else{
+                    $year = Date::now('Asia/Jakarta')->format('Y');
+                }
+            }
+            else{
+                if($yearsCount > 0){
+                    if(!in_array($year,$years->toArray())) $year = null;
+                }
+                else{
+                    if($year != Date::now('Asia/Jakarta')->format('Y')) $year = null;
+                }
+            }
+            if(!$year){
+                return redirect()->route($this->route.'.index');
+            }
         }
 
         $active = $this->active;
         $route = $this->route;
 
-        return view($this->template.$route.'-index', compact('active','route','datas','levels','level','year','month','years','unit_id'));
+        return view($this->template.$route.'-index', compact('active','route','levels','level','year','years','academicYears','tahunPelajaran','isYear'));
     }
 
     /**
@@ -104,21 +166,36 @@ class PembayaranSppController extends Controller
         $unit_id = $request->unit_id;
         // $level_id = $request->level_id;
 
-        $datas = SppTransaction::where('year', $year)
-        // ->when($level_id, function($q, $level_id){
-        //     return $q->where('level_id', $level_id);
-        // })
-        ->when($month, function($q, $month){
-            return $q->where('month', $month);
-        });
+        $datas = null;
 
-        if($request->user()->pegawai->unit_id == 5){
-            $datas = $datas->where('unit_id',$unit_id);
-        }else{
-            $datas = $datas->where('unit_id',$request->user()->pegawai->unit_id);
+        $year = str_replace("-","/",$year);
+        $year = TahunAjaran::select('id','academic_year_start','academic_year_end')->where('academic_year',$year)->first();
+        
+        if($year){
+            $datas = SppTransaction::whereIn('exchange_que',array(0,1))->when($month, function($q)use($month,$year){
+                return $q->where('month', $month)->when($month >= 7, function($q)use($year){
+                    return $q->where('year',$year->academic_year_start);
+                }, function($q)use($year){
+                    return $q->where('year',$year->academic_year_end);
+                });
+            }, function($q)use($year){
+                return $q->where(function($q)use($year){
+                    $q->where(function($q)use($year){
+                        $q->where('year',$year->academic_year_start)->where('month', '>=', 7);
+                    })->orWhere(function($q)use($year){
+                        $q->where('year',$year->academic_year_end)->where('month', '<=', 6);
+                    });
+                });
+            });
+
+            if($request->user()->pegawai->unit_id == 5){
+                $datas = $datas->where('unit_id',$unit_id);
+            }else{
+                $datas = $datas->where('unit_id',$request->user()->pegawai->unit_id);
+            }
+
+            $datas = $datas->orderBy('month','DESC')->get();
         }
-
-        $datas = $datas->whereIn('exchange_que',array(0,1))->orderBy('month','DESC')->get();
 
         $resource = new LaporanSppMasukanCollection($datas);
 

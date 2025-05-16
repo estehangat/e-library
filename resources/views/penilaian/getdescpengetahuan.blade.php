@@ -1,5 +1,5 @@
 <div class="col-md-12">
-    <a class="m-0 float-right btn btn-brand-purple-dark btn-sm mb-2" href="javascript:void(0)" data-toggle="modal" data-target="#TambahModal">Tambah <i class="fas fa-plus"></i></a>
+    <a class="m-0 float-right btn btn-brand-green-dark btn-sm mb-2" href="javascript:void(0)" data-toggle="modal" data-target="#TambahModal">Tambah <i class="fas fa-plus"></i></a>
 </div>
 <div class="table-responsive">
     <table class="table align-items-center table-flush">
@@ -20,7 +20,7 @@
                 <td>{{$rpd->predicate}}</td>
                 <td>{{$rpd->description}}</td>
                 <td>
-                    <a href="javascript:void(0)" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#UbahModal" onclick="ubah(<?php echo $rpd->id; ?>, '<?php echo $rpd->predicate; ?>', '<?php echo $rpd->description; ?>')"><i class="fas fa-pen"></i></a>
+                    <a href="javascript:void(0)" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#UbahModal" onclick="ubah(<?php echo $rpd->id; ?>, '<?php echo $rpd->predicate; ?>', '<?php echo addslashes(htmlspecialchars($rpd->description)); ?>')"><i class="fas fa-pen"></i></a>
                     &nbsp;<a href="javascript:void(0)" data-toggle="modal" data-target="#HapusModal" onclick="hapus(<?php echo $rpd->id; ?>)" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></a>
                 </td>
             </tr>

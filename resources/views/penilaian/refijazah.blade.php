@@ -142,7 +142,7 @@ Referensi Nilai Ijazah
                                                 <input type="hidden" name="semester" value="{{$semesteraktif->id}}">
                                                 <input type="hidden" name="level_id" value="{{$siswas->kelas->level_id}}">
                                                 <input type="hidden" name="major_id" value="{{$siswas->kelas->major_id}}">
-                                                <button type="submit" class="btn btn-brand-purple btn-sm"><i class="fa fas fa-print"></i> Cetak Referensi Ijazah</button>&nbsp;
+                                                <button type="submit" class="btn btn-brand-green btn-sm"><i class="fa fas fa-print"></i> Cetak Referensi Ijazah</button>&nbsp;
                                             </form>
                                             @endif
                                         <?php } else { ?>

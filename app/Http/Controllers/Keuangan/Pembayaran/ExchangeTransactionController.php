@@ -9,15 +9,17 @@ use App\Http\Services\Psb\CalonSiswa\BmsCalonReverseService;
 use App\Http\Services\Psb\Siswa\BmsSiswaService;
 use App\Http\Services\Psb\Siswa\SppReverseService;
 use App\Http\Services\Psb\Siswa\SppSiswaService;
-use App\Models\Pembayaran\BMS;
-use App\Models\Pembayaran\BmsCalonSiswa;
 use App\Models\Pembayaran\BmsTransaction;
 use App\Models\Pembayaran\BmsTransactionCalonSiswa;
 use App\Models\Pembayaran\ExchangeTransaction;
 use App\Models\Pembayaran\ExchangeTransactionTarget;
-use App\Models\Pembayaran\Spp;
 use App\Models\Pembayaran\SppTransaction;
 use Illuminate\Http\Request;
+
+// Unused
+use App\Models\Pembayaran\BMS;
+use App\Models\Pembayaran\BmsCalonSiswa;
+use App\Models\Pembayaran\Spp;
 
 class ExchangeTransactionController extends Controller
 {
@@ -38,22 +40,41 @@ class ExchangeTransactionController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request,$status = null)
     {
         //
-        $datas = ExchangeTransaction::where('status',0)->get();
-        $active = $this->active;
-        $route = $this->route;
-        return view($this->template.$route,compact('active','route','datas'));
-    }
+        $status = 'menunggu';
+        if(isset($request->status) && $request->status != 'menunggu'){
+            if(in_array($request->status,['sukses','refund','ditolak'])) $status = $request->status;
+        }
 
-    public function refund()
-    {
-        //
-        $datas = ExchangeTransaction::where('status',1)->where('refund','!=',0)->get();
+        $datas = ExchangeTransaction::where(function($q){
+            $q->where(function($q){
+                $q->has('bmsTransactionOrigin')->where('origin',1);
+            })->orWhere(function($q){
+                $q->has('sppTransactionOrigin')->where('origin',2);
+            })->orWhere(function($q){
+                $q->has('bmsCandidateTransactionOrigin')->where('origin',3);
+            });
+        });
+        if($status == 'sukses'){
+            $datas = $datas->where('status',1)->where('refund',0);
+        }
+        elseif($status == 'refund'){
+            $datas = $datas->where('status',1)->where('refund','!=',0);
+        }
+        elseif($status == 'ditolak'){
+            $datas = $datas->where('status',2);
+        }
+        else{
+            $datas = $datas->where('status',0);   
+        }
+        $datas = $datas->get();
         $active = $this->active;
         $route = $this->route;
-        return view($this->template.$route,compact('active','route','datas'));
+        $editable = $status == 'menunggu' && in_array($request->user()->pegawai->position_id,[57]) ? true : false;
+
+        return view($this->template.$route,compact('active','route','datas','editable','status'));
     }
 
     /**
@@ -227,6 +248,7 @@ class ExchangeTransactionController extends Controller
         }
         $trx->exchange_que = 0;
         $trx->save();
+
         return redirect()->back()->with('success', 'Perubahan berhasil ditolak');
     }
 }

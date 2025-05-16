@@ -5,14 +5,7 @@ Keuangan
 @endsection
 
 @section('sidebar')
-@php
-$role = Auth::user()->role->name;
-@endphp
-@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','pembinayys','ketuayys','wakasek']))
-@include('template.sidebar.keuangan.'.$role)
-@else
-@include('template.sidebar.keuangan.employee')
-@endif
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -39,7 +32,7 @@ $role = Auth::user()->role->name;
             </div>
           </div>
           <div class="col-auto">
-            <i class="fas fa-calendar fa-2x text-brand-purple"></i>
+            <i class="fas fa-calendar fa-2x text-brand-green"></i>
           </div>
         </div>
       </div>
@@ -110,7 +103,7 @@ $role = Auth::user()->role->name;
   <div class="col-xl-8 col-lg-7">
     <div class="card mb-4">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">Monthly Recap Report</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">Monthly Recap Report</h6>
         <div class="dropdown no-arrow">
           <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
@@ -135,9 +128,9 @@ $role = Auth::user()->role->name;
   <div class="col-xl-4 col-lg-5">
     <div class="card mb-4">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">Products Sold</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">Products Sold</h6>
         <div class="dropdown no-arrow">
-          <a class="dropdown-toggle btn btn-brand-purple-dark btn-sm" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <a class="dropdown-toggle btn btn-brand-green-dark btn-sm" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Month <i class="fas fa-chevron-down"></i>
           </a>
           <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" aria-labelledby="dropdownMenuLink">
@@ -171,7 +164,7 @@ $role = Auth::user()->role->name;
             <div class="small float-right"><b>455 of 800 Items</b></div>
           </div>
           <div class="progress" style="height: 12px;">
-            <div class="progress-bar bg-brand-purple" role="progressbar" style="width: 55%" aria-valuenow="55" aria-valuemin="0" aria-valuemax="100"></div>
+            <div class="progress-bar bg-brand-green" role="progressbar" style="width: 55%" aria-valuenow="55" aria-valuemin="0" aria-valuemax="100"></div>
           </div>
         </div>
         <div class="mb-3">
@@ -192,7 +185,7 @@ $role = Auth::user()->role->name;
         </div>
       </div>
       <div class="card-footer text-center">
-        <a class="m-0 small text-brand-purple-dark card-link" href="#">View More <i class="fas fa-chevron-right"></i></a>
+        <a class="m-0 small text-brand-green-dark card-link" href="#">View More <i class="fas fa-chevron-right"></i></a>
       </div>
     </div>
   </div>
@@ -200,8 +193,8 @@ $role = Auth::user()->role->name;
   <div class="col-xl-8 col-lg-7 mb-4">
     <div class="card">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">Invoice</h6>
-        <a class="m-0 float-right btn btn-brand-purple-dark btn-sm" href="#">View More <i class="fas fa-chevron-right"></i></a>
+        <h6 class="m-0 font-weight-bold text-brand-green">Invoice</h6>
+        <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="#">View More <i class="fas fa-chevron-right"></i></a>
       </div>
       <div class="table-responsive">
         <table class="table align-items-center table-flush">
@@ -220,35 +213,35 @@ $role = Auth::user()->role->name;
               <td>Udin Wayang</td>
               <td>Nasi Padang</td>
               <td><span class="badge badge-brand-green">Finished</span></td>
-              <td><a href="#" class="btn btn-sm btn-outline-brand-purple">Detail</a></td>
+              <td><a href="#" class="btn btn-sm btn-outline-brand-green">Detail</a></td>
             </tr>
             <tr>
               <td><a href="#">RA5324</a></td>
               <td>Jaenab Bajigur</td>
               <td>Gundam 90' Edition</td>
               <td><span class="badge badge-warning">Shipping</span></td>
-              <td><a href="#" class="btn btn-sm btn-outline-brand-purple">Detail</a></td>
+              <td><a href="#" class="btn btn-sm btn-outline-brand-green">Detail</a></td>
             </tr>
             <tr>
               <td><a href="#">RA8568</a></td>
               <td>Rivat Mahesa</td>
               <td>Oblong T-Shirt</td>
               <td><span class="badge badge-danger">Pending</span></td>
-              <td><a href="#" class="btn btn-sm btn-outline-brand-purple">Detail</a></td>
+              <td><a href="#" class="btn btn-sm btn-outline-brand-green">Detail</a></td>
             </tr>
             <tr>
               <td><a href="#">RA1453</a></td>
               <td>Indri Junanda</td>
               <td>Hat Rounded</td>
               <td><span class="badge badge-info">Processing</span></td>
-              <td><a href="#" class="btn btn-sm btn-outline-brand-purple">Detail</a></td>
+              <td><a href="#" class="btn btn-sm btn-outline-brand-green">Detail</a></td>
             </tr>
             <tr>
               <td><a href="#">RA1998</a></td>
               <td>Udin Cilok</td>
               <td>Baby Powder</td>
-              <td><span class="badge badge-brand-purple">Delivered</span></td>
-              <td><a href="#" class="btn btn-sm btn-outline-brand-purple">Detail</a></td>
+              <td><span class="badge badge-brand-green">Delivered</span></td>
+              <td><a href="#" class="btn btn-sm btn-outline-brand-green">Detail</a></td>
             </tr>
           </tbody>
         </table>
@@ -259,7 +252,7 @@ $role = Auth::user()->role->name;
   <!-- Message From Customer-->
   <div class="col-xl-4 col-lg-5 ">
     <div class="card">
-      <div class="card-header py-4 bg-brand-purple d-flex flex-row align-items-center justify-content-between">
+      <div class="card-header py-4 bg-brand-green d-flex flex-row align-items-center justify-content-between">
         <h6 class="m-0 font-weight-bold text-light">Message From Customer</h6>
       </div>
       <div>
@@ -293,7 +286,7 @@ $role = Auth::user()->role->name;
           </a>
         </div>
         <div class="card-footer text-center">
-          <a class="m-0 small text-brand-purple card-link" href="#">View More <i class="fas fa-chevron-right"></i></a>
+          <a class="m-0 small text-brand-green card-link" href="#">View More <i class="fas fa-chevron-right"></i></a>
         </div>
       </div>
     </div>

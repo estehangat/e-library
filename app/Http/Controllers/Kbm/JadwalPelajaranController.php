@@ -175,7 +175,7 @@ class JadwalPelajaranController extends Controller
             'description' => $jam->description,
         ]);
 
-        return redirect('/kependidikan/kbm/pelajaran/jadwal-pelajaran/'.$kelas.'/'.$hari)->with('sukses','Tambah Jadwal Berhasil');
+        return redirect('/kependidikan/kbm/pelajaran/jadwal-pelajaran/'.$kelas.'/'.$hari)->with('success','Tambah Jadwal Berhasil');
 
     }
 
@@ -225,7 +225,7 @@ class JadwalPelajaranController extends Controller
 
         // dd($pesan);
 
-        return redirect('/kependidikan/kbm/pelajaran/jadwal-pelajaran/'.$kelas.'/'.$hari)->with('sukses','Ubah Jadwal Berhasil');
+        return redirect('/kependidikan/kbm/pelajaran/jadwal-pelajaran/'.$kelas.'/'.$hari)->with('success','Ubah Jadwal Berhasil');
     }
 
     /**
@@ -239,7 +239,7 @@ class JadwalPelajaranController extends Controller
         //
         $jadwal = JadwalPelajaran::find($id);
         $jadwal->delete();
-        return redirect('/kependidikan/kbm/pelajaran/jadwal-pelajaran/'.$kelas.'/'.$hari)->with('sukses','Hapus Jadwal Berhasil');
+        return redirect('/kependidikan/kbm/pelajaran/jadwal-pelajaran/'.$kelas.'/'.$hari)->with('success','Hapus Jadwal Berhasil');
     }
 
     public function unduh()
@@ -346,7 +346,7 @@ class JadwalPelajaranController extends Controller
                     if($jadwal->subject_id == null)
                     {
                         // cetak deskripsi jam mapel
-                        $spreadsheet->setActiveSheetIndex($sheet)->setCellValue($columnkelas.$rowkelas, $jadwal->jam->description);
+                        $spreadsheet->setActiveSheetIndex($sheet)->setCellValue($columnkelas.$rowkelas, $jadwal->jam ? $jadwal->jam->description : null);
                         // dd($jadwal->description);
                         // $spreadsheet->setActiveSheetIndex($sheet)->setCellValue($columnkelas.$rowkelas, '-');
                     }

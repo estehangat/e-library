@@ -37,4 +37,9 @@ class Role extends Model
     {
         return $this->hasMany('App\Models\User','role_id');
     }
+
+    public function rights()
+    {
+        return $this->hasMany('App\Models\AccessRights\AccessRight','role_id');
+    }
 }

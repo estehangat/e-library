@@ -5,14 +5,7 @@ Biaya Masuk Sekolah
 @endsection
 
 @section('sidebar')
-@php
-$role = Auth::user()->role->name;
-@endphp
-@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','keu','pembinayys','ketuayys','wakasek']))
-@include('template.sidebar.keuangan.'.$role)
-@else
-@include('template.sidebar.keuangan.employee')
-@endif
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -76,13 +69,13 @@ $role = Auth::user()->role->name;
                                         @endforeach
                                     </select>
                                 </div>
-                                <button class="btn btn-brand-purple-dark btn-sm" type="submit">Saring</button>
+                                <button class="btn btn-brand-green-dark btn-sm" type="submit">Saring</button>
                             </div>
                         </form>
                     </div>
                     <div class="table-responsive">
                         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                            <h6 class="m-0 font-weight-bold text-brand-purple">Laporan BMS Siswa</h6>
+                            <h6 class="m-0 font-weight-bold text-brand-green">Laporan BMS Siswa</h6>
                         </div>
                         @if(Session::has('sukses'))
                         <div class="alert alert-success alert-dismissible fade show" role="alert">

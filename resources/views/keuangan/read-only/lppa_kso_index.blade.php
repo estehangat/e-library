@@ -9,7 +9,7 @@ RPPA
 @endsection
 
 @section('sidebar')
-@include('template.sidebar.keuangan.'.Auth::user()->role->name)
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -24,11 +24,11 @@ RPPA
     @endif
   </ol>
 </div>
-
+{{--
 <div class="row">
     @foreach($jenisAnggaran as $j)
     @php
-    if(!in_array(Auth::user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv'])){
+    if(!in_array(Auth::user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv','am'])){
         if(Auth::user()->pegawai->unit_id == '5'){
             $anggaranCount = $j->anggaran()->whereHas('anggaran',function($q){$q->where('position_id',Auth::user()->pegawai->jabatan->group()->first()->id);})->whereHas('ppa',function($q){$q->where('director_acc_status_id',1)->has('lppa');})->count();
         }
@@ -64,14 +64,14 @@ RPPA
         <div class="card h-100">
             <div class="card-body p-0">
                 <div class="row align-items-center mx-0">
-                    <div class="col-auto px-3 py-2 bg-brand-purple">
+                    <div class="col-auto px-3 py-2 bg-brand-green">
                         <i class="mdi mdi-file-document-outline mdi-24px text-white"></i>
                     </div>
                     <div class="col">
                         <div class="h6 mb-0 font-weight-bold text-gray-800">{{ $j->name }}</div>
                     </div>
                     <div class="col-auto">
-                        <a href="{{ route('lppa.index', ['jenis' => $j->link])}}" class="btn btn-sm btn-outline-brand-purple">Pilih</a>
+                        <a href="{{ route('lppa.index', ['jenis' => $j->link])}}" class="btn btn-sm btn-outline-brand-green">Pilih</a>
                     </div>
                 </div>
             </div>
@@ -99,7 +99,7 @@ RPPA
     @endif
     @endforeach
 </div>
-
+--}}
 @if($jenisAktif)
 <div class="row mb-4">
   <div class="col-12">
@@ -121,7 +121,7 @@ RPPA
                       @endif
                       @endforeach
                     </select>
-                    <a href="{{ route('lppa.index', ['jenis' => $jenisAktif->link]) }}" id="btn-select-year" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('lppa.index', ['jenis' => $jenisAktif->link]) }}">Pilih</a>
+                    <a href="{{ route('lppa.index', ['jenis' => $jenisAktif->link]) }}" id="btn-select-year" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('lppa.index', ['jenis' => $jenisAktif->link]) }}">Pilih</a>
                     </div>
                   </div>
                 </div>
@@ -137,7 +137,7 @@ RPPA
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Anggaran Tersedia</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Anggaran Tersedia</h6>
             </div>
             <div class="card-body p-3">
                 @php
@@ -147,7 +147,7 @@ RPPA
                 <div class="row ml-1">
                     @php
                     $anggarans = $jenisAktif->anggaran;
-                    if(Auth::user()->role->name == 'am') $anggarans = $jenisAktif->anggaran()->whereHas('anggaran',function($q){
+                    if(in_array(Auth::user()->role->name,['etl','ctl'])) $anggarans = $jenisAktif->anggaran()->whereHas('anggaran',function($q){
                         $q->where('acc_position_id',Auth::user()->pegawai->position_id);
                     })->get();
                     @endphp
@@ -170,7 +170,7 @@ RPPA
                                 </div>
                             </div>
                             <div class="col-4 d-flex justify-content-end align-items-center">
-                                <a href="{{ route('lppa.index', ['jenis' => $jenisAktif->link, 'tahun' => $tahun->academicYearLink, 'anggaran' => $a->anggaran->link])}}" class="btn btn-sm btn-outline-brand-purple-dark">Pilih</a>
+                                <a href="{{ route('lppa.index', ['jenis' => $jenisAktif->link, 'tahun' => $tahun->academicYearLink, 'anggaran' => $a->anggaran->link])}}" class="btn btn-sm btn-outline-brand-green-dark">Pilih</a>
                             </div>
                         </div>
                     </div>
@@ -203,5 +203,6 @@ RPPA
 
 @section('footjs')
 <!-- Plugins and scripts required by this view-->
+@include('template.footjs.kepegawaian.tooltip')
 @include('template.footjs.keuangan.change-year')
 @endsection

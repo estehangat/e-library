@@ -24,6 +24,7 @@ use App\Models\Siswa\OrangTua;
 use App\Models\Siswa\Siswa;
 
 use DB;
+use Session;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
@@ -48,7 +49,8 @@ class RegisterController extends Controller
     {
         //
         $lock = DB::table('tm_settings')->where('name','psb_lock_status')->first();
-        return view('psb.pendaftaran',compact('lock'));
+        $units = Unit::select('name','whatsapp_unit')->sekolah()->get();
+        return view('psb.pendaftaran',compact('lock','units'));
     }
 
     public function createSiswa(Request $request)
@@ -80,6 +82,9 @@ class RegisterController extends Controller
             return view('psb.ortu.unit',compact('units'));
         }
 
+        $unit = Unit::select('id','name','psb_active','new_admission_active','transfer_admission_active')->where('name',$request->unit)->sekolah()->first();
+        if(!$unit) return view('psb.ortu.unit',compact('units'));
+
         $agamas = Agama::where('name','Islam')->get();
         $kelases = Level::all();
         $levels = Level::where('unit_id',$unit_id)->get();
@@ -95,6 +100,7 @@ class RegisterController extends Controller
             'agamas',
             'levels',
             'units',
+            'unit',
             'jeniskelamin',
             'tahunAjaran',
             'semesters',
@@ -114,133 +120,144 @@ class RegisterController extends Controller
 
         $unit_id = $request->unit_id;
         $unit = Unit::find($unit_id);
-        if($request->siswa_baru == 1){
-            $kelases = Level::where('unit_id',$unit_id)->first();
-            $kelas = $kelases->id;
-        }else{
-            $kelas = $request->kelas;
-        }
-        $semester = Semester::find($request->tahun_ajaran);
-        $registerCounter = $semester->tahunAjaran->psbRegisterCounter()->select('register_intern','register_extern')->where('unit_id',$unit_id)->where('student_status_id',$request->siswa_baru)->first();
+
+        if($unit->psb_active == 1){
+            if(($unit->new_admission_active == 1 && $unit->transfer_admission_active != 1 && $request->siswa_baru != 1) || ($unit->new_admission_active != 1 && $unit->transfer_admission_active == 1 && $request->siswa_baru != 2)){
+                 Session::flash('danger','Pendaftaran calon siswa gagal. Saat ini pendaftaran masih ditutup.');
+                 //return redirect()->route('psb.siswa.create',['unit' => $unit->name]);
+                 return redirect()->route('psb.index');
+            }
+            if($request->siswa_baru == 1){
+                $kelases = Level::where('unit_id',$unit_id)->first();
+                $kelas = $kelases->id;
+            }else{
+                $kelas = $request->kelas;
+            }
+            $semester = Semester::find($request->tahun_ajaran);
+            $registerCounter = $semester->tahunAjaran->psbRegisterCounter()->select('register_intern','register_extern')->where('unit_id',$unit_id)->where('student_status_id',$request->siswa_baru)->first();
+            
+            // bikin number register
+            $register_number = CodeGeneratorPsb::RegisterNumber($unit_id,$semester->academic_year_id);
+
+            // Sudah pernah di Auliya
+            if($request->existing == "2"){
+                $siswa = IdentitasSiswa::find($request->siswa_id);
+
+                $isCandidateExist = auth()->user()->orangtua->calonSiswa()->count() > 0 && in_array($siswa->id,auth()->user()->orangtua->calonSiswa()->select('student_id')->get()->pluck('student_id')->toArray()) ? true : false;
+
+                if(!$siswa || $siswa->parent_id != auth()->user()->user_id || $isCandidateExist){
+                    return redirect()->route('psb.index')->with('danger','Pendaftaran calon siswa gagal. Mohon periksa kembali data putra/i Anda.');
+                }
+
+                $calon = CalonSiswa::create([
+                    'unit_id' => $unit_id,
+                    'student_id' => $siswa->id,
+                    'student_nis' => $siswa->student_nis,
+                    'student_nisn' => $siswa->student_nisn,
+                    'student_name' => $siswa->student_name,
+                    'student_nickname' => $siswa->student_nickname,
+                    'nik' => $siswa->nik,
+                    'student_status_id' => $request->siswa_baru,
+                    'reg_number' => $register_number,
+                    // 'reg_number' => $unit->name.$semester->tahunAjaran->academic_year_start.sprintf('%04d',($registerCounter ? ($registerCounter->register_intern+$registerCounter->register_extern)+1 : '1')),
+                    'academic_year_id' => $semester->academic_year_id,
         
-        // bikin number register
-        $register_number = CodeGeneratorPsb::RegisterNumber($unit_id,$semester->academic_year_id);
-
-        // Sudah pernah di Auliya
-        if($request->existing == "2"){
-            $siswa = IdentitasSiswa::find($request->siswa_id);
-
-            $isCandidateExist = auth()->user()->orangtua->calonSiswa()->count() > 0 && in_array($siswa->id,auth()->user()->orangtua->calonSiswa()->select('student_id')->get()->pluck('student_id')->toArray()) ? true : false;
-
-            if(!$siswa || $siswa->parent_id != auth()->user()->user_id || $isCandidateExist){
-                return redirect()->route('psb.index')->with('danger','Pendaftaran calon siswa gagal. Mohon periksa kembali data putra/i Anda.');
+                    'birth_place' => $siswa->birth_place,
+                    'birth_date' => $siswa->birth_date,
+                    'gender_id' => $siswa->gender_id,
+                    'religion_id' => $siswa->religion_id,
+                    'child_of' => null,
+                    'family_status' => null,
+                    
+                    'join_date' => null,
+                    'semester_id' => $request->tahun_ajaran,
+                    'level_id' => $kelas,
+                    'address' => $siswa->address,
+                    'address_number' => $siswa->address_number,
+                    'rt' => $siswa->rt,
+                    'rw' => $siswa->rw,
+                    'region_id' => $siswa->region_id,
+        
+                    'origin_school' => $request->asal_sekolah,
+                    'origin_school_address' => '',
+                    
+                    'sibling_name' => $siswa->sibling_name,
+                    'sibling_level_id' => $siswa->sibling_level_id,
+        
+                    'info_from' => $siswa->info_from,
+                    'info_name' => $siswa->info_name,
+                    'position' => $siswa->position,
+                    'status_id' => 1,
+        
+                    'parent_id' => auth()->user()->user_id,
+                ]);
+            }else{
+                $agama = Agama::where('name','Islam')->first();
+                $desa = Wilayah::where('code',$request->desa)->first();
+                $level = Level::find($request->kelas);
+                $request->validate([
+                    "nik" => "required",
+                    "nama" => "required",
+                    "tempat_lahir" => "required",
+                    "tanggal_lahir" => "required",
+                    "jenis_kelamin" => "required",
+                    "agama" => "required",
+                    "alamat" => "required",
+                    "rt" => "required",
+                    "rw" => "required",
+                    "desa" => "required",
+                    "kelas" => "required",
+                ]);
+                $calon = CalonSiswa::create([
+                    'unit_id' => $unit_id,
+                    'student_nis' => $request->nis,
+                    'student_nisn' => $request->nisn,
+                    'student_name' => $request->nama,
+                    'student_nickname' => $request->nama_pendek,
+                    'nik' => $request->nik,
+                    'student_status_id' => $request->siswa_baru,
+                    'reg_number' => $register_number,
+                    // 'reg_number' => $unit->name.$semester->tahunAjaran->academic_year_start.sprintf('%04d',($registerCounter ? ($registerCounter->register_intern+$registerCounter->register_extern)+1 : '1')),
+                    'academic_year_id' => $semester->academic_year_id,
+        
+                    'birth_place' => $request->tempat_lahir,
+                    'birth_date' => $request->tanggal_lahir,
+                    'gender_id' => $request->jenis_kelamin,
+                    'religion_id' => $agama->id,
+                    'child_of' => null,
+                    'family_status' => null,
+                    
+                    'join_date' => null,
+                    'semester_id' => $request->tahun_ajaran,
+                    'level_id' => $kelas,
+                    'address' => $request->alamat,
+                    'address_number' => $request->no_rumah,
+                    'rt' => $request->rt,
+                    'rw' => $request->rw,
+                    'region_id' => $desa->id,
+        
+                    'origin_school' => $request->asal_sekolah,
+                    'origin_school_address' => $request->alamat_asal_sekolah,
+                    
+                    'sibling_name' => $request->saudara_nama,
+                    'sibling_level_id' => $request->saudara_kelas,
+        
+                    'info_from' => $request->info_dari,
+                    'info_name' => $request->info_nama,
+                    'position' => $request->posisi,
+                    'status_id' => 1,
+        
+                    'parent_id' => auth()->user()->user_id,
+                ]);
             }
 
-            $calon = CalonSiswa::create([
-                'unit_id' => $unit_id,
-                'student_id' => $siswa->id,
-                'student_nis' => $siswa->student_nis,
-                'student_nisn' => $siswa->student_nisn,
-                'student_name' => $siswa->student_name,
-                'student_nickname' => $siswa->student_nickname,
-                'nik' => $siswa->nik,
-                'student_status_id' => $request->siswa_baru,
-                'reg_number' => $register_number,
-                // 'reg_number' => $unit->name.$semester->tahunAjaran->academic_year_start.sprintf('%04d',($registerCounter ? ($registerCounter->register_intern+$registerCounter->register_extern)+1 : '1')),
-                'academic_year_id' => $semester->academic_year_id,
-    
-                'birth_place' => $siswa->birth_place,
-                'birth_date' => $siswa->birth_date,
-                'gender_id' => $siswa->gender_id,
-                'religion_id' => $siswa->religion_id,
-                'child_of' => null,
-                'family_status' => null,
-                
-                'join_date' => null,
-                'semester_id' => $request->tahun_ajaran,
-                'level_id' => $kelas,
-                'address' => $siswa->address,
-                'address_number' => $siswa->address_number,
-                'rt' => $siswa->rt,
-                'rw' => $siswa->rw,
-                'region_id' => $siswa->region_id,
-    
-                'origin_school' => $request->asal_sekolah,
-                'origin_school_address' => '',
-                
-                'sibling_name' => $siswa->sibling_name,
-                'sibling_level_id' => $siswa->sibling_level_id,
-    
-                'info_from' => $siswa->info_from,
-                'info_name' => $siswa->info_name,
-                'position' => $siswa->position,
-                'status_id' => 1,
-    
-                'parent_id' => auth()->user()->user_id,
-            ]);
-        }else{
-            $agama = Agama::where('name','Islam')->first();
-            $desa = Wilayah::where('code',$request->desa)->first();
-            $level = Level::find($request->kelas);
-            $request->validate([
-                "nik" => "required",
-                "nama" => "required",
-                "tempat_lahir" => "required",
-                "tanggal_lahir" => "required",
-                "jenis_kelamin" => "required",
-                "agama" => "required",
-                "alamat" => "required",
-                "rt" => "required",
-                "rw" => "required",
-                "desa" => "required",
-                "kelas" => "required",
-            ]);
-            $calon = CalonSiswa::create([
-                'unit_id' => $unit_id,
-                'student_nis' => $request->nis,
-                'student_nisn' => $request->nisn,
-                'student_name' => $request->nama,
-                'student_nickname' => $request->nama_pendek,
-                'nik' => $request->nik,
-                'student_status_id' => $request->siswa_baru,
-                'reg_number' => $register_number,
-                // 'reg_number' => $unit->name.$semester->tahunAjaran->academic_year_start.sprintf('%04d',($registerCounter ? ($registerCounter->register_intern+$registerCounter->register_extern)+1 : '1')),
-                'academic_year_id' => $semester->academic_year_id,
-    
-                'birth_place' => $request->tempat_lahir,
-                'birth_date' => $request->tanggal_lahir,
-                'gender_id' => $request->jenis_kelamin,
-                'religion_id' => $agama->id,
-                'child_of' => null,
-                'family_status' => null,
-                
-                'join_date' => null,
-                'semester_id' => $request->tahun_ajaran,
-                'level_id' => $kelas,
-                'address' => $request->alamat,
-                'address_number' => $request->no_rumah,
-                'rt' => $request->rt,
-                'rw' => $request->rw,
-                'region_id' => $desa->id,
-    
-                'origin_school' => $request->asal_sekolah,
-                'origin_school_address' => $request->alamat_asal_sekolah,
-                
-                'sibling_name' => $request->saudara_nama,
-                'sibling_level_id' => $request->saudara_kelas,
-    
-                'info_from' => $request->info_dari,
-                'info_name' => $request->info_nama,
-                'position' => $request->posisi,
-                'status_id' => 1,
-    
-                'parent_id' => auth()->user()->user_id,
-            ]);
+            RegisterCounterService::addCounter($calon->id,'register');
+
+            Session::flash('success','Pendaftaran calon siswa berhasil. Selanjutnya, silakan klik fitur nama calon siswa.');
         }
+        else Session::flash('danger','Pendaftaran calon siswa gagal. Saat ini pendaftaran masih ditutup.');
 
-        RegisterCounterService::addCounter($calon->id,'register');
-
-        return redirect()->route('psb.index')->with('success','Pendaftaran calon siswa berhasil. Selanjutnya, silakan klik fitur nama calon siswa.');
+        return redirect()->route('psb.index');
     }
 
     public function storeOrtu(Request $request)
@@ -303,7 +320,7 @@ class RegisterController extends Controller
                 ]);
             }
             elseif(isset($request->father_email) && (OrangTua::where('father_email',$request->father_email)->count() > 0)){
-                return redirect()->back()->with('danger', 'Mohon maaf, email sudah terdaftar');
+                return redirect()->back()->with('exist', 'Mohon maaf, email sudah terdaftar');
             }
             else{
                 return redirect()->back()->with('danger', 'Maaf, harap isikan semua data dengan lengkap');

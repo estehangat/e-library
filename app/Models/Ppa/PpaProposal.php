@@ -18,10 +18,13 @@ class PpaProposal extends Model
         'year',
         'academic_year_id',
         'title',
+        'desc',
         'total_value',
         'employee_id',
         'unit_id',
-        'position_id'
+        'position_id',
+        'budgeting_id',
+        'declined_at'
     ];
 
     public function ppa()
@@ -48,6 +51,12 @@ class PpaProposal extends Model
     {
         return $this->belongsTo('App\Models\Penempatan\Jabatan','position_id');
     }
+
+    public function anggaran()
+    {
+        return $this->belongsTo('App\Models\Anggaran\Anggaran','budgeting_id');
+    }
+    
     
     public function details()
     {
@@ -57,7 +66,7 @@ class PpaProposal extends Model
     public function getDateIdAttribute()
     {
         Date::setLocale('id');
-        return Date::parse($this->date)->format('j F Y');
+        return $this->date ? Date::parse($this->date)->format('j F Y') : null;
     }
 
     public function getTotalValueWithSeparatorAttribute()

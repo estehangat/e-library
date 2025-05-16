@@ -50,7 +50,7 @@ class PotonganBmsController extends Controller
         $route = $this->route;
 
         $editable = false;
-        if(in_arraY($role,['fam'])) $editable = true;
+        if(in_arraY($role,['am'])) $editable = true;
 
         return view($this->template.$route.'-index', compact('data','used','active','route','editable'));
     }

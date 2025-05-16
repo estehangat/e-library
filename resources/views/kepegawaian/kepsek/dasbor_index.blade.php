@@ -33,7 +33,7 @@ $role = Auth::user()->role->name;
             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $count['total'] }}</div>
           </div>
           <div class="col-auto">
-            <i class="fas fa-users fa-2x text-brand-purple"></i>
+            <i class="fas fa-users fa-2x text-brand-green"></i>
           </div>
         </div>
       </div>
@@ -108,12 +108,12 @@ $unit = Auth::user()->pegawai->unit;
   <div class="col-12">
     <div class="card shadow mb-4">
       <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-brand-purple">Unit Anda</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">Unit Anda</h6>
       </div>
       <div class="card-body pt-1">
         <div class="d-flex align-items-center mb-3">
           <span class="fa-stack fa-2x">
-            <i class="fas fa-square fa-stack-2x text-brand-purple-dark"></i>
+            <i class="fas fa-square fa-stack-2x text-brand-green-dark"></i>
             <i class="fas fa-building fa-stack-1x fa-inverse"></i>
           </span>
           <h3 class="pt-1 mb-0">{{ $unit->desc }}</h3>
@@ -183,7 +183,7 @@ $unit = Auth::user()->pegawai->unit;
   <div class="col-md-6 col-12">
     <div class="card">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">10 Pegawai Terlama</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">10 Pegawai Terlama</h6>
       </div>
       <div class="card-body pt-1 pb-3 px-3">
         @foreach($senior as $p)
@@ -210,7 +210,7 @@ $unit = Auth::user()->pegawai->unit;
   <div class="col-md-6 col-12">
     <div class="card">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">Pegawai Senja</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">Pegawai Senja</h6>
       </div>
       <div class="card-body pt-0 pb-3 px-3">
         @if(count($tua) > 0)

@@ -211,7 +211,7 @@ class PhkController extends Controller
         if($phk){
             $nama = $phk->pegawai->name;
             if(!$phk->director_acc_status_id){
-                $login = LoginUser::where('user_id',$phk->pegawai->id)->first();
+                $login = LoginUser::where('user_id',$phk->pegawai->id)->pegawai()->first();
                 if($login) $login->delete();
 
                 $pegawai = Pegawai::find($phk->pegawai->id);

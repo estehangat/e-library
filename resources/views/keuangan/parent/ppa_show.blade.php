@@ -12,7 +12,7 @@ PPA
 @endsection
 
 @section('sidebar')
-@include('template.sidebar.keuangan.'.Auth::user()->role->name)
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -24,15 +24,15 @@ PPA
     <li class="breadcrumb-item"><a href="{{ route('ppa.index', ['jenis' => $jenisAktif->link])}}">{{ $jenisAktif->name }}</a></li>
     <li class="breadcrumb-item"><a href="{{ route('ppa.index', ['jenis' => $jenisAktif->link,'tahun' => !$isYear ? $tahun->academicYearLink : $tahun])}}">{{ !$isYear ? $tahun->academic_year : $tahun }}</a></li>
     <li class="breadcrumb-item"><a href="{{ route('ppa.index', ['jenis' => $jenisAktif->link,'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link])}}">{{ $anggaranAktif->anggaran->name }}</a></li>
-    <li class="breadcrumb-item active" aria-current="page">{{ $ppaAktif->firstNumber }}</li>
+    <li class="breadcrumb-item active" aria-current="page">{{ $ppaAktif->firstNumber.($ppaAktif->is_draft == 1 ? ' (Draf)' : null) }}</li>
   </ol>
 </div>
-
+{{--
 <div class="row">
     @foreach($jenisAnggaran as $j)
     @php
     $checkAccAttr = $j->isKso ? 'director_acc_status_id' : 'president_acc_status_id';
-    if(!in_array(Auth::user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv','fas'])){
+    if(!in_array(Auth::user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv','fas','am','akunspv'])){
         if(Auth::user()->pegawai->unit_id == '5'){
             $anggaranCount = $j->anggaran()->whereHas('anggaran',function($q)use($checkAccAttr){$q->where('position_id',Auth::user()->pegawai->jabatan->group()->first()->id);})->whereHas('apby',function($q)use($checkAccAttr){$q->where($checkAccAttr,1);})->count();
         }
@@ -69,14 +69,14 @@ PPA
         <div class="card h-100">
             <div class="card-body p-0">
                 <div class="row align-items-center mx-0">
-                    <div class="col-auto px-3 py-2 bg-brand-purple">
+                    <div class="col-auto px-3 py-2 bg-brand-green">
                         <i class="mdi mdi-file-document-outline mdi-24px text-white"></i>
                     </div>
                     <div class="col">
                         <div class="h6 mb-0 font-weight-bold text-gray-800">{{ $j->name }}</div>
                     </div>
                     <div class="col-auto">
-                        <a href="{{ route('ppa.index', ['jenis' => $j->link])}}" class="btn btn-sm btn-outline-brand-purple">Pilih</a>
+                        <a href="{{ route('ppa.index', ['jenis' => $j->link])}}" class="btn btn-sm btn-outline-brand-green">Pilih</a>
                     </div>
                 </div>
             </div>
@@ -104,7 +104,7 @@ PPA
     @endif
     @endforeach
 </div>
-
+--}}
 @if($jenisAktif)
 <div class="row mb-4">
   <div class="col-12">
@@ -147,6 +147,28 @@ PPA
                 </div>
                 <div class="col-lg-9 col-md-8 col-12">
                   {{ $ppaAktif->number ? $ppaAktif->number : '-' }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mb-0">
+          <div class="col-lg-8 col-md-10 col-12">
+            <div class="form-group mb-0">
+              <div class="row">
+                <div class="col-lg-3 col-md-4 col-12">
+                  <label class="form-control-label">Tahap</label>
+                </div>
+                <div class="col-lg-9 col-md-8 col-12">
+                  @if($ppaAktif->is_draft == 1)
+                  <span class="badge badge-secondary">Draf</span>
+                  @else
+                  @if(!$ppaAktif->lppa)
+                  <span class="badge badge-info">Diajukan</span>
+                  @else
+                  <span class="badge badge-success">Disetujui</span>
+                  @endif
+                  @endif
                 </div>
               </div>
             </div>
@@ -223,15 +245,15 @@ PPA
     </div>
 </div>
 
-@if(($apbyAktif && $apbyAktif->is_active == 1 && $apbyAktif->is_final != 1) && $ppaAktif && $isAnggotaPa && ((in_array(Auth::user()->role->name, ['fam','faspv']) && $ppaAktif->finance_acc_status_id != 1) || $ppaAktif->pa_acc_status_id != 1) && $ppaAktif->detail()->count() < 5 && !$ppaAktif->lppa_id && ($akun && $akun->where('is_fillable',1)->count() > 0))
+@if(($apbyAktif && $apbyAktif->is_active == 1 && $apbyAktif->is_final != 1) && $ppaAktif && $isAnggotaPa && ((in_array(Auth::user()->role->name, ['am']) && $ppaAktif->finance_acc_status_id != 1) || $ppaAktif->pa_acc_status_id != 1) && $ppaAktif->detail()->count() < 5 && !$ppaAktif->lppa_id && ($akun && $akun->where('is_fillable',1)->count() > 0))
 <div class="row mb-4">
   <div class="col-12">
     <div class="card">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">Tambah Pengajuan</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">Tambah Pengajuan</h6>
       </div>
       <div class="card-body pt-2 pb-3 px-4">
-        <form action="{{ route('ppa.tambah', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]) }}" id="addPpaDetailForm" method="post" enctype="multipart/form-data" accept-charset="utf-8">
+        <form action="{{ route('ppa.tambah', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber, 'submitted' => $ppaAktif->is_draft == 1 ? null : '1']) }}" id="addPpaDetailForm" method="post" enctype="multipart/form-data" accept-charset="utf-8">
           {{ csrf_field() }}
           <div class="row">
             <div class="col-lg-10 col-md-12">
@@ -329,7 +351,7 @@ PPA
                       @if($ppaAktif->type_id == 2 && $proposals && count($proposals) < 1)
                       <button type="button" class="btn btn-sm btn-secondary disabled">Tambah</button>
                       @else
-                      <input type="submit" class="btn btn-sm btn-brand-purple-dark" value="Tambah">
+                      <input type="submit" class="btn btn-sm btn-brand-green-dark" value="Tambah">
                       @endif
                     </div>
                 </div>
@@ -345,19 +367,19 @@ PPA
 <div class="row mb-4">
     <div class="col-12">
         <div class="card">
-        <form action="{{ route('ppa.perbarui.semua',['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]) }}" id="ppa-form" method="post" enctype="multipart/form-data" accept-charset="utf-8">
+        <form action="{{ route('ppa.perbarui.semua',['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber, 'submitted' => $ppaAktif->is_draft == 1 ? null : '1']) }}" id="ppa-form" method="post" enctype="multipart/form-data" accept-charset="utf-8">
           {{ csrf_field() }}
           {{ method_field('PUT') }}
           @yield('validate')
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">{{ $anggaranAktif->anggaran->name }}</h6>
-                @if(in_array(Auth::user()->role->name, ['fam','faspv']))
+                <h6 class="m-0 font-weight-bold text-brand-green">{{ $anggaranAktif->anggaran->name }}</h6>
+                @if(in_array(Auth::user()->role->name, ['fam','faspv','am','akunspv']))
                 @if($ppaAktif && ((!$isKso && $ppaAktif->bbk && $ppaAktif->bbk->bbk->president_acc_status_id == 1) || ($isKso && $ppaAktif->pa_acc_status_id == 1)))
                 <div class="m-0 float-right">
                 @if($apbyAktif && $apbyAktif->is_active == 1)
                 <a href="{{ route('ppa.ekspor', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]) }}" class="btn btn-brand-green-dark btn-sm">Ekspor <i class="fas fa-file-export ml-1"></i></a>
                 @else
-                <button type="button" class="btn btn-secondary btn-sm" disabled="disabled">Ekspor <i class="fas fa-file-export ml-1"></i></a>
+                <button type="button" class="btn btn-secondary btn-sm" disabled="disabled">Ekspor <i class="fas fa-file-export ml-1"></i></button>
                 @endif
                 </div>
                 @endif
@@ -387,12 +409,22 @@ PPA
                             <th>#</th>
                             <th>Akun Anggaran</th>
                             <th>Keterangan</th>
-                            @if(in_array(Auth::user()->role->name, ['fam','faspv']) && ($apbyAktif && $apbyAktif->is_active == 1 && $apbyAktif->is_final != 1) && $ppaAktif->director_acc_status_id != 1)
+                            @if(($isPa || in_array(Auth::user()->role->name, ['fam','faspv','am','akunspv'])) && ($apbyAktif && $apbyAktif->is_active == 1 && $apbyAktif->is_final != 1) && $ppaAktif->director_acc_status_id != 1)
                             <th>Sisa Saldo</th>
                             @endif
                             <th>Status</th>
                             <th style="min-width: 200px">Jumlah</th>
-                            @if(($apbyAktif && $apbyAktif->is_active == 1 && ($apbyAktif->is_final != 1 && $ppaAktif->type_id == 1)) && ($isAnggotaPa || (!$isAnggotaPa && in_array(Auth::user()->role->name, ['fam']) && $ppaAktif->finance_acc_status_id == 1) || (!$isAnggotaPa && in_array(Auth::user()->role->name, ['fam','faspv']) && $ppaAktif->type_id == 2)) && ((in_array(Auth::user()->role->name, ['faspv']) && $ppaAktif->finance_acc_status_id != 1) || $ppaAktif->pa_acc_status_id != 1 || (in_array(Auth::user()->role->name, ['fam']) && $ppaAktif->finance_acc_status_id == 1 && $ppaAktif->detail()->where('value','<=',0)->count() > 0)))
+                            @if(($apbyAktif && $apbyAktif->is_active == 1 && $apbyAktif->is_final != 1)
+              								&& ($isAnggotaPa || (!$isAnggotaPa && in_array(Auth::user()->role->name, ['fam','am']) && $ppaAktif->finance_acc_status_id == 1) || (!$isAnggotaPa && in_array(Auth::user()->role->name, ['fam','faspv','am']) && $ppaAktif->type_id == 2))
+              								&& (($ppaAktif->type_id == 2 && ($isPa || (in_array(Auth::user()->role->name, ['fam','faspv','akunspv','am'])) || (((!$isPa && $isAnggotaPa) || in_array(Auth::user()->role->name, ['fas'])) && !$ppaAktif->bbk)))
+              									|| ($ppaAktif->type_id != 2
+              										&& ((in_array(Auth::user()->role->name, ['am']) && $ppaAktif->finance_acc_status_id != 1)
+              											|| $ppaAktif->pa_acc_status_id != 1
+              											|| (in_array(Auth::user()->role->name, ['fam','am']) && $ppaAktif->finance_acc_status_id == 1 && $ppaAktif->detail()->where('value','<=',0)->count() > 0 && !$ppaAktif->lppa)
+              											)
+              										)
+              									)
+              								)
                             <th style="width: 160px">Aksi</th>
                             @endif
                         </tr>
@@ -419,11 +451,11 @@ PPA
 @endif
 <!--Row-->
 
-@if(($apbyAktif && $apbyAktif->is_active == 1 && $apbyAktif->is_final != 1) && $ppaAktif && $isAnggotaPa && ((in_array(Auth::user()->role->name, ['fam','faspv']) && $ppaAktif->finance_acc_status_id != 1) || $ppaAktif->pa_acc_status_id != 1))
+@if(($apbyAktif && $apbyAktif->is_active == 1 && $apbyAktif->is_final != 1) && $ppaAktif && $isAnggotaPa && ((in_array(Auth::user()->role->name, ['am']) && $ppaAktif->finance_acc_status_id != 1) || $ppaAktif->pa_acc_status_id != 1))
 <div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h6 class="modal-title text-white">Ubah Pengajuan</h6>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>
@@ -441,7 +473,7 @@ PPA
       </div>
       <div class="modal-body p-4" style="display: none;">
         @if($ppaAktif->type_id != 2)
-        <form action="{{ route('ppa.perbarui.detail', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber]) }}" id="editPpaDetailForm" method="post" enctype="multipart/form-data" accept-charset="utf-8">
+        <form action="{{ route('ppa.perbarui.detail', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $ppaAktif->firstNumber, 'submitted' => $ppaAktif->is_draft == 1 ? null : '1']) }}" id="editPpaDetailForm" method="post" enctype="multipart/form-data" accept-charset="utf-8">
           {{ csrf_field() }}
           {{ method_field('PUT') }}
           <input type="hidden" name="editId">
@@ -497,7 +529,7 @@ PPA
             <div class="col-12">
                 <div class="row">
                     <div class="col-lg-9 offset-lg-3 col-md-8 offset-md-4 col-12 text-left">
-                      <input type="submit" class="btn btn-sm btn-brand-purple-dark" value="Simpan">
+                      <input type="submit" class="btn btn-sm btn-brand-green-dark" value="Simpan">
                     </div>
                 </div>
             </div>
@@ -510,8 +542,8 @@ PPA
 </div>
 
 @endif
-@if(($apbyAktif && $apbyAktif->is_active == 1 && ($apbyAktif->is_final != 1 && $ppaAktif->type_id == 1)) && ($isAnggotaPa || (!$isAnggotaPa && in_array(Auth::user()->role->name, ['fam']) && $ppaAktif->finance_acc_status_id == 1) || (!$isAnggotaPa && in_array(Auth::user()->role->name, ['fam','faspv']) && $ppaAktif->type_id == 2)) && ((in_array(Auth::user()->role->name, ['faspv']) && $ppaAktif->finance_acc_status_id != 1) || $ppaAktif->pa_acc_status_id != 1 || (in_array(Auth::user()->role->name, ['fam']) && $ppaAktif->finance_acc_status_id == 1 && $ppaAktif->detail()->where('value','<=',0)->count() > 0)))
-
+@if(($apbyAktif && $apbyAktif->is_active == 1 && $apbyAktif->is_final != 1) && ($isAnggotaPa || (!$isAnggotaPa && in_array(Auth::user()->role->name, ['fam','am']) && $ppaAktif->finance_acc_status_id == 1) || (!$isAnggotaPa && in_array(Auth::user()->role->name, ['fam','faspv','am']) && $ppaAktif->type_id == 2)) && ((in_array(Auth::user()->role->name, ['am']) && $ppaAktif->finance_acc_status_id != 1) || $ppaAktif->pa_acc_status_id != 1 || (in_array(Auth::user()->role->name, ['fam','am']) && $ppaAktif->finance_acc_status_id == 1 && $ppaAktif->detail()->where('value','<=',0)->count() > 0 && !$ppaAktif->lppa)))
+@include('template.modal.konfirmasi_hapus')
 @endif
 
 @yield('accept-modal')
@@ -534,9 +566,10 @@ PPA
 @include('template.footjs.global.select2-multiple')
 @include('template.footjs.kepegawaian.tooltip')
 @include('template.footjs.keuangan.change-year')
-@if(($apbyAktif && $apbyAktif->is_active == 1 && ($apbyAktif->is_final != 1 && $ppaAktif->type_id == 1)) && ($isAnggotaPa || (!$isAnggotaPa && in_array(Auth::user()->role->name, ['fam']) && $ppaAktif->finance_acc_status_id == 1) || (!$isAnggotaPa && in_array(Auth::user()->role->name, ['fam','faspv']) && $ppaAktif->type_id == 2)) && ((in_array(Auth::user()->role->name, ['faspv']) && $ppaAktif->finance_acc_status_id != 1) || $ppaAktif->pa_acc_status_id != 1 || (in_array(Auth::user()->role->name, ['fam']) && $ppaAktif->finance_acc_status_id == 1 && $ppaAktif->detail()->where('value','<=',0)->count() > 0)))
+@if(($apbyAktif && $apbyAktif->is_active == 1 && $apbyAktif->is_final != 1) && ($isAnggotaPa || (!$isAnggotaPa && in_array(Auth::user()->role->name, ['fam','am']) && $ppaAktif->finance_acc_status_id == 1) || (!$isAnggotaPa && in_array(Auth::user()->role->name, ['fam','faspv','am']) && $ppaAktif->type_id == 2)) && ((in_array(Auth::user()->role->name, ['am']) && $ppaAktif->finance_acc_status_id != 1) || $ppaAktif->pa_acc_status_id != 1 || (in_array(Auth::user()->role->name, ['fam','am']) && $ppaAktif->finance_acc_status_id == 1 && $ppaAktif->detail()->where('value','<=',0)->count() > 0 && !$ppaAktif->lppa)))
+@include('template.footjs.modal.get_delete')
 @endif
-@if(($apbyAktif && $apbyAktif->is_active == 1 && $apbyAktif->is_final != 1) && $ppaAktif && $isAnggotaPa && ((in_array(Auth::user()->role->name, ['fam','faspv']) && $ppaAktif->finance_acc_status_id != 1) || $ppaAktif->pa_acc_status_id != 1))
+@if(($apbyAktif && $apbyAktif->is_active == 1 && $apbyAktif->is_final != 1) && $ppaAktif && $isAnggotaPa && ((in_array(Auth::user()->role->name, ['am']) && $ppaAktif->finance_acc_status_id != 1) || $ppaAktif->pa_acc_status_id != 1))
 @if($ppaAktif->type_id == 2)
 @include('template.footjs.modal.post_edit')
 @else

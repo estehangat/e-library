@@ -15,4 +15,9 @@ class PredikatDeskripsi extends Model
     {
         return $this->belongsTo('App\Models\Penilaian\RpdType', 'rpd_type_id');
     }
+    
+    public function descriptions()
+    {
+        return $this->hasMany('App\Models\Penilaian\Kurdeka\Deskripsi', 'rpd_id');
+    }
 }

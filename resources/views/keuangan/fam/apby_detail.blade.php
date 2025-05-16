@@ -1,34 +1,29 @@
 @extends('template.main.master')
 
 @section('title')
-APB
+APBY
 @endsection
 
 @section('headmeta')
-@if($apbyAktif && ($isYear && $apbyAktif->president_acc_status_id == 1) || (!$isYear && $apbyAktif->director_acc_status_id == 1))
-<!-- Select2 -->
-<link href="{{ asset('vendor/select2/dist/css/select2.min.css') }}" rel="stylesheet">
-<link href="{{ asset('vendor/select2/dist/css/select2-bootstrap4.min.css') }}" rel="stylesheet">
-@endif
 <meta name="csrf-token" content="{{ Session::token() }}" />
 @endsection
 
 @section('sidebar')
-@include('template.sidebar.keuangan.'.Auth::user()->role->name)
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-2">
-  <h1 class="h3 mb-0 text-gray-800">APB</h1>
+  <h1 class="h3 mb-0 text-gray-800">APBY</h1>
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="{{ route('keuangan.index')}}">Beranda</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('apby.index')}}">APB</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('apby.index')}}">APBY</a></li>
     <li class="breadcrumb-item"><a href="{{ route('apby.index', ['jenis' => $jenisAktif->link])}}">{{ $jenisAktif->name }}</a></li>
     <li class="breadcrumb-item"><a href="{{ route('apby.index', ['jenis' => $jenisAktif->link,'tahun' => !$isYear ? $tahun->academicYearLink : $tahun])}}">{{ !$isYear ? $tahun->academic_year : $tahun }}</a></li>
     <li class="breadcrumb-item active" aria-current="page">{{ $anggaranAktif->anggaran->name }}</li>
   </ol>
 </div>
-
+{{--
 <div class="row">
     @foreach($jenisAnggaran as $j)
     @if($jenisAktif == $j)
@@ -54,14 +49,14 @@ APB
         <div class="card h-100">
             <div class="card-body p-0">
                 <div class="row align-items-center mx-0">
-                    <div class="col-auto px-3 py-2 bg-brand-purple">
+                    <div class="col-auto px-3 py-2 bg-brand-green">
                         <i class="mdi mdi-file-document-outline mdi-24px text-white"></i>
                     </div>
                     <div class="col">
                         <div class="h6 mb-0 font-weight-bold text-gray-800">{{ $j->name }}</div>
                     </div>
                     <div class="col-auto">
-                        <a href="{{ route('apby.index', ['jenis' => $j->link])}}" class="btn btn-sm btn-outline-brand-purple">Pilih</a>
+                        <a href="{{ route('apby.index', ['jenis' => $j->link])}}" class="btn btn-sm btn-outline-brand-green">Pilih</a>
                     </div>
                 </div>
             </div>
@@ -70,7 +65,7 @@ APB
     @endif
     @endforeach
 </div>
-
+--}}
 @if($jenisAktif)
 <div class="row mb-4">
   <div class="col-12">
@@ -96,13 +91,13 @@ APB
                       @endif
                       <option value="{{ date('Y') }}" {{ $tahun == date('Y') ? 'selected' : '' }}>{{ date('Y') }}</option>
                       @endif
-                      @if((!$academicYears && !$isYear) || ($academicYears && count($academicYears) > 0))
+                      @if((!$academicYears && !$isYear) ||($academicYears && count($academicYears) > 0))
                       @foreach($tahunPelajaran as $t)
                       <option value="{{ $t->academicYearLink }}" {{ !$isYear && $tahun->id == $t->id ? 'selected' : '' }}>{{ $t->academic_year }}</option>
                       @endforeach
                       @endif
                     </select>
-                    <a href="{{ route('apby.index', ['jenis' => $jenisAktif->link]) }}" id="btn-select-year" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('apby.index', ['jenis' => $jenisAktif->link]) }}">Pilih</a>
+                    <a href="{{ route('apby.index', ['jenis' => $jenisAktif->link]) }}" id="btn-select-year" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('apby.index', ['jenis' => $jenisAktif->link]) }}">Pilih</a>
                     </div>
                   </div>
                 </div>
@@ -115,7 +110,7 @@ APB
 </div>
 
 <div class="row">
-    <div class="{{ $apbyAktif && $apbyAktif->detail()->count() > 0 && $apbyAktif->president_acc_status_id == 1? 'col-lg-4 ' : 'col-lg-6 ' }}col-12 mb-4">
+    <div class="{{ $apbyAktif && $apbyAktif->detail()->count() > 0 && $apbyAktif->president_acc_status_id == 1? 'col-lg-4 '  : 'col-lg-6 ' }}col-12 mb-4">
         <div class="card">
             <div class="card-body p-4">
                 <div class="d-flex align-items-center">
@@ -249,38 +244,13 @@ APB
         <form action="{{ route('apby.perbarui',['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link]) }}" id="apby-form" method="post" enctype="multipart/form-data" accept-charset="utf-8">
           {{ csrf_field() }}
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">{{ $anggaranAktif->anggaran->name }}</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">{{ $anggaranAktif->anggaran->name }}</h6>
                 <div class="m-0 float-right">
                 @if($apbyAktif && $apbyAktif->detail()->whereHas('akun',function($query){$query->where('is_fillable',1);})->whereNull('finance_acc_status_id')->whereNotNull('value_rkat')->count() > 0)
-                <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#acceptAll">Setujui Semua <i class="fas fa-check ml-1"></i></button>
+                <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#acceptAll">Ajukan Semua <i class="fas fa-check ml-1"></i></button>
                 @endif
                 </div>
             </div>
-            @if(Session::has('success'))
-            <div class="alert alert-success alert-dismissible mx-3 fade show" role="alert">
-                <strong>Sukses!</strong> {{ Session::get('success') }}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            @endif
-            @if(Session::has('danger'))
-            <div class="alert alert-danger alert-dismissible mx-3 fade show" role="alert">
-                <strong>Gagal!</strong> {{ Session::get('danger') }}
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            @endif
-            @if($errors->any())
-            <div class="alert alert-danger mx-3">
-              <ul class="mb-0">
-                @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-                @endforeach
-              </ul>
-            </div>
-            @endif
                 @if($apbyAktif && $apbyAktif->detail()->count() > 0)
                 <div class="table-responsive">
                     <table class="table align-items-center table-flush">
@@ -290,9 +260,6 @@ APB
                                 <th>Nama Akun</th>
                                 <th>Status</th>
                                 <th>Jumlah</th>
-                                @if(($isYear && $apbyAktif->president_acc_status_id == 1) || (!$isYear && $apbyAktif->director_acc_status_id == 1))
-                                <th>Aksi</th>
-                                @endif
                             </tr>
                         </thead>
                         <tbody>
@@ -322,9 +289,9 @@ APB
                                     @if(!$d->employee_id)
                                     <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Nominal anggaran akun ini berasal dari RKAT"></i>
                                     @elseif(!$d->finance_acc_status_id)
-                                    <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Persetujuan {{ Auth::user()->pegawai->position_id == 29 ? 'Anda' : 'Finance & Accounting Manager' }}"></i>
+                                    <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Pemeriksaan {{ Auth::user()->pegawai->position_id == 33 ? 'Anda' : 'Kepala Divisi Umum' }}"></i>
                                     @elseif(!$apbyAktif->finance_acc_status_id && $d->finance_acc_status_id == 1)
-                                    <i class="fa fa-lg fa-check-circle text-warning mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disetujui oleh {{ Auth::user()->pegawai->is($d->accKeuangan) ? 'Anda' : $d->accKeuangan->name }}<br>{{ date('d M Y H.i.s', strtotime($d->finance_acc_time)) }}"></i>
+                                    <i class="fa fa-lg fa-check-circle text-warning mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disimpan oleh {{ Auth::user()->pegawai->is($d->accKeuangan) ? 'Anda' : $d->accKeuangan->name }}<br>{{ date('d M Y H.i.s', strtotime($d->finance_acc_time)) }}"></i>
                                     @elseif($apbyAktif->finance_acc_status_id == 1 && !$d->director_acc_status_id)
                                     <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Persetujuan  {{ Auth::user()->pegawai->position_id == 17 ? 'Anda' : 'Director' }}"></i>
                                     @elseif(!$apbyAktif->director_acc_status_id && $d->director_acc_status_id == 1)
@@ -355,13 +322,6 @@ APB
                                     <input name="value-{{ $d->id }}" type="text" class="form-control form-control-sm number-separator" value="{{ $d->valueWithSeparator }}" {{ $d->akun->is_fillable < 1 ? 'disabled' : '' }}>
                                     @endif
                                 </td>
-                                @if(($isYear && $apbyAktif->president_acc_status_id == 1) || (!$isYear && $apbyAktif->director_acc_status_id == 1))
-                                <td>
-                                    @if($d->akun->is_fillable == 1 && $d->akun->kategori->parent->name == "Belanja" && $d->balance > 0)
-                                    <a href="#" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#edit-form" onclick="editModal('{{ route('apby.ubah',['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link]) }}', '{{ $d->id }}')"><i class="fas fa-pen"></i></a>
-                                    @endif
-                                </td>
-                                @endif
                             </tr>
                             @php $i++ @endphp
                             @endforeach
@@ -375,7 +335,7 @@ APB
                     <div class="row">
                         <div class="col-12">
                             <div class="text-center">
-                                <button class="btn btn-brand-purple-dark" type="submit">Simpan</button>
+                                <button class="btn btn-brand-green-dark" type="submit">Simpan</button>
                             </div>
                         </div>
                     </div>
@@ -408,7 +368,7 @@ APB
       </div>
       
       <div class="modal-body p-1">
-        Apakah Anda yakin ingin menyetujui semua alokasi dana yang ada?
+        Apakah Anda yakin ingin mengajukan semua alokasi dana yang ada?
       </div>
 
       <div class="modal-footer justify-content-center">
@@ -416,36 +376,8 @@ APB
         <form action="{{ route('apby.validasi.semua',['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link]) }}" method="post">
           {{ csrf_field() }}
           {{ method_field('PUT') }}
-          <button type="submit" class="btn btn-warning">Ya, Setujui</button>
+          <button type="submit" class="btn btn-warning">Ya, Ajukan</button>
         </form>
-      </div>
-    </div>
-  </div>
-</div>
-@endif
-
-@if($apbyAktif && ($isYear && $apbyAktif->president_acc_status_id == 1) || (!$isYear && $apbyAktif->director_acc_status_id == 1))
-<div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true" style="display: none;">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
-        <h5 class="modal-title text-white">Transfer Nominal Saldo</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">x</span>
-        </button>
-      </div>
-
-      <div class="modal-load p-4">
-        <div class="row">
-          <div class="col-12">
-            <div class="text-center my-5">
-              <i class="fa fa-spin fa-circle-notch fa-lg text-brand-green"></i>
-              <h5 class="font-weight-light mb-3">Memuat...</h5>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="modal-body p-4" style="display: none;">
       </div>
     </div>
   </div>
@@ -461,15 +393,8 @@ APB
 
 <!-- Easy Number Separator JS -->
 <script src="{{ asset('vendor/easy-number-separator/easy-number-separator.js') }}"></script>
-@if($apbyAktif && ($isYear && $apbyAktif->president_acc_status_id == 1) || (!$isYear && $apbyAktif->director_acc_status_id == 1))
-<!-- Select2 -->
-<script src="{{ asset('vendor/select2/dist/js/select2.min.js') }}"></script>
-@endif
 
 <!-- Plugins and scripts required by this view-->
 @include('template.footjs.kepegawaian.tooltip')
 @include('template.footjs.keuangan.change-year')
-@if($apbyAktif && ($isYear && $apbyAktif->president_acc_status_id == 1) || (!$isYear && $apbyAktif->director_acc_status_id == 1))
-@include('template.footjs.modal.post_edit')
-@endif
 @endsection

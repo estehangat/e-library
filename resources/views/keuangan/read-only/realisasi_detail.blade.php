@@ -9,7 +9,7 @@ Realisasi
 @endsection
 
 @section('sidebar')
-@include('template.sidebar.keuangan.'.Auth::user()->role->name)
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -25,7 +25,7 @@ Realisasi
     @endif
   </ol>
 </div>
-
+{{--
 <div class="row">
     @foreach($jenisAnggaran as $j)
     @if($jenisAktif == $j)
@@ -55,14 +55,14 @@ Realisasi
         <div class="card h-100">
             <div class="card-body p-0">
                 <div class="row align-items-center mx-0">
-                    <div class="col-auto px-3 py-2 bg-brand-purple">
+                    <div class="col-auto px-3 py-2 bg-brand-green">
                         <i class="mdi mdi-file-document-outline mdi-24px text-white"></i>
                     </div>
                     <div class="col">
                         <div class="h6 mb-0 font-weight-bold text-gray-800">{{ $j->name }}</div>
                     </div>
                     <div class="col-auto">
-                        <a href="{{ route('saldo.index', ['jenis' => $j->link])}}" class="btn btn-sm btn-outline-brand-purple">Pilih</a>
+                        <a href="{{ route('realisasi.index', ['jenis' => $j->link])}}" class="btn btn-sm btn-outline-brand-green">Pilih</a>
                     </div>
                 </div>
             </div>
@@ -90,7 +90,7 @@ Realisasi
     @endif
     @endforeach
 </div>
-
+--}}
 @if($jenisAktif)
 <div class="row mb-4">
   <div class="col-12">
@@ -122,7 +122,7 @@ Realisasi
                       @endforeach
                       @endif
                     </select>
-                    <a href="{{ route('realisasi.index', ['jenis' => $jenisAktif->link]) }}" id="btn-select-year" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('realisasi.index', ['jenis' => $jenisAktif->link]) }}">Pilih</a>
+                    <a href="{{ route('realisasi.index', ['jenis' => $jenisAktif->link]) }}" id="btn-select-year" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('realisasi.index', ['jenis' => $jenisAktif->link]) }}">Pilih</a>
                     </div>
                   </div>
                 </div>
@@ -233,7 +233,7 @@ Realisasi
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-				<h6 class="m-0 font-weight-bold text-brand-purple">Kemajuan Realisasi</h6>
+				<h6 class="m-0 font-weight-bold text-brand-green">Kemajuan Realisasi</h6>
 			</div>
             <div class="card-body pt-1 pb-4 px-4">
 				@php
@@ -261,7 +261,7 @@ Realisasi
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">{{ $anggaranAktif->anggaran->name }}</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">{{ $anggaranAktif->anggaran->name }}</h6>
             </div>
                 @if($apbyAktif && $apbyAktif->detail()->count() > 0)
                 <div class="table-responsive">
@@ -271,8 +271,12 @@ Realisasi
                                 <th style="white-space: nowrap">No Akun</th>
                                 <th>Nama Akun</th>
 								<th>Rencana</th>
-								<th>Realisasi</th>
-								<th>Selisih</th>
+								<th>Realisasi Terkini</th>
+                                <th>Realisasi PPB</th>
+                                <th>Realisasi RPPA</th>
+								{{--<th>Selisih</th>--}}
+                                <th>Selisih PPB</th>
+                                <th>Selisih RPPA</th>
 								<th>Sisa Saldo</th>
                             </tr>
                         </thead>
@@ -295,14 +299,18 @@ Realisasi
 								@else
 								<td>{{ $d->usedWithSeparator }}</td>
 								@endif
-								@if($d->akun->is_fillable < 1)
+                                <td>{{ $ppbValue[$d->akun->id]['used'] }}</td>
+                                <td>{{ $rppaValue[$d->akun->id]['used'] }}</td>
+                                @if($d->akun->is_fillable < 1)
 								@php
 								$thisBalance = $apbyAktif->detail()->whereHas('akun',function($q)use($d){$q->where('code','LIKE',$d->akun->code.'%')->where('is_fillable',1);})->sum('balance');
 								@endphp
-                                <td>{{ number_format($thisBalance, 0, ',', '.') }}</td>
+                                {{--<td>{{ number_format($thisBalance, 0, ',', '.') }}</td>--}}
 								@else
-								<td>{{ $d->balanceWithSeparator }}</td>
+								{{--<td>{{ $d->balanceWithSeparator }}</td>--}}
 								@endif
+                                <td>{{ $ppbValue[$d->akun->id]['balance'] }}</td>
+                                <td>{{ $rppaValue[$d->akun->id]['balance'] }}</td>
 								@php
 								if($d->akun->is_fillable < 1){
 									$percentage = $d->value > 0 ? (($thisBalance/$d->value)*100) : 0;

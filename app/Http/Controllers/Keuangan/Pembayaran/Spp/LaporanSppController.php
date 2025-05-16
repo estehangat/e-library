@@ -8,12 +8,16 @@ use App\Http\Services\Generator\SppGenerator;
 use App\Http\Services\Keuangan\SppDeductionService;
 use Illuminate\Http\Request;
 
+use App\Models\Kbm\TahunAjaran;
 use App\Models\Pembayaran\Spp;
 use App\Models\Pembayaran\SppBill;
 use App\Models\Pembayaran\SppDeduction;
 use App\Models\Pembayaran\SppPlan;
 use App\Models\Siswa\Siswa;
 use App\Models\Level;
+
+use Session;
+use Jenssegers\Date\Date;
 
 class LaporanSppController extends Controller
 {
@@ -47,10 +51,76 @@ class LaporanSppController extends Controller
         $plan = SppPlan::where('year',$year)->where('month',$month)->where('unit_id',$unit_id)->first();
         $deductions = SppDeduction::orderBy('name')->get();
 
+        // Use Academic Year
+
+        $year = $request->year;
+        $years = $academicYears = null;
+        $isYear = false;
+
+        $queryData = SppBill::query();
+
+        if($queryData->count() > 0){
+            $years = clone $queryData;
+            $yearsCount = $years->whereNotNull('year')->count();
+            $years = $years->whereNotNull('year')->orderBy('year')->pluck('year')->unique();
+
+            $academicYears = TahunAjaran::select('id','academic_year','academic_year_start','academic_year_end')->where('academic_year_start','>=',$years->min())->where('academic_year_end','<=',$years->max())->orderBy('academic_year')->get();
+        }
+
+        $tahunPelajaran = TahunAjaran::where('is_active',1)->latest()->take(1)->get();
+        
+
+
+        if($academicYears && $academicYears->count() > 0){
+            $tahunPelajaran = TahunAjaran::where(function($q)use($academicYears){
+                $q->where(function($q){
+                    $q->where('is_active',1);
+                })->orWhere(function($q)use($academicYears){
+                    $q->whereIn('id',$academicYears);
+                });
+            })->orderBy('created_at')->get();
+        }
+
+        if(!$isYear){
+            if($year){
+                $year = str_replace("-","/",$year);
+                $year = TahunAjaran::where('academic_year',$year)->first();
+            }
+            else{
+                // Default Value
+                $year = TahunAjaran::where('is_active',1)->latest()->first();
+            }
+            if(!$year) return redirect()->route($this->route.'.index');
+        }
+        else{
+            // Default Value
+            if(!$year){
+                if($yearsCount > 0){
+                    $year = $years->last();
+                }
+                else{
+                    $year = Date::now('Asia/Jakarta')->format('Y');
+                }
+            }
+            else{
+                if($yearsCount > 0){
+                    if(!in_array($year,$years->toArray())) $year = null;
+                }
+                else{
+                    if($year != Date::now('Asia/Jakarta')->format('Y')) $year = null;
+                }
+            }
+            if(!$year){
+                return redirect()->route($this->route.'.index');
+            }
+        }
+
         $active = $this->active;
         $route = $this->route;
+        
 
-        return view($this->template.$route.'-index', compact('active','route','year','month','unit_id','unit','deductions'));
+
+        return view($this->template.$route.'-index', compact('active','route','year','month','unit_id','unit','deductions','years','academicYears','tahunPelajaran','isYear'));
     }
 
     /**
@@ -65,21 +135,39 @@ class LaporanSppController extends Controller
         $unit_id = $request->unit_id;
         $level_id = $request->level_id;
 
-        $datas = SppBill::where('year', $year)
-        ->when($level_id, function($q, $level_id){
-            return $q->where('level_id', $level_id);
-        })
-        ->when($month, function($q, $month){
-            return $q->where('month', $month);
-        });
+        $datas = null;
 
-        if($request->user()->pegawai->unit_id == 5){
-            $datas = $datas->where('unit_id',$unit_id);
-        }else{
-            $datas = $datas->where('unit_id',$request->user()->pegawai->unit_id);
+        $year = str_replace("-","/",$year);
+        $year = TahunAjaran::select('id','academic_year_start','academic_year_end')->where('academic_year',$year)->first();
+        
+        if($year){
+            $datas = SppBill::when($level_id, function($q, $level_id){
+                return $q->where('level_id', $level_id);
+            })
+            ->when($month, function($q)use($month,$year){
+                return $q->where('month', $month)->when($month >= 7, function($q)use($year){
+                    return $q->where('year',$year->academic_year_start);
+                }, function($q)use($year){
+                    return $q->where('year',$year->academic_year_end);
+                });
+            }, function($q)use($year){
+                 return $q->where(function($q)use($year){
+                    $q->where(function($q)use($year){
+                        $q->where('year',$year->academic_year_start)->where('month', '>=', 7);
+                    })->orWhere(function($q)use($year){
+                        $q->where('year',$year->academic_year_end)->where('month', '<=', 6);
+                    });
+                });
+            });
+
+            if($request->user()->pegawai->unit_id == 5){
+                $datas = $datas->where('unit_id',$unit_id);
+            }else{
+                $datas = $datas->where('unit_id',$request->user()->pegawai->unit_id);
+            }
+
+            $datas = $datas->get();
         }
-
-        $datas = $datas->get();
 
         $resource = new LaporanSppSiswaCollection($datas);
 
@@ -147,9 +235,28 @@ class LaporanSppController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request,$id)
     {
-        //
+        $sppBill = SppBill::find($request->id);
+
+        if($sppBill){
+            $name = $sppBill->siswa && $sppBill->siswa->identitas ? $sppBill->siswa->identitas->student_name : 'siswa';
+            if($sppBill->spp){
+                $spp = $sppBill->spp;
+                $spp->saldo += $sppBill->spp_paid;
+                $spp->total -= $sppBill->spp_nominal;
+                $spp->deduction -= $sppBill->deduction_nominal;
+                $spp->remain -= $sppBill->sppRemain;
+                $spp->paid -= $sppBill->spp_paid;
+                $spp->save();
+            }
+            $sppBill->delete();
+
+            Session::flash('success','Data SPP '.$name.' berhasil dihapus');
+        }
+        else Session::flash('danger','Data gagal dihapus');
+
+        return redirect()->route($this->route.'.index');
     }
 
     /**
@@ -176,6 +283,11 @@ class LaporanSppController extends Controller
         $year = $request->year;
         $month = $request->month;
         $level = $request->level;
+
+        $tahun = str_replace("-","/",$year);
+        $tahun = TahunAjaran::select('id','academic_year_start','academic_year_end')->where('academic_year',$tahun)->first();
+
+        $year = $month >= 7 ? $tahun->academic_year_start : $tahun->academic_year_end;
 
         $plan = SppPlan::where('year',$year)->where('month',$month)->where('unit_id',$unit_id)->first();
         $nominal = str_replace('.','',$request->spp);
@@ -280,7 +392,7 @@ class LaporanSppController extends Controller
                         $spp_add_bill->spp_paid = $spp_student->saldo;
 
                         $spp_student->remain = $nominal-$deduction-$spp_student->saldo;
-                        $spp_student->paid = $spp_student->saldo;
+                        $spp_student->paid += $spp_student->saldo;
                         $spp_student->saldo = 0;
                     }
                     else{

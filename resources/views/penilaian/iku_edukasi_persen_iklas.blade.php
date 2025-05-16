@@ -5,7 +5,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple percentage-title">Mengumpulkan Data...</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green percentage-title">Mengumpulkan Data...</h6>
             </div>
             <div class="card-body pt-1 pb-4 px-4">
                 @php
@@ -29,7 +29,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Daftar Kelas</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Daftar Kelas</h6>
             </div>
             <div class="card-body p-3">
                 @if(Session::has('success'))

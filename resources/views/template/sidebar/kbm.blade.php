@@ -13,7 +13,7 @@
             <span>Belajar Mengajar</span>
         </a>
     </li> -->
-    @if(in_array(Auth::user()->role->name,['ketuayys','pembinayys','direktur','kepsek','wakasek','etl','am']))
+    @if(in_array(Auth::user()->role->name,['ketuayys','pembinayys','direktur','kepsek','wakasek','etl','etm','am']))
     <li class="nav-item {{ request()->routeIs('skbm*') ? 'active' : '' }}">
         <a class="nav-link {{ request()->routeIs('skbm*') ? 'active' : '' }}" href="{{ route('skbm.index') }}">
             <i class="mdi mdi-file-account"></i>
@@ -38,7 +38,7 @@
         </a>
     </li>
     @endif
-    @if( in_array((auth()->user()->role_id), array(1,2,3,7,11,12,13,15,16,18,29,30,31)))
+    @if( in_array((auth()->user()->role_id), array(1,2,3,7,9,11,12,13,15,16,18,29,30,31)))
     <li class="nav-item {{ (request()->is('kependidikan/kbm/siswa*')) ? 'active' : '' }}">
         <a class="nav-link {{ (request()->is('kependidikan/kbm/siswa*')) ? '' : 'collapsed' }}" href="#" data-toggle="collapse" data-target="#collapseSiswaData" aria-expanded="true" aria-controls="collapseBootstrap">
             <i class="fas fa-fw fa-users"></i>
@@ -95,11 +95,11 @@
                     <i class="mdi mdi-cog" aria-hidden="true"></i> 
                     <span>Nama Kelas</span>
                 </a>
-                @if( auth()->user()->pegawai->unit_id == 4)
-                <!-- <a class="collapse-item {{ (Request::path()=='kependidikan/kbm/kelas/jurusan*') ? 'active' : '' }}" href="/kependidikan/kbm/kelas/jurusan">
+                @if((in_array(auth()->user()->role_id, array(2)) && auth()->user()->pegawai->unit_id == 4) || in_array(auth()->user()->role_id, array(11,12,13)))
+                <a class="collapse-item {{ (Request::path()=='kependidikan/kbm/kelas/jurusan*') ? 'active' : '' }}" href="/kependidikan/kbm/kelas/jurusan">
                     <i class="mdi mdi-cog" aria-hidden="true"></i> 
                     <span>Jurusan</span>
-                </a> -->
+                </a>
                 @endif
                 @endif
             </div>

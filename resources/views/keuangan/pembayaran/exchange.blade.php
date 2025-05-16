@@ -4,7 +4,6 @@
 {{ $active }}
 @endsection
 
-
 @section('headmeta')
 <!-- Select2 -->
 <link href="{{ asset('vendor/select2/dist/css/select2.min.css') }}" rel="stylesheet">
@@ -12,17 +11,7 @@
 @endsection
 
 @section('sidebar')
-@php
-$role = Auth::user()->role->name;
-@endphp
-@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','keu','pembinayys','ketuayys','wakasek']))
-@include('template.sidebar.keuangan.'.$role)
-@else
-@include('template.sidebar.keuangan.employee')
-@endif
-<!-- Select2 -->
-<link href="{{ asset('vendor/select2/dist/css/select2.min.css') }}" rel="stylesheet">
-<link href="{{ asset('vendor/select2/dist/css/select2-bootstrap4.min.css') }}" rel="stylesheet">
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -35,13 +24,30 @@ $role = Auth::user()->role->name;
 </div>
 
 <div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <ul class="nav nav-pills p-3">
+              <li class="nav-item">
+                <a class="nav-link {{ !isset($status) || !in_array($status,['sukses','refund','ditolak']) ? 'active' : 'text-brand-green' }}" href="{{ route($route.'.index', ['status' => 'menunggu']) }}">Menunggu</a>
+              </li>
+              @php
+              $statuses = ['sukses','refund','ditolak'];
+              @endphp
+              @foreach($statuses as $s)
+              <li class="nav-item">
+                <a class="nav-link {{ isset($status) && $status == $s ? 'active' : 'text-brand-green' }}" href="{{ route($route.'.index', ['status' => $s]) }}">{{ ucwords($s) }}</a>
+              </li>
+              @endforeach
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
   <div class="col-12">
     <div class="card shadow">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">{{ $active }}</h6>
-        <div class="float-right">
-            <a class="m-0 float-right btn btn-brand-purple-dark btn-sm" href="{{route($route.'.refund')}}">Refund <i class="fas fa-undo-alt ml-1"></i></a>
-        </div>
+        <h6 class="m-0 font-weight-bold text-brand-green">{{ $active }}</h6>
       </div>
       <div class="card-body">
           @if(Session::has('success'))
@@ -71,7 +77,9 @@ $role = Auth::user()->role->name;
                         <th>Nominal Awal</th>
                         <th>Target</th>
                         <th>Refund</th>
+						@if($editable)
                         <th>Aksi</th>
+						@endif
                     </tr>
                 </thead>
                 <tbody>
@@ -81,30 +89,41 @@ $role = Auth::user()->role->name;
                         $isCalon = $data->origin == 3 ? true : false;
                         @endphp
                         <td>{{$data->created_at}}</td>
-                        <td>{{$isCalon ? $data->transactionOrigin->siswa->reg_number : $data->transactionOrigin->siswa->student_nis}}</td>
-                        <td>{{$isCalon ? $data->transactionOrigin->siswa->student_name : $data->transactionOrigin->siswa->identitas->student_name}}</td>
+                        @if($data->transactionOrigin)
+                        <td>{{$isCalon ? ($data->transactionOrigin->siswa ? $data->transactionOrigin->siswa->reg_number : 'Tidak ditemukan') : $data->transactionOrigin->siswa->student_nis}}</td>
+                        <td>{{$isCalon ? ($data->transactionOrigin->siswa ? $data->transactionOrigin->siswa->student_name : 'Tidak ditemukan') : $data->transactionOrigin->siswa->identitas->student_name}}</td>
+                        @else
+                        <td>-</td>
+                        <td>-</td>
+                        @endif
                         <td>{{in_array($data->origin,[1,3])?'BMS':'SPP'}}</td>
                         <td>Rp {{$data->nominalWithSeparator}}</td>
                         <td>
 
                             @foreach ($data->transactionTarget as $target)
-                            {{$target->is_student == 0 ? $target->student->reg_number : $target->student->student_nis}} <br>
-                            {{$target->is_student == 0 ? $target->student->student_name : $target->student->identitas->student_name }} <br>
+                            {{$target->is_student == 0 ? ($target->student ? $target->student->reg_number : 'Tidak ditemukan') : $target->student->student_nis}} <br>
+                            {{$target->is_student == 0 ? ($target->student ? $target->student->student_name : 'Tidak ditemukan') : $target->student->identitas->student_name }} <br>
                             Rp {{$target->nominalWithSeparator}} ({{$target->transaction_type==1?'BMS':'SPP'}})
                             <br><br>
                             @endforeach
 
                         </td>
                         <td>Rp {{$data->refundWithSeparator}}</td>
+						@if($editable)
                         <td>
+                            @if($data->transactionOrigin)
                             <a href="#" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#ubahModal" 
                             data-name="{{$isCalon ? $data->transactionOrigin->siswa->student_name : $data->transactionOrigin->siswa->identitas->student_name}}" 
                             data-total="{{$data->nominalWithSeparator}}"
                             data-origin="{{$data->origin}}"
-                            data-student_id="{{$data->transactionOrigin->siswa->id}}" data-id="{{$data->id}}"><i class="fa fa-pencil-alt"></i></a>
+                            data-student_id="{{($data->transactionOrigin->siswa->id)}}" data-id="{{$data->id}}"><i class="fa fa-pencil-alt"></i></a>
                             <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#tolakModal" data-name="{{$isCalon ? $data->transactionOrigin->siswa->student_name : $data->transactionOrigin->siswa->identitas->student_name}}" data-id="{{$data->id}}"><i class="fa fa-ban"></i></a>
+							@if(in_array(Auth::user()->pegawai->position_id,[57]))
                             <a href="#" class="btn btn-sm btn-success" data-toggle="modal" data-target="#ubahKategori" data-name="{{$isCalon ? $data->transactionOrigin->siswa->student_name : $data->transactionOrigin->siswa->identitas->student_name}}" data-id="{{$data->id}}"><i class="fa fa-check"></i></a>
+							@endif
+                            @endif
                         </td>
+						@endif
                     </tr>
                     @endforeach
                 </tbody>
@@ -121,6 +140,7 @@ $role = Auth::user()->role->name;
   </div>
 </div>
 
+@if($editable)
 <!-- Modal Acc -->
 <div id="ubahKategori" class="modal fade">
     <div class="modal-dialog modal-confirm">
@@ -274,8 +294,9 @@ $role = Auth::user()->role->name;
     </div>
 </div>
 
-
+@endif
 <!--Row-->
+
 @endsection
 
 @section('footjs')
@@ -295,6 +316,7 @@ $role = Auth::user()->role->name;
 <!-- Page level custom scripts -->
 @include('template.footjs.kbm.datatables')
 
+@if($editable)
 <script>
     $(document).ready(function()
     {
@@ -480,4 +502,5 @@ $role = Auth::user()->role->name;
         }
     }
 </script>
+@endif
 @endsection

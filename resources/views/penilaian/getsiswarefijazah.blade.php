@@ -50,7 +50,7 @@
                             <input type="hidden" name="major_id" value="{{$siswas->siswa->kelas->major_id}}">
                             <button type="submit" class="btn btn-info btn-sm"><i class="fa fa-eye"></i> Lihat Nilai</button>
                             @if ($siswas->report_status_id == 0 && auth()->user()->role->name == 'kepsek')
-                            <a href="/kependidikan/ijazahkepsek/refijazah/validasi/{{$siswas->siswa->id}}"><button type="button" class="btn btn-brand-purple btn-sm"><i class="fa fa-check"></i> Validasi</button></a>
+                            <a href="/kependidikan/ijazahkepsek/refijazah/validasi/{{$siswas->siswa->id}}"><button type="button" class="btn btn-brand-green btn-sm"><i class="fa fa-check"></i> Validasi</button></a>
                             @endif
                         </form>
                     </div>

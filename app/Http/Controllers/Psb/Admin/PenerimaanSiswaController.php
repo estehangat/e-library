@@ -100,7 +100,8 @@ class PenerimaanSiswaController extends Controller
         }
         $code = Wilayah::find($siswa->region_id);
         $city = Wilayah::where('code', substr($code->code,0,8))->first();
-
+        
+        /**
         $create_bms_inquiry = BsiService::registerInvoice(
             $siswa->student_name,
             $siswa->student_nickname."@sekolahauliya.sch.id",
@@ -118,17 +119,17 @@ class PenerimaanSiswaController extends Controller
             $va.'2',
             "SPP",
             $calons->unit_id,
-        );
+        ); **/
 
         $va_siswa = VirtualAccountCalonSiswa::create([
             'unit_id' => $siswa->unit_id,
             'candidate_student_id' => $siswa->id,
-            'spp_bank' => 'BSI',
+            'spp_bank' => 'DIGIYOK',
             'spp_va' => $va.'2',
-            'spp_trx_id' => $create_spp_inquiry?$create_spp_inquiry->data->number:'',
-            'bms_bank' => 'BSI',
+            'spp_trx_id' => $va.'21',
+            'bms_bank' => 'DIGIYOK',
             'bms_va' => $va.'1',
-            'bms_trx_id' => $create_bms_inquiry?$create_bms_inquiry->data->number:'',
+            'bms_trx_id' => $va.'11',
         ]);
         // dd($request->bms_sisa_bms,$va_siswa);
         // $bms_nominalnya = $request->bms_sisa_bms + (int)str_replace('.','',$request->bms_daftar_ulang);

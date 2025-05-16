@@ -60,13 +60,13 @@ Dashboard
                                         @endforeach
                                     </select>
                                 </div>
-                                <button class="btn btn-brand-purple-dark btn-sm" type="submit">Saring</button>
+                                <button class="btn btn-brand-green-dark btn-sm" type="submit">Saring</button>
                             </div>
                         </form>
                     </div>
                     <div class="table-responsive">
                         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                            <h6 class="m-0 font-weight-bold text-brand-purple">Dashboard</h6>
+                            <h6 class="m-0 font-weight-bold text-brand-green">Dashboard</h6>
                         </div>
                         <table id="dataTable" class="table align-items-center table-flush">
                             <thead class="thead-light">
@@ -76,15 +76,15 @@ Dashboard
                                     <th rowspan="2">Tahun</th>
                                     <th rowspan="2">Status</th>
                                     <th colspan="3">Sudah Daftar Online</th>
-                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,14,17,18,20,21,25,26]))
+                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,9,14,17,18,20,21,25,26]))
                                         <th colspan="3">Biaya Observasi</th>
                                         <th colspan="3">Wawancara</th>
                                     @endif
                                     <th colspan="3">Diterima</th>
                                     <th colspan="3">Bayar DU</th>
                                     <th colspan="3">Lunas DU</th>
-                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,14,17,18,20,21,25,26]))
-                                        <th colspan="3">Peresmian</th>
+                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,9,14,17,18,20,21,25,26]))
+                                        <th colspan="3">Diresmikan</th>
                                         <th colspan="3">Dicadangkan</th>
                                         <th colspan="3">Pembatalan DU</th>
                                     @endif
@@ -93,7 +93,7 @@ Dashboard
                                     <th>Internal</th>
                                     <th>Eksternal</th>
                                     <th>Total</th>
-                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,14,17,18,20,21,25,26]))
+                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,9,14,17,18,20,21,25,26]))
                                         <th>Internal</th>
                                         <th>Eksternal</th>
                                         <th>Total</th>
@@ -107,7 +107,10 @@ Dashboard
                                     <th>Internal</th>
                                     <th>Eksternal</th>
                                     <th>Total</th>
-                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,14,17,18,20,21,25,26]))
+                                    <th>Internal</th>
+                                    <th>Eksternal</th>
+                                    <th>Total</th>
+                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,9,14,17,18,20,21,25,26]))
                                         <th>Internal</th>
                                         <th>Eksternal</th>
                                         <th>Total</th>
@@ -130,7 +133,7 @@ Dashboard
                                     <td>{{$data->register_intern}}</td>
                                     <td>{{$data->register_extern}}</td>
                                     <td><b>{{$data->register_intern+$data->register_extern}}</b></td>
-                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,14,17,18,20,21,25,26]))
+                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,9,14,17,18,20,21,25,26]))
                                         <td>{{$data->saving_seat_intern}}</td>
                                         <td>{{$data->saving_seat_extern}}</td>
                                         <td><b>{{$data->saving_seat_intern+$data->saving_seat_extern}}</b></td>
@@ -147,7 +150,7 @@ Dashboard
                                     <td>{{$data->reapply_intern}}</td>
                                     <td>{{$data->reapply_extern}}</td>
                                     <td><b>{{$data->reapply_intern+$data->reapply_extern}}</b></td>
-                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,14,17,18,20,21,25,26]))
+                                    @if(in_array(Auth::user()->role->id,[1,2,3,7,8,9,14,17,18,20,21,25,26]))
                                         <td>{{$data->stored_intern}}</td>
                                         <td>{{$data->stored_extern}}</td>
                                         <td><b>{{$data->stored_intern+$data->stored_extern}}</b></td>

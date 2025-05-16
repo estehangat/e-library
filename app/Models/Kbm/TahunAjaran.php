@@ -61,6 +61,11 @@ class TahunAjaran extends Model
         return $this->hasMany('App\Models\Penilaian\SertifIklas','academic_year_id');
     }
 
+    public function jenisAnggarans()
+    {
+        return $this->hasMany('App\Models\Anggaran\jenisAnggaranAnggaranRiwayat','academic_year_id');
+    }
+
     public function rkat()
     {
         return $this->hasMany('App\Models\Rkat\Rkat','academic_year_id');
@@ -69,6 +74,11 @@ class TahunAjaran extends Model
     public function apby()
     {
         return $this->hasMany('App\Models\Apby\Apby','academic_year_id');
+    }
+
+    public function proposalPpas()
+    {
+        return $this->hasMany('App\Models\Ppa\PpaProposal','academic_year_id');
     }
 
     public function ppa()

@@ -31,6 +31,11 @@ class JenisAnggaranAnggaran extends Model
         return $this->belongsToMany('App\Models\Anggaran\Akun','budgeting_account','budgeting_budgeting_type_id','account_id')->withTimestamps();
     }
 
+    public function tahuns()
+    {
+        return $this->hasMany('App\Models\Anggaran\JenisAnggaranAnggaranRiwayat','budgeting_budgeting_type_id');
+    }
+
     public function rkat()
     {
         return $this->hasMany('App\Models\Rkat\Rkat','budgeting_budgeting_type_id');

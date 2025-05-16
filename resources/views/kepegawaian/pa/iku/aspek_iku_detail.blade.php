@@ -52,7 +52,7 @@ $role = Auth::user()->role->name;
                         <option value="{{ $c->nameLc }}" {{ $c->name == $iku->name ? 'selected' : '' }}>{{ $c->name }}</option>
                         @endforeach
                       </select>
-                      <a href="{{ route('iku.aspek.index') }}" id="btn-select-category" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('iku.aspek.index') }}">Pilih</a>
+                      <a href="{{ route('iku.aspek.index') }}" id="btn-select-category" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('iku.aspek.index') }}">Pilih</a>
                     </div>
                   </div>
                 </div>
@@ -88,7 +88,7 @@ $role = Auth::user()->role->name;
   <div class="col-12">
     <div class="card">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">Tambah Aspek IKU {{ $iku->name }}</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">Tambah Aspek IKU {{ $iku->name }}</h6>
       </div>
       <div class="card-body pt-2 pb-3 px-4">
         <form action="{{ route('iku.aspek.simpan',['iku' =>$iku->nameLc, 'unit' => $unitAktif->name]) }}" id="aspek-form" method="post" enctype="multipart/form-data" accept-charset="utf-8">
@@ -181,7 +181,7 @@ $role = Auth::user()->role->name;
                 <div class="row">
                     <div class="col-lg-9 offset-lg-3 col-md-8 offset-md-4 col-12 text-left">
                       @if(count($aspects) > 0)
-                      <input type="submit" class="btn btn-sm btn-brand-purple-dark" value="Tambah">
+                      <input type="submit" class="btn btn-sm btn-brand-green-dark" value="Tambah">
                       @else
                       <button type="button" class="btn btn-sm btn-secondary" disabled="disabled">Tambah</button>
                       @endif
@@ -199,7 +199,7 @@ $role = Auth::user()->role->name;
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Aspek IKU {{ $iku->name }}</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Aspek IKU {{ $iku->name }}</h6>
             </div>
             <div class="card-body p-3">
               @if(Session::has('success'))
@@ -297,7 +297,7 @@ $role = Auth::user()->role->name;
 <div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h6 class="modal-title text-white">Ubah Indikator Kinerja Utama</h6>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>
@@ -405,7 +405,7 @@ $role = Auth::user()->role->name;
             <div class="col-lg-10 col-md-12">
                 <div class="row">
                     <div class="col-lg-9 offset-lg-3 col-md-8 offset-md-4 col-12 text-left">
-                      <input type="submit" class="btn btn-sm btn-brand-purple-dark" value="Simpan">
+                      <input type="submit" class="btn btn-sm btn-brand-green-dark" value="Simpan">
                     </div>
                 </div>
             </div>

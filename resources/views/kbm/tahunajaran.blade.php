@@ -48,11 +48,11 @@ Tahun Pelajaran
                             </div>
                         </div>
                         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                            <h6 class="m-0 font-weight-bold text-brand-purple"></h6>
-                            <a class="m-0 float-right btn btn-brand-purple-dark btn-sm" href="" data-toggle="modal" data-target="#TambahModal">Tambah Tahun Pelajaran <i class="fas fa-plus"></i></a>
+                            <h6 class="m-0 font-weight-bold text-brand-green"></h6>
+                            <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="" data-toggle="modal" data-target="#TambahModal">Tambah Tahun Pelajaran <i class="fas fa-plus"></i></a>
                         </div>
                         <div class="text-center mt-4">
-                            <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+                            <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
                         </div>
                         </form>
                         @endif
@@ -96,7 +96,7 @@ Tahun Pelajaran
                             </div>
                         </div>
                         <div class="text-center mt-4">
-                            <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+                            <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
                         </div>
                         </form>
                         @endif

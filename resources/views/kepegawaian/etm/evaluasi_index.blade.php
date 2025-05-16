@@ -32,7 +32,7 @@ Evaluasi Pegawai
                 <a class="nav-link active" href="{{ route('evaluasi.index', ['status' => 'aktif']) }}">Aktif</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link text-brand-purple" href="{{ route('evaluasi.index', ['status' => 'selesai']) }}">Selesai</a>
+                <a class="nav-link text-brand-green" href="{{ route('evaluasi.index', ['status' => 'selesai']) }}">Selesai</a>
               </li>
             </ul>
         </div>
@@ -43,7 +43,7 @@ Evaluasi Pegawai
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Evaluasi Pegawai Tidak Tetap</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Evaluasi Pegawai Tidak Tetap</h6>
             </div>
             <div class="card-body p-3">
               @if(Session::has('success'))
@@ -154,7 +154,7 @@ Evaluasi Pegawai
 <div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h5 class="modal-title text-white">Atur Hasil Evaluasi</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>

@@ -25,8 +25,8 @@ Calon Pegawai
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Calon Pegawai Lulus Seleksi</h6>
-                <a class="m-0 float-right btn btn-brand-purple-dark btn-sm" href="{{ route('calon.tambah') }}">Tambah <i class="fas fa-plus-circle ml-1"></i></a>
+                <h6 class="m-0 font-weight-bold text-brand-green">Calon Pegawai Lulus Seleksi</h6>
+                <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="{{ route('calon.tambah') }}">Tambah <i class="fas fa-plus-circle ml-1"></i></a>
             </div>
             <div class="card-body p-3">
               @if(Session::has('success'))
@@ -83,7 +83,7 @@ Calon Pegawai
                         @endif
                       </td>
                       <td>
-                        <a href="{{ route('calon.detail', ['id' => $c->id]) }}" class="btn btn-sm btn-brand-purple-dark" target="_blank"><i class="fas fa-eye"></i></a>
+                        <a href="{{ route('calon.detail', ['id' => $c->id]) }}" class="btn btn-sm btn-brand-green-dark" target="_blank"><i class="fas fa-eye"></i></a>
                         @if(!$c->education_acc_status_id)
                         <a href="{{ route('calon.ubah', ['id' => $c->id]) }}" class="btn btn-sm btn-warning"><i class="fas fa-pen"></i></a>
                         <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#delete-confirm" onclick="deleteModal('Calon Pegawai', '{{ addslashes(htmlspecialchars($c->name)) }}', '{{ route('calon.hapus', ['id' => $c->id]) }}')"><i class="fas fa-trash"></i></a>

@@ -13,7 +13,7 @@ class Jurusan extends Model
 
     public function kelas()
     {
-        return $this->hasMany('App\Models\Kbm\Kelas');
+        return $this->hasMany('App\Models\Kbm\Kelas','major_id');
     }
 
     public function kelompokmapel()

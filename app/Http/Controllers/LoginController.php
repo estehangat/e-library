@@ -30,11 +30,11 @@ class LoginController extends Controller
         $credentials = $request->only('username', 'password');
         if (Auth::attempt($credentials)) {
             // Check remaining period
-            if($request->user()->pegawai && $request->user()->pegawai->remainingPeriod == 'Habis'){
-                Session::flash('danger', 'Sisa masa kerja Anda sudah habis. Mohon hubungi Administrator.');
-                Auth::logout();
-                return redirect()->route('login');
-            }
+            // if($request->user()->pegawai && $request->user()->pegawai->remainingPeriod == 'Habis'){
+            //     Session::flash('danger', 'Sisa masa kerja Anda sudah habis. Mohon hubungi Administrator.');
+            //     Auth::logout();
+            //     return redirect()->route('login');
+            // }
             $role = $request->user()->role->name;
             // Exclusion
             if($role == 'keulsi') return redirect()->route('keuangan.index');

@@ -60,7 +60,7 @@ Catatan Wali Kelas
                         <form action="{{route('catatan.simpan')}}" method="POST">
                             @csrf
                             <table class="table align-items-center table-flush">
-                                <thead class="bg-brand-purple text-white">
+                                <thead class="bg-brand-green text-white">
                                     <tr>
                                         <th width="30%">Nama Siswa</th>
                                         <th class="text-center">Catatan</th>
@@ -73,7 +73,7 @@ Catatan Wali Kelas
                                     <tr>
                                         <td>{{$siswas->identitas->student_name}}</td>
                                         <td>
-                                            <textarea class="form-control" name="notes[]"><?php if ($pas) echo $pas[$key]->notes; ?></textarea>
+                                            <textarea class="form-control" name="notes[]"><?php if ($pas && isset($pas[$key])) echo $pas[$key]->notes; ?></textarea>
                                         </td>
                                     </tr>
                                     @endforeach
@@ -89,12 +89,12 @@ Catatan Wali Kelas
                             @if($countrapor > 0)
                             @if($validasi > 0)
                             <div class="text-center mt-4">
-                                <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+                                <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
                             </div>
                             @endif
                             @else
                             <div class="text-center mt-4">
-                                <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+                                <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
                             </div>
                             @endif
                             @endif

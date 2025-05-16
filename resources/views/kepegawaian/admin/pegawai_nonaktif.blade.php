@@ -1,7 +1,7 @@
 @extends('template.main.master')
 
 @section('title')
-Civitas Auliya
+Civitas
 @endsection
 
 @section('headmeta')
@@ -14,10 +14,10 @@ Civitas Auliya
 
 @section('content')
 <div class="d-sm-flex align-items-center justify-content-between mb-2">
-    <h1 class="h3 mb-0 text-gray-800">Civitas Auliya</h1>
+    <h1 class="h3 mb-0 text-gray-800">Civitas</h1>
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="./">Beranda</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Civitas Auliya</li>
+        <li class="breadcrumb-item active" aria-current="page">Civitas</li>
     </ol>
 </div>
 
@@ -26,7 +26,7 @@ Civitas Auliya
         <div class="card">
             <ul class="nav nav-pills p-3">
               <li class="nav-item">
-                <a class="nav-link text-brand-purple" href="{{ route('pegawai.index', ['status' => 'aktif']) }}">Aktif</a>
+                <a class="nav-link text-brand-green" href="{{ route('pegawai.index', ['status' => 'aktif']) }}">Aktif</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link active" href="{{ route('pegawai.index', ['status' => 'nonaktif']) }}">Nonaktif</a>
@@ -40,7 +40,7 @@ Civitas Auliya
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Civitas Auliya Nonaktif</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Civitas Nonaktif</h6>
             </div>
             <div class="card-body p-3">
               @if(count($pegawai) > 0)
@@ -55,7 +55,7 @@ Civitas Auliya
                       <th>Tanggal Lahir</th>
                       <th>Unit</th>
                       <th>Masa Kerja</th>
-                      <th>Status Civitas Auliya</th>
+                      <th>Status Civitas</th>
                       <th>Aksi</th>
                     </tr>
                   </thead>
@@ -85,7 +85,7 @@ Civitas Auliya
                       <td>{{ $p->yearsOfService }}</td>
                       <td>{{ $p->statusPegawai->acronym }}</td>
                       <td>
-                        <a href="{{ route('pegawai.detail', ['id' => $p->id]) }}" class="btn btn-sm btn-brand-purple-dark" target="_blank"><i class="fas fa-eye"></i></a>
+                        <a href="{{ route('pegawai.detail', ['id' => $p->id]) }}" class="btn btn-sm btn-brand-green-dark" target="_blank"><i class="fas fa-eye"></i></a>
                       </td>
                     </tr>
                     @endforeach
@@ -95,7 +95,7 @@ Civitas Auliya
               @else
               <div class="text-center mx-3 mt-4 mb-5">
                 <h3 >Mohon Maaf,</h3>
-                <h6 class="font-weight-light mb-3">Tidak ada data Civitas Auliya nonaktif yang ditemukan</h6>
+                <h6 class="font-weight-light mb-3">Tidak ada data Civitas nonaktif yang ditemukan</h6>
               </div>
               @endif
             </div>

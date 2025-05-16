@@ -4,17 +4,13 @@
 Sumbangan Pembinaan Pendidikan
 @endsection
 
-@section('sidebar')
-@php
-$role = Auth::user()->role->name;
-@endphp
-@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','keu','pembinayys','ketuayys','wakasek']))
-@include('template.sidebar.keuangan.'.$role)
-@else
-@include('template.sidebar.keuangan.employee')
-@endif
+@section('headmeta')
 <!-- Select2 -->
 <link href="{{url('/vendor/select2/dist/css/select2.min.css')}}" rel="stylesheet" type="text/css">
+@endsection
+
+@section('sidebar')
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -63,13 +59,13 @@ $role = Auth::user()->role->name;
                                         @endforeach
                                     </select>
                                 </div>
-                                <button id="filter_submit" class="btn btn-brand-purple-dark btn-sm" type="button">Saring</button>
+                                <button id="filter_submit" class="btn btn-brand-green-dark btn-sm" type="button">Saring</button>
                             </div>
                         </form>
                     </div>
                     <div class="table-responsive">
                         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                            <h6 class="m-0 font-weight-bold text-brand-purple">Laporan Masukan SPP</h6>
+                            <h6 class="m-0 font-weight-bold text-brand-green">Laporan Masukan SPP</h6>
                             <div class="float-right">
                             </div>
                         </div>

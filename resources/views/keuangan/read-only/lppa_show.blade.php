@@ -5,7 +5,7 @@ RPPA
 @endsection
 
 @section('sidebar')
-@include('template.sidebar.keuangan.'.Auth::user()->role->name)
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -20,11 +20,11 @@ RPPA
     <li class="breadcrumb-item active" aria-current="page">{{ $lppaAktif->firstNumber }}</li>
   </ol>
 </div>
-
+{{--
 <div class="row">
     @foreach($jenisAnggaran as $j)
     @php
-    if(!in_array(Auth::user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv','fas'])){
+    if(!in_array(Auth::user()->role->name,['pembinayys','ketuayys','direktur','fam','faspv','fas','am','akunspv'])){
         if(Auth::user()->pegawai->unit_id == '5'){
             $anggaranCount = $j->anggaran()->whereHas('anggaran',function($q){$q->where('position_id',Auth::user()->pegawai->jabatan->group()->first()->id);})->whereHas('ppa',function($q){$q->where('director_acc_status_id',1)->has('lppa');})->count();
         }
@@ -60,14 +60,14 @@ RPPA
         <div class="card h-100">
             <div class="card-body p-0">
                 <div class="row align-items-center mx-0">
-                    <div class="col-auto px-3 py-2 bg-brand-purple">
+                    <div class="col-auto px-3 py-2 bg-brand-green">
                         <i class="mdi mdi-file-document-outline mdi-24px text-white"></i>
                     </div>
                     <div class="col">
                         <div class="h6 mb-0 font-weight-bold text-gray-800">{{ $j->name }}</div>
                     </div>
                     <div class="col-auto">
-                        <a href="{{ route('lppa.index', ['jenis' => $j->link])}}" class="btn btn-sm btn-outline-brand-purple">Pilih</a>
+                        <a href="{{ route('lppa.index', ['jenis' => $j->link])}}" class="btn btn-sm btn-outline-brand-green">Pilih</a>
                     </div>
                 </div>
             </div>
@@ -95,7 +95,7 @@ RPPA
     @endif
     @endforeach
 </div>
-
+--}}
 @if($jenisAktif)
 <div class="row mb-4">
   <div class="col-12">
@@ -331,12 +331,40 @@ RPPA
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">{{ $anggaranAktif->anggaran->name }}</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">{{ $anggaranAktif->anggaran->name }}</h6>
+				@if(in_array(Auth::user()->role->name,['fam','faspv','akunspv']))
+				<div class="m-0 float-right">
+                @if(in_array(Auth::user()->role->name,['faspv']) && $apbyAktif && $apbyAktif->is_active == 1 && !$isPa && $editable && $lppaAktif->finance_acc_status_id != 1)
+                <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#acceptAll">Setujui Semua <i class="fas fa-check ml-1"></i></button>
+                @endif
+				@if($lppaAktif && $lppaAktif->finance_acc_status_id == 1)
+                <a href="{{ route('lppa.ekspor', ['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $lppaAktif->firstNumber]) }}" class="btn btn-brand-green-dark btn-sm">Ekspor <i class="fas fa-file-export ml-1"></i></a>
+                @endif
+                </div>
+				@endif
             </div>
             @if($lppaAktif->finance_acc_status_id == 1 &&  $selisihKurang < 0)
             <div class="alert alert-light alert-dismissible fade show mx-3" role="alert">
                 <i class="fa fa-info-circle text-info mr-2"></i>Selisih yang kurang diajukan dengan PPA nomor <strong><a href="{{ route('ppa.show',['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $lppaAktif->ppaKurang->firstNumber]) }}" target="_blank" class="text-info">{{ $lppaAktif->ppaKurang->number }}</a></strong>
             </div>
+            @endif
+            @if(in_array(Auth::user()->role->name,['faspv']))
+            @if(Session::has('success'))
+            <div class="alert alert-success alert-dismissible fade show mx-3" role="alert">
+              <strong>Sukses!</strong> {{ Session::get('success') }}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            @endif
+            @if(Session::has('danger'))
+            <div class="alert alert-danger alert-dismissible fade show mx-3" role="alert">
+              <strong>Gagal!</strong> {{ Session::get('danger') }}
+              <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+               <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            @endif
             @endif
             @if($lppaAktif->detail()->count() > 0)
             @php
@@ -383,11 +411,11 @@ RPPA
                             </td>
                             <td>
                                 @if(!$l->acc_status_id)
-                                <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Persetujuan {{ Auth::user()->pegawai->position_id == $anggaranAktif->anggaran->acc_position_id ? 'Anda' : $anggaranAktif->anggaran->accJabatan->name }}"></i>
+                                <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Pemeriksaan {{ Auth::user()->pegawai->position_id == $anggaranAktif->anggaran->acc_position_id ? 'Anda' : $anggaranAktif->anggaran->accJabatan->name }}"></i>
                                 @elseif(($lppaAktif->detail()->where('acc_status_id',1)->count() < ($lppaAktif->detail()->count())) && $l->acc_status_id == 1)
-                                <i class="fa fa-lg fa-check-circle text-secondary mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disetujui oleh {{ Auth::user()->pegawai->is($l->accPegawai) ? 'Anda' : $l->accPegawai->name }}<br>{{ date('d M Y H.i.s', strtotime($l->acc_time)) }}"></i>
+                                <i class="fa fa-lg fa-check-circle text-secondary mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disimpan oleh {{ Auth::user()->pegawai->is($l->accPegawai) ? 'Anda' : $l->accPegawai->name }}<br>{{ date('d M Y H.i.s', strtotime($l->acc_time)) }}"></i>
                                 @elseif(($lppaAktif->detail()->where('acc_status_id',1)->count() >= ($lppaAktif->detail()->count())) && !$lppaAktif->finance_acc_status_id)
-                                <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Persetujuan {{ Auth::user()->pegawai->position_id == 29 ? 'Anda' : 'Finance & Accounting Manager' }}"></i>
+                                <i class="fa fa-lg fa-question-circle text-light" data-toggle="tooltip" data-original-title="Menunggu Persetujuan {{ Auth::user()->pegawai->position_id == 57 ? 'Anda' : 'Supervisor Akuntansi' }}"></i>
                                 @elseif($lppaAktif->finance_acc_status_id)
                                 <i class="fa fa-lg fa-check-circle text-success mr-1" data-toggle="tooltip" data-html="true" data-original-title="Disetujui oleh {{ Auth::user()->pegawai->is($lppaAktif->accKeuangan) ? 'Anda' : $lppaAktif->accKeuangan->name }}<br>{{ date('d M Y H.i.s', strtotime($lppaAktif->finance_acc_time)) }}"></i>
                                 @else
@@ -411,6 +439,38 @@ RPPA
 </div>
 @endif
 <!--Row-->
+
+@if(in_array(Auth::user()->role->name,['faspv']))
+@if($apbyAktif && $apbyAktif->is_active == 1 && !$isPa && $editable && $lppaAktif && $lppaAktif->finance_acc_status_id != 1)
+<div class="modal fade" id="acceptAll" tabindex="-1" role="dialog" aria-labelledby="setujuiModalLabel" aria-hidden="true" style="display: none;">
+  <div class="modal-dialog modal-confirm" role="document">
+    <div class="modal-content">
+      <div class="modal-header flex-column">
+        <div class="icon-box border-success">
+          <i class="material-icons text-success">&#xE5CA;</i>
+        </div>
+        <h4 class="modal-title w-100">Apakah Anda yakin?</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      </div>
+      
+      <div class="modal-body p-1">
+        Apakah Anda yakin ingin menyetujui semua data laporan yang ada?
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-danger mr-1" data-dismiss="modal">Tidak</button>
+        <form action="{{ route('lppa.validasi',['jenis' => $jenisAktif->link, 'tahun' => !$isYear ? $tahun->academicYearLink : $tahun, 'anggaran' => $anggaranAktif->anggaran->link, 'nomor' => $lppaAktif->firstNumber]) }}" method="post">
+          {{ csrf_field() }}
+          {{ method_field('PUT') }}
+          <button type="submit" class="btn btn-success">Ya, Setujui</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+@endif
+@endif
+
 @endsection
 
 @section('footjs')

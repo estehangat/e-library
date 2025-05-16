@@ -30,7 +30,7 @@
             className: 'btn-success btn-sm mb-3',
             text: '<i class="fas fa-file-excel mr-2"></i>Ekspor',
             exportOptions: {
-              columns: 'th:not(:last-child)'
+              columns: 'th:not(.action-col)'
             }
           })
         ]

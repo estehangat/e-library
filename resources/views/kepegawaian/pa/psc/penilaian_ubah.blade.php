@@ -68,7 +68,7 @@
       <button type="button" class="btn btn-light" data-dismiss="modal">Kembali</button>
     </div>
     <div class="col-6 text-right">
-      <input id="save-dismassal" type="submit" class="btn btn-brand-purple-dark" value="Simpan">
+      <input id="save-dismassal" type="submit" class="btn btn-brand-green-dark" value="Simpan">
     </div>
   </div>
 </form>

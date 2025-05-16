@@ -39,7 +39,7 @@ class LoginUser extends Authenticatable
 
     public function orangtua()
     {
-        return $this->belongsTo(OrangTua::class,'user_id','id');
+        return $this->belongsTo(OrangTua::class,'user_id');
     }
 
     public function ortu()
@@ -65,5 +65,15 @@ class LoginUser extends Authenticatable
     public function scopeAktif($query)
     {
         return $query->where('active_status_id',1);
+    }
+    
+    public function scopeOrangTua($query)
+    {
+        return $query->where('role_id',36);
+    }
+    
+    public function scopePegawai($query)
+    {
+        return $query->where('role_id','!=',36);
     }
 }

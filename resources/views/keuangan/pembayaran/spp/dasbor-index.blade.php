@@ -5,14 +5,7 @@
 @endsection
 
 @section('sidebar')
-@php
-$role = Auth::user()->role->name;
-@endphp
-@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','keu','pembinayys','ketuayys','wakasek']))
-@include('template.sidebar.keuangan.'.$role)
-@else
-@include('template.sidebar.keuangan.employee')
-@endif
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -29,7 +22,7 @@ $role = Auth::user()->role->name;
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-              <h6 class="m-0 font-weight-bold text-brand-purple">Total SPP Terbayar</h6>
+              <h6 class="m-0 font-weight-bold text-brand-green">Total SPP Terbayar</h6>
             </div>
             <div class="card-body pt-1 pb-4 px-4">
                 @php
@@ -57,7 +50,7 @@ $role = Auth::user()->role->name;
   <div class="col-12">
     <div class="card shadow">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">{{ $active }}</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">{{ $active }}</h6>
       </div>
       <div class="card-body">
         <div class="table-responsive">

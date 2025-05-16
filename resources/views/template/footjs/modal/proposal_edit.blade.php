@@ -22,7 +22,13 @@
 			var colPrice = colBtn.siblings(".detail-price");
 			var colQty = colBtn.siblings(".detail-qty");
 			
-			var dataDesc = colDesc.html();
+			//alert(colDesc.children('input[name="desc-'+detailId+'"]').length);
+			if(colDesc.children('input[name="desc-'+detailId+'"]').length){
+				var dataDesc = colDesc.children('input[name="desc-'+detailId+'"]').first().val();
+			}
+			else{
+				var dataDesc = colDesc.html();
+			}
 			var dataPrice = colPrice.children('input[name="price-'+detailId+'"]').first().val();
 			var dataQty = colQty.children('input[name="qty-'+detailId+'"]').first().val();
 			

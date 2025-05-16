@@ -52,7 +52,7 @@ class CalonPegawaiController extends Controller
             $calon = CalonPegawai::orderBy('created_at','desc')->get();
         }
 
-        if(in_array($role,['etl','etm']))
+        if(in_array($role,['etl','etm','sdms']))
             $folder = $role;
         else $folder = 'read-only';
 
@@ -247,7 +247,7 @@ class CalonPegawaiController extends Controller
             $calon = CalonPegawai::find($id);
         }
 
-        if(in_array($role,['etl','etm']))
+        if(in_array($role,['etl','etm','sdms']))
             $folder = $role;
         else $folder = 'read-only';
 
@@ -323,7 +323,7 @@ class CalonPegawaiController extends Controller
         $calon = CalonPegawai::find($request->id);
 
         if($calon && !$calon->education_acc_status_id){
-            if($request->user()->role->name == 'etm'){
+            if(in_array($request->user()->role->name,['etm','sdms'])){
                 $messages = [
                     'name.required' => 'Mohon tuliskan nama lengkap dan gelar',
                     'nickname.required' => 'Mohon tuliskan nama panggilan',
@@ -712,9 +712,10 @@ class CalonPegawaiController extends Controller
                     $user = new LoginUser();
                     $user->username = $pegawai->email;
                     $user->password = bcrypt(Date::parse($pegawai->birth_date)->format('dmY'));
+                    $user->user_id = $pegawai->id;
                     $user->role_id = $activeRole ? $activeRole : 37;
                     $user->active_status_id = 1;
-                    $pegawai->login()->save($user);
+                    $user->save();
                 }
 
                 $calon->education_acc_id = $request->user()->pegawai->id;

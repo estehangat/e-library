@@ -73,7 +73,7 @@ Deskripsi Aspek Perkembangan
                     <div class="col-md-12">
                         <div class="row">
                             <div class="col-md-12">
-                                <a class="m-0 float-right btn btn-brand-purple-dark btn-sm mb-2" href="javascript:void(0)" data-toggle="modal" data-target="#TambahModal" onclick="levelid()">Tambah <i class="fas fa-plus"></i></a>
+                                <a class="m-0 float-right btn btn-brand-green-dark btn-sm mb-2" href="javascript:void(0)" data-toggle="modal" data-target="#TambahModal" onclick="levelid()">Tambah <i class="fas fa-plus"></i></a>
                             </div>
                         </div>
                         <table class="table align-items-center table-flush" id="tabelaspek">
@@ -132,7 +132,7 @@ Deskripsi Aspek Perkembangan
             <form action="{{route('descaspek.tambah')}}" method="POST">
                 @csrf
                 <input type="hidden" name="level_id" id="idlevelsubmit" />
-                <div class="modal-header bg-brand-purple-dark text-white">
+                <div class="modal-header bg-brand-green-dark text-white">
                     <h5 class="modal-title" id="exampleModalLongTitle">Tambah Deskripsi</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
@@ -188,7 +188,7 @@ Deskripsi Aspek Perkembangan
 
             <form action="{{route('descaspek.ubah')}}" method="POST">
                 @csrf
-                <div class="modal-header bg-brand-purple-dark text-white">
+                <div class="modal-header bg-brand-green-dark text-white">
                     <h5 class="modal-title" id="exampleModalLongTitle">Ubah Deskripsi</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>

@@ -20,7 +20,7 @@ class ProgramStudiController extends Controller
     {
         $latar = LatarBidangStudi::orderBy('name')->get();
 
-        return view('kepegawaian.etm.program_studi_index', compact('latar'));
+        return view('kepegawaian.manajemen.rekrutmen.program_studi_index', compact('latar'));
     }
 
     /**

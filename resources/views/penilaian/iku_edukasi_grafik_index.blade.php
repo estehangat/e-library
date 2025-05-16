@@ -68,7 +68,7 @@ IKU Edukasi
                       <option value="{{ $l['link'] }}" {{ $ledger == $l['link'] ? 'selected' : '' }}>{{ $l['name'] }}</option>
                       @endforeach
                     </select>
-                    <a href="{{ route('penilaian.ikuEdukasi.persen') }}" id="btn-select-ledger" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('penilaian.ikuEdukasi.persen') }}">Pilih</a>
+                    <a href="{{ route('penilaian.ikuEdukasi.persen') }}" id="btn-select-ledger" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('penilaian.ikuEdukasi.persen') }}">Pilih</a>
                     </div>
                   </div>
                 </div>
@@ -101,7 +101,7 @@ IKU Edukasi
                       <option value="{{ $u->name }}" {{ $unit && $unit->id == $u->id ? 'selected' : '' }}>{{ $u->name }}</option>
                       @endforeach
                     </select>
-                    <a href="{{ route('penilaian.ikuEdukasi.persen', ['ledger' => $ledger]) }}" id="btn-select-unit" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('penilaian.ikuEdukasi.persen', ['ledger' => $ledger]) }}">Pilih</a>
+                    <a href="{{ route('penilaian.ikuEdukasi.persen', ['ledger' => $ledger]) }}" id="btn-select-unit" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('penilaian.ikuEdukasi.persen', ['ledger' => $ledger]) }}">Pilih</a>
                     </div>
                     @endif
                   </div>
@@ -135,7 +135,7 @@ IKU Edukasi
                       @endif
                       @endforeach
                     </select>
-                    <a href="{{ route('penilaian.ikuEdukasi.persen', ['ledger' => $ledger, 'unit' => $unit->name]) }}" id="btn-select-year" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('penilaian.ikuEdukasi.persen', ['ledger' => $ledger, 'unit' => $unit->name]) }}">Atur</a>
+                    <a href="{{ route('penilaian.ikuEdukasi.persen', ['ledger' => $ledger, 'unit' => $unit->name]) }}" id="btn-select-year" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('penilaian.ikuEdukasi.persen', ['ledger' => $ledger, 'unit' => $unit->name]) }}">Atur</a>
                     </div>
                   </div>
                 </div>
@@ -171,7 +171,7 @@ IKU Edukasi
                               <span class="input-group-text""><i class="fa fa-star"></i></span>
                             </div>
                             @endif
-                            <button type="submit" class="btn btn-brand-purple ml-2 pt-2">Lihat</button>
+                            <button type="submit" class="btn btn-brand-green ml-2 pt-2">Lihat</button>
                         </div>
                     </form>
                   </div>

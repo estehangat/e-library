@@ -187,7 +187,7 @@ class MateriPelatihanController extends Controller
         if($pelatihan){
             if($role == 'etm'){
                 $etl = PegawaiJabatan::whereHas('jabatan',function($query){
-                    $query->where('name','Education Team Leader');
+                    $query->where('name','Kepala Divisi Edukasi');
                 })->with('pegawaiUnit.pegawai')->get()->pluck('pegawaiUnit.pegawai')->where('active_status_id',1)->sortByDesc('id')->first();
                 $peserta = null;
                 if($pelatihan->active_status_id == 1){

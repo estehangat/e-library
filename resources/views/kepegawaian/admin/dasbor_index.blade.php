@@ -59,7 +59,7 @@ $role = Auth::user()->role->name;
             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $total }}</div>
           </div>
           <div class="col-auto">
-            <i class="fas fa-users fa-2x text-brand-purple"></i>
+            <i class="fas fa-users fa-2x text-brand-green"></i>
           </div>
         </div>
       </div>
@@ -116,7 +116,7 @@ $role = Auth::user()->role->name;
   <div class="col-lg-8">
     <div class="card shadow mb-4">
       <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-brand-purple">Pegawai Tiap Unit</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">Pegawai Tiap Unit</h6>
       </div>
       <div class="card-body">
         <div class="chart-bar">
@@ -130,7 +130,7 @@ $role = Auth::user()->role->name;
   <div class="col-lg-4">
     <div class="card shadow mb-4">
       <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-brand-purple">Jenis Kelamin</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">Jenis Kelamin</h6>
       </div>
       <div class="card-body">
         <div class="chart-pie">
@@ -144,7 +144,7 @@ $role = Auth::user()->role->name;
   <div class="col-12">
     <div class="card shadow mb-4">
       <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-brand-purple">Guru Tiap Unit</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">Guru Tiap Unit</h6>
       </div>
       <div class="card-body pt-0">
         <div class="row pt-2">
@@ -169,12 +169,12 @@ $role = Auth::user()->role->name;
     </div>
   </div>
   @php
-  $senior = $pegawai->sortBy('join_date')->take(10)->all();
+  $senior = $pegawai->whereNotIn('id',$pejabat)->sortBy('join_date')->take(10)->all();
   @endphp
   <div class="col-md-6 col-12">
     <div class="card">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">10 Pegawai Terlama</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">10 Pegawai Terlama</h6>
       </div>
       <div class="card-body pt-1 pb-3 px-3">
         @foreach($senior as $p)
@@ -196,12 +196,12 @@ $role = Auth::user()->role->name;
     </div>
   </div>
   @php
-  $tua = $pegawai->where('birth_date','<=',Date::parse('-50 year'))->sortBy('birth_date')->all();
+  $tua = $pegawai->whereNotIn('id',$pejabat)->where('birth_date','<=',Date::parse('-50 year'))->sortBy('birth_date')->all();
   @endphp
   <div class="col-md-6 col-12">
     <div class="card">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">Pegawai Senja</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">Pegawai Senja</h6>
       </div>
       <div class="card-body pt-0 pb-3 px-3">
         @if(count($tua) > 0)

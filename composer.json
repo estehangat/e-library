@@ -8,7 +8,7 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^7.3",
+        "php": "^7.3 || ^8.0 || ^8.1",
         "barryvdh/laravel-dompdf": "^0.8.7",
         "doctrine/dbal": "^2.12",
         "elibyy/tcpdf-laravel": "^8.0",
@@ -20,7 +20,8 @@
         "laravel/tinker": "^2.0",
         "maatwebsite/excel": "^3.1",
         "phpoffice/phpspreadsheet": "^1.15",
-        "simplesoftwareio/simple-qrcode": "^4.2"
+        "simplesoftwareio/simple-qrcode": "^4.2",
+        "yajra/laravel-datatables-oracle": "^9.21"
     },
     "require-dev": {
         "facade/ignition": "^2.3.6",
@@ -44,7 +45,11 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "files": [
+            "app/Helpers/YearHelper.php",
+            "app/Helpers/UnitHelper.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

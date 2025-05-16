@@ -5,20 +5,14 @@
 @endsection
 
 @section('headmeta')
+<!-- DataTables -->
 <link href="{{ asset('vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
 <link href="{{ asset('vendor/datatables-button/buttons.bootstrap4.min.css') }}" rel="stylesheet">
 <link href="{{ asset('vendor/datatables-button/jszip/datatables.min.css') }}" rel="stylesheet">
 @endsection
 
 @section('sidebar')
-@php
-$role = Auth::user()->role->name;
-@endphp
-@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','keu','pembinayys','ketuayys','wakasek']))
-@include('template.sidebar.keuangan.'.$role)
-@else
-@include('template.sidebar.keuangan.employee')
-@endif
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -61,7 +55,7 @@ $role = Auth::user()->role->name;
                             <option value="">Semua</option>
                         </select>
                     </div>
-                    <button id="filter_submit" class="btn btn-brand-purple-dark btn-sm" type="button">Saring</button>
+                    <button id="filter_submit" class="btn btn-brand-green-dark btn-sm" type="button">Saring</button>
                 </div>
             </form>
           </div>
@@ -75,9 +69,9 @@ $role = Auth::user()->role->name;
   <div class="col-12">
     <div class="card shadow">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">{{ $active }}</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">{{ $active }}</h6>
         <!-- <div class="float-right">
-            <a class="m-0 btn btn-brand-purple-dark btn-sm" href="/keuangan/spp/tambah">Tambah <i class="fas fa-plus"></i></a>
+            <a class="m-0 btn btn-brand-green-dark btn-sm" href="/keuangan/spp/tambah">Tambah <i class="fas fa-plus"></i></a>
         </div> -->
       </div>
       <div class="card-body">

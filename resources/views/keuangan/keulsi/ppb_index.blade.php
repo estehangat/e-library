@@ -9,7 +9,7 @@ PPB
 @endsection
 
 @section('sidebar')
-@include('template.sidebar.keuangan.'.Auth::user()->role->name)
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -56,7 +56,7 @@ PPB
                       @endforeach
                       @endif
                     </select>
-                    <a href="{{ route('ppb.index', ['jenis' => $jenisAktif->link]) }}" id="btn-select-year" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('ppb.index', ['jenis' => $jenisAktif->link]) }}">Pilih</a>
+                    <a href="{{ route('ppb.index', ['jenis' => $jenisAktif->link]) }}" id="btn-select-year" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('ppb.index', ['jenis' => $jenisAktif->link]) }}">Pilih</a>
                     </div>
                   </div>
                 </div>
@@ -72,7 +72,7 @@ PPB
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">PPB</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">PPB</h6>
             </div>
             @if($bbk && count($bbk) > 0)
             @php

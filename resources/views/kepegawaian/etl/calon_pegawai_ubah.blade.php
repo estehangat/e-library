@@ -43,7 +43,7 @@
   <hr>
   <div class="row mb-2">
     <div class="col-12">
-      <h6 class="font-weight-bold text-brand-purple">Rekomendasi</h6>
+      <h6 class="font-weight-bold text-brand-green">Rekomendasi</h6>
     </div>
   </div>
   <div class="row">
@@ -165,7 +165,7 @@
       <button type="button" class="btn btn-light" data-dismiss="modal">Kembali</button>
     </div>
     <div class="col-6 text-right">
-      <input type="submit" class="btn btn-brand-purple-dark" value="Simpan">
+      <input type="submit" class="btn btn-brand-green-dark" value="Simpan">
     </div>
   </div>
 </form>

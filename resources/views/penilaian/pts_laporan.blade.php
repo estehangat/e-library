@@ -124,7 +124,13 @@
                 @endif
                 @php
                 $i = 1;
-                $matapelajarans = $k->matapelajarans()->whereNull('is_mulok')->orderBy('subject_number');
+                $matapelajarans = $k->matapelajarans()->whereNull('is_mulok')->whereHas('jadwalPelajaran',function($q)use($rapor,$semester){
+				    $q->where([
+				        'level_id' => $rapor->kelas->level_id,
+				        'class_id' => $rapor->kelas->id,
+				        'semester_id' => $semester->id,
+				    ]);
+				})->orderBy('subject_number');
 				if($unit->name == 'SD'){
                     $matapelajarans = $matapelajarans->whereHas('mapelKelas',function($q)use($rapor){
                         $q->where('level_id',$rapor->kelas->level_id);
@@ -156,7 +162,7 @@
 						@php
 						$nilai_keterampilan = $keterampilan ? number_format((float)$keterampilan->nilaiketerampilandetail()->whereNotNull('score')->average('score'), 0, ',', '') : '';
 						@endphp
-						<td class="text-center">{{ $nilai_keterampilan }}</td>
+						<td class="text-center">{{ $nilai_keterampilan == 0 ? '-' : $nilai_keterampilan }}</td>
 						@php
 						$nilai_sikap = $sikap ? $sikap->predicate : '';
 						@endphp
@@ -170,7 +176,13 @@
 				@php
 				    $j = 'a';
 				    $n = 1;
-                    $matapelajarans = $k->matapelajarans()->mulok()->orderBy('subject_number');
+                    $matapelajarans = $k->matapelajarans()->mulok()->whereHas('jadwalPelajaran',function($q)use($rapor,$semester){
+					    $q->where([
+					        'level_id' => $rapor->kelas->level_id,
+					        'class_id' => $rapor->kelas->id,
+					        'semester_id' => $semester->id,
+					    ]);
+					})->orderBy('subject_number');
     				if($unit->name == 'SD'){
                         $matapelajarans = $matapelajarans->whereHas('mapelKelas',function($q)use($rapor){
                             $q->where('level_id',$rapor->kelas->level_id);
@@ -207,7 +219,7 @@
                     @php
                     $nilai_keterampilan = $keterampilan ? number_format((float)$keterampilan->nilaiketerampilandetail()->whereNotNull('score')->average('score'), 0, ',', '') : '';
                     @endphp
-                    <td class="text-center">{{ $nilai_keterampilan }}</td>
+                    <td class="text-center">{{ $nilai_keterampilan == 0 ? '-' : $nilai_keterampilan }}</td>
                     @php
                     $nilai_sikap = $sikap ? $sikap->predicate : '';
                     @endphp

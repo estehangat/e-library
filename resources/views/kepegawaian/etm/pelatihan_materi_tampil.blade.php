@@ -154,7 +154,7 @@ Kehadiran Pelatihan
                 </div>
                 @else
                 <div id="date-col" class="col-lg-9 col-md-8 col-12 mb-2">
-                  <button type="button" data-href="#edit-date-form" class="btn btn-sm btn-brand-purple-dark btn-edit"><i class="fas fa-plus-circle mr-1"></i>Pilih tanggal</button>
+                  <button type="button" data-href="#edit-date-form" class="btn btn-sm btn-brand-green-dark btn-edit"><i class="fas fa-plus-circle mr-1"></i>Pilih tanggal</button>
                 </div>
                 @endif
                 <div id="edit-date-form" class="col-md-6 col-12 mb-3" style="display: none">
@@ -166,7 +166,7 @@ Kehadiran Pelatihan
                   </div>
                   <div class="d-flex justify-content-end mt-2">
                     <button type="button" class="btn btn-sm btn-light btn-cancel mr-2" data-dismiss="#edit-date-form">Kembali</button>
-                    <button id="save-date" type="button" class="btn btn-sm btn-brand-purple-dark btn-submit">Simpan</button>
+                    <button id="save-date" type="button" class="btn btn-sm btn-brand-green-dark btn-submit">Simpan</button>
                   </div>
                 </div>
               </div>
@@ -186,14 +186,14 @@ Kehadiran Pelatihan
                 </div>
                 @else
                 <div id="place-col" class="col-lg-9 col-md-8 col-12 mb-2">
-                  <button type="button" data-href="#edit-place-form" class="btn btn-sm btn-brand-purple-dark btn-edit"><i class="fas fa-plus-circle mr-1"></i>Tambahkan tempat</button>
+                  <button type="button" data-href="#edit-place-form" class="btn btn-sm btn-brand-green-dark btn-edit"><i class="fas fa-plus-circle mr-1"></i>Tambahkan tempat</button>
                 </div>
                 @endif
                 <div id="edit-place-form" class="col-md-8 col-12 mb-3" style="display: none">
                   <input id="place" class="form-control" name="place" value="{{ $pelatihan->place }}" placeholder="Tuliskan tempat pelatihan" maxlength="255">
                   <div class="d-flex justify-content-end mt-2">
                     <button type="button" class="btn btn-sm btn-light btn-cancel mr-2" data-dismiss="#edit-place-form">Kembali</button>
-                    <button id="save-place" type="button" class="btn btn-sm btn-brand-purple-dark btn-submit">Simpan</button>
+                    <button id="save-place" type="button" class="btn btn-sm btn-brand-green-dark btn-submit">Simpan</button>
                   </div>
                 </div>
               </div>
@@ -214,7 +214,7 @@ Kehadiran Pelatihan
     <div class="col-12">
         <div id="training-presence" class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Kehadiran Pelatihan</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Kehadiran Pelatihan</h6>
             </div>
             <div class="card-body p-3">
               @if($pelatihan->education_acc_status_id == 1 && count($peserta) > 0)
@@ -326,7 +326,7 @@ Kehadiran Pelatihan
 <div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h5 class="modal-title text-white">Ubah Materi Pelatihan</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>

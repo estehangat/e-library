@@ -49,7 +49,7 @@ Jadwal Pelajaran
                                     <option value="Sabtu">Sabtu</option>
                                 </select>
                             </div>
-                            <button type="submit" class="btn btn-brand-purple-dark">Cari</button>
+                            <button type="submit" class="btn btn-brand-green-dark">Cari</button>
                         </div>
                     </form>
                     </div>
@@ -63,7 +63,5 @@ Jadwal Pelajaran
 
 @section('footjs')
 <!-- Plugins and scripts required by this view-->
-<script src="{{asset('vendor/chart.js/Chart.min.js')}}"></script>
-<script src="{{asset('js/demo/chart-area-demo.js')}}"></script>
 @include('template.footjs.kbm.datatables')
 @endsection

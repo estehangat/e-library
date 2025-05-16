@@ -109,7 +109,7 @@ $role = Auth::user()->role->name;
             {{ method_field('PUT') }}
           @endif
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">PSC Pegawai</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">PSC Pegawai</h6>
             </div>
             <div class="card-body p-3">
               @if($nilai && $nilai->acc_status_id == 1)
@@ -246,7 +246,7 @@ $role = Auth::user()->role->name;
                 <div class="row">
                   <div class="col-12">
                     <div class="text-center">
-                      <button class="btn btn-brand-purple-dark" type="submit">Simpan</button>
+                      <button class="btn btn-brand-green-dark" type="submit">Simpan</button>
                     </div>
                   </div>
                 </div>

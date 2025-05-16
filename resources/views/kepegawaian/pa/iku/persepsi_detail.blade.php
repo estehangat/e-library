@@ -53,7 +53,7 @@ $role = Auth::user()->role->name;
                         @endif
                         @endforeach
                       </select>
-                      <a href="{{ route('iku.'.$category->nameLc.'.index') }}" id="btn-select-year" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('iku.'.$category->nameLc.'.index') }}">Pilih</a>
+                      <a href="{{ route('iku.'.$category->nameLc.'.index') }}" id="btn-select-year" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('iku.'.$category->nameLc.'.index') }}">Pilih</a>
                     </div>
                   </div>
                 </div>
@@ -91,7 +91,7 @@ $role = Auth::user()->role->name;
         <form action="{{ route('iku.'.$category->nameLc.'.perbarui.semua', ['tahun' => $tahun->academicYearLink,'unit' => $unitAktif->name]) }}" id="iku-form" method="post" enctype="multipart/form-data" accept-charset="utf-8">
           {{ csrf_field() }}
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">IKU {{ $category->name }}</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">IKU {{ $category->name }}</h6>
             </div>
             <div class="card-body p-3">
               @if(Session::has('success'))
@@ -245,7 +245,7 @@ $role = Auth::user()->role->name;
                 <div class="row">
                   <div class="col-12">
                     <div class="text-center">
-                      <button class="btn btn-brand-purple-dark" type="submit">Simpan Capaian</button>
+                      <button class="btn btn-brand-green-dark" type="submit">Simpan Capaian</button>
                     </div>
                   </div>
                 </div>
@@ -262,7 +262,7 @@ $role = Auth::user()->role->name;
 <div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h5 class="modal-title text-white">Ubah Bukti dan Catatan</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>

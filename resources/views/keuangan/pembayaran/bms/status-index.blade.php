@@ -14,14 +14,7 @@
 @endif
 
 @section('sidebar')
-@php
-$role = Auth::user()->role->name;
-@endphp
-@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','keu','pembinayys','ketuayys','wakasek']))
-@include('template.sidebar.keuangan.'.$role)
-@else
-@include('template.sidebar.keuangan.employee')
-@endif
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -43,7 +36,7 @@ $role = Auth::user()->role->name;
         <div class="card h-100">
             <div class="card-body p-0">
                 <div class="row align-items-center mx-0">
-                    <div class="col-auto px-3 py-2 {{ isset($siswa) && $siswa == $opt ? 'bg-brand-green' : 'bg-brand-purple' }}">
+                    <div class="col-auto px-3 py-2 {{ isset($siswa) && $siswa == $opt ? 'bg-brand-green' : 'bg-brand-green' }}">
                         <i class="mdi mdi-account-outline mdi-24px text-white"></i>
                     </div>
                     <div class="col">
@@ -51,7 +44,7 @@ $role = Auth::user()->role->name;
                     </div>
                     <div class="col-auto">
                         @if(!isset($siswa) || (isset($siswa) && $siswa != $opt))
-                        <a href="{{ route($route.'.index', ['siswa' => $opt])}}" class="btn btn-sm btn-outline-brand-purple">Pilih</a>
+                        <a href="{{ route($route.'.index', ['siswa' => $opt])}}" class="btn btn-sm btn-outline-brand-green">Pilih</a>
                         @else
                         <a href="javascript:void(0)" class="btn btn-sm btn-outline-secondary disabled"role="button" aria-disabled="true">Pilih</a>
                         @endif
@@ -73,11 +66,11 @@ $role = Auth::user()->role->name;
                 <a class="nav-link active" href="{{ route($route.'.index', ['siswa' => $siswa, 'jenis' => 'tunai']) }}">Tunai</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link text-brand-purple" href="{{ route($route.'.index', ['siswa' => $siswa, 'jenis' => 'berkala']) }}">Berkala</a>
+                <a class="nav-link text-brand-green" href="{{ route($route.'.index', ['siswa' => $siswa, 'jenis' => 'berkala']) }}">Berkala</a>
               </li>
               @else
               <li class="nav-item">
-                <a class="nav-link text-brand-purple" href="{{ route($route.'.index', ['siswa' => $siswa, 'jenis' => 'tunai']) }}">Tunai</a>
+                <a class="nav-link text-brand-green" href="{{ route($route.'.index', ['siswa' => $siswa, 'jenis' => 'tunai']) }}">Tunai</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link active" href="{{ route($route.'.index', ['siswa' => $siswa, 'jenis' => 'berkala']) }}">Berkala</a>
@@ -92,7 +85,7 @@ $role = Auth::user()->role->name;
   <div class="col-12">
     <div class="card shadow">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">{{ $active }}</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">{{ $active }}</h6>
       </div>
       @if(count($lists) > 0)
       <div class="card-body">
@@ -184,10 +177,11 @@ $role = Auth::user()->role->name;
                         @else
                         @php
                         $terminCount = $list->termin()->count();
+                        $scope = !isset($siswa) || $siswa != 'calon' ? 'siswa' : 'calon';
                         @endphp
                         @if($terminCount > 0)
                         @php
-                        $termins = $list->termin()->calon()->with('tahunPelajaran:id,academic_year_start')->get()->sortBy('tahunPelajaran.academic_year_start');
+                        $termins = $list->termin()->{$scope}()->with('tahunPelajaran:id,academic_year_start')->get()->sortBy('tahunPelajaran.academic_year_start');
                         @endphp
                         @foreach($termins as $key => $t)
                         @if($key == 0)
@@ -293,7 +287,7 @@ $role = Auth::user()->role->name;
 <div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h5 class="modal-title text-white">Kirim Email Pengingat Tanggungan BMS</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>

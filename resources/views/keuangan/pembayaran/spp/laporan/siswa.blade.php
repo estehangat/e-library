@@ -5,14 +5,7 @@ Sumbangan Pembinaan Pendidikan
 @endsection
 
 @section('sidebar')
-@php
-$role = Auth::user()->role->name;
-@endphp
-@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','keu','pembinayys','ketuayys','wakasek']))
-@include('template.sidebar.keuangan.'.$role)
-@else
-@include('template.sidebar.keuangan.employee')
-@endif
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -70,15 +63,15 @@ $role = Auth::user()->role->name;
                                         <option value="">Semua</option>
                                     </select>
                                 </div>
-                                <button id="filter_submit" class="btn btn-brand-purple-dark btn-sm" type="button">Saring</button>
+                                <button id="filter_submit" class="btn btn-brand-green-dark btn-sm" type="button">Saring</button>
                             </div>
                         </form>
                     </div>
                     <div class="table-responsive">
                         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                            <h6 class="m-0 font-weight-bold text-brand-purple">Laporan SPP Siswa</h6>
+                            <h6 class="m-0 font-weight-bold text-brand-green">Laporan SPP Siswa</h6>
                             <div class="float-right">
-                                <button class="m-0 btn btn-brand-purple-dark btn-sm" data-toggle="modal" id="atur_sekaligus" style="display: none" data-target="#AturModal">Atur Sekaligus <i class="fas fa-cogs"></i></button>
+                                <button class="m-0 btn btn-brand-green-dark btn-sm" data-toggle="modal" id="atur_sekaligus" style="display: none" data-target="#AturModal">Atur Sekaligus <i class="fas fa-cogs"></i></button>
                             </div>
                         </div>
                         @if(Session::has('sukses'))

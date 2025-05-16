@@ -5,7 +5,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Grafik</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Grafik</h6>
             </div>
             <div class="card-body p-3">
                 <div class="chartWrapper">
@@ -24,7 +24,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Daftar Kelas</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Daftar Kelas</h6>
             </div>
             <div class="card-body p-3">
                 @if(Session::has('success'))

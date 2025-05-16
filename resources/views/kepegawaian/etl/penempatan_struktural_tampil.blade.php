@@ -66,7 +66,7 @@ Penempatan Struktural
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Penempatan Struktural</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Penempatan Struktural</h6>
             </div>
             <div class="card-body p-3">
               @if(Session::has('success'))
@@ -132,7 +132,11 @@ Penempatan Struktural
                       </td>
                       <td>
                         @if($p->acc_status_id == 1)
+                        @if(Auth::user()->role->name == 'etl')
+						<a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#delete-confirm" onclick="deleteModal('Penempatan Pegawai', '{{ addslashes(htmlspecialchars($p->pegawai->name)) }}', '{{ route('struktural.hapus', ['tahunajaran' => $aktif->academicYearLink, 'unit' => $unit->name, 'id' => $p->id]) }}')"><i class="fas fa-trash"></i></a>
+						@else
                         <span class="badge badge-success font-weight-normal">Telah Disetujui</span>
+						@endif
                         @else
                         @if($p->acc_position_id == Auth::user()->pegawai->position_id)
                         <a href="#" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#edit-form" onclick="editModal('{{ route('struktural.ubah', ['tahunajaran' => $aktif->academicYearLink, 'unit' => $unit->name]) }}','{{ $p->id }}')" data-toggle="modal" data-target="#edit-form"><i class="fas fa-pen"></i></a>
@@ -159,7 +163,7 @@ Penempatan Struktural
 <div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h5 class="modal-title text-white">Atur Penempatan Struktural</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>
@@ -182,6 +186,8 @@ Penempatan Struktural
   </div>
 </div>
 
+@include('template.modal.konfirmasi_hapus')
+
 @endsection
 
 @section('footjs')
@@ -199,4 +205,5 @@ Penempatan Struktural
 @include('template.footjs.kepegawaian.tooltip')
 @include('template.footjs.kepegawaian.datatables')
 @include('template.footjs.modal.post_edit')
+@include('template.footjs.modal.get_delete')
 @endsection

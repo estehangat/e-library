@@ -6,17 +6,16 @@
 
 @section('headmeta')
 <meta name="csrf-token" content="{{ Session::token() }}" />
+<style>
+button:disabled {
+  cursor: not-allowed;
+  pointer-events: all !important;
+}
+</style>
 @endsection
 
 @section('sidebar')
-@php
-$role = Auth::user()->role->name;
-@endphp
-@if(in_array($role,['admin','pembinayys','ketuayys','kepsek','wakasek','keu','direktur','etl','etm','fam','faspv','fas','ctl','ctm','am','aspv','ftm','ftspv','fts','keulsi']))
-@include('template.sidebar.keuangan.'.$role)
-@else
-@include('template.sidebar.keuangan.employee')
-@endif
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -103,7 +102,46 @@ $role = Auth::user()->role->name;
             </div>
           </div>
         </div>
-        @if(in_array($role,['ketuayys','direktur','fam','faspv']) && $data->ppa)
+        <div class="row mb-0">
+          <div class="col-lg-8 col-md-10 col-12">
+            <div class="form-group mb-0">
+              <div class="row">
+                <div class="col-lg-3 col-md-4 col-12">
+                  <label class="form-control-label">Tahap</label>
+                </div>
+                <div class="col-lg-9 col-md-8 col-12">
+                  @if(!$data->date)
+                  <span class="badge badge-secondary">Draft</span>
+                  @else
+                  @if(!$data->ppa)
+                  <span class="badge badge-info">Diajukan ke PA</span>
+                  @else
+                  <span class="badge badge-success">Proses PPA</span>
+                  @endif
+                  @endif
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        @if($data->anggaran)
+        <div class="row mb-0">
+          <div class="col-lg-8 col-md-10 col-12">
+            <div class="form-group mb-0">
+              <div class="row">
+                <div class="col-lg-3 col-md-4 col-12">
+                  <label class="form-control-label">Tujuan</label>
+                </div>
+                <div class="col-lg-9 col-md-8 col-12">
+                  {{ $data->anggaran->accJabatan->name.' - '.$data->anggaran->name }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        @endif
+        
+        @if(in_array(Auth::user()->role->name,['ketuayys','direktur','fam','faspv']) && $data->ppa)
         <div class="row mb-0">
           <div class="col-lg-8 col-md-10 col-12">
             <div class="form-group mb-0">
@@ -119,8 +157,25 @@ $role = Auth::user()->role->name;
           </div>
         </div>
         @endif
+
+        @if($data->desc)
+        <div class="row mb-0">
+          <div class="col-lg-8 col-md-10 col-12">
+            <div class="form-group mb-0">
+              <div class="row">
+                <div class="offset-lg-3 col-lg-9 offset-md-4 col-md-8 col-12">
+                  <a href="javascript:void(0)" class="text-brand-green" data-toggle="modal" data-target="#detailModal">
+                    <i class="fas fa-chevron-down mr-2"></i>Lihat Selengkapnya
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        @endif
+
         <div class="d-flex justify-content-end">
-          <a href="{{ route($route.'.index', ['year' => $data->year, 'status' => $data->ppa ? 'diajukan' : 'menunggu']) }}" class="btn btn-sm btn-light">Kembali</a>
+          <a href="{{ route($route.'.index', ['year' => $isYear ? $data->year : $data->tahunPelajaran->academicYearLink, 'status' => $data->ppa ? 'diajukan' : 'menunggu']) }}" class="btn btn-sm btn-light">Kembali</a>
         </div>
       </div>
     </div>
@@ -133,17 +188,25 @@ $role = Auth::user()->role->name;
             <div class="card-body p-4">
                 <div class="d-flex align-items-center">
                     <div class="mr-3">
-                        <div class="icon-circle {{ $data && $data->details()->withTrashed()->count() > 0 ? 'bg-brand-green' : 'bg-secondary' }}">
+                        <div class="icon-circle {{ $data && ((!$isWithTrashed && $data->details()->count() > 0) || ($isWithTrashed && $data->details()->withTrashed()->count() > 0)) ? 'bg-brand-green' : 'bg-secondary' }}">
                           <i class="fas fa-calculator text-white"></i>
                         </div>
                     </div>
                     <div>
                         <div class="small text-gray-500">Total Jumlah</div>
                         <h6 id="summary" class="mb-0">
-                            @if($data && $data->details()->withTrashed()->count() > 0)
+                            @if($isDynamic)
+                            @if($data && ((!$isWithTrashed && $data->details()->count() > 0) || ($isWithTrashed && $data->details()->withTrashed()->count() > 0)))
+                            {{ $data->totalValueWithSeparator }}
+                            @else
+                            0
+                            @endif
+                            @else
+                            @if($data && ((!$isWithTrashed && $data->details()->count() > 0) || ($isWithTrashed && $data->details()->withTrashed()->count() > 0)))
                             {{ $data->totalValueOriWithSeparator }}
                             @else
                             0
+                            @endif
                             @endif
                         </h6>
                     </div>
@@ -158,7 +221,7 @@ $role = Auth::user()->role->name;
   <div class="col-12">
     <div class="card shadow">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">Tambah Pengajuan</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">Tambah Pengajuan</h6>
       </div>
       <div class="card-body px-4 py-3">
         <form action="{{ route($route.'.detail.store',['id' => $id]) }}" id="addItemForm" method="post" enctype="multipart/form-data" accept-charset="utf-8">
@@ -219,7 +282,7 @@ $role = Auth::user()->role->name;
             <div class="col-lg-10 col-md-12">
                 <div class="row">
                     <div class="col-lg-9 offset-lg-3 col-md-8 offset-md-4 col-12 text-left">
-                      <input type="submit" class="btn btn-sm btn-brand-purple-dark" value="Tambah">
+                      <input type="submit" class="btn btn-sm btn-brand-green-dark" value="Tambah">
                     </div>
                 </div>
             </div>
@@ -235,8 +298,18 @@ $role = Auth::user()->role->name;
   <div class="col-12">
     <div class="card shadow">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">Rincian Proposal</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">Rincian Proposal</h6>
+        @if($data && ((!$isWithTrashed && $data->details()->count() > 0) || ($isWithTrashed && $data->details()->withTrashed()->count() > 0)) && in_array(Auth::user()->role->name,['wakasek','keu','fam','faspv','akunspv']))
+        <div class="m-0 float-right">
+          <a href="{{ route($route.'.export',['id' => $data->id]) }}" class="btn btn-brand-green-dark btn-sm">Ekspor <i class="fas fa-file-export ml-1"></i></a>
+        </div>
+        @endif
       </div>
+      @if((($isYear && $year == date('Y')) || (!$isYear && $year->is_finance_year == 1)) && $data->declined_at)
+      <div class="alert alert-warning mx-3" role="alert">
+          <i class="fa fa-info-circle mr-2"></i>Untuk dapat mengajukan kembali, lakukan perubahan pada draft proposal PPA ini
+      </div>
+      @endif
       @if(Session::has('success'))
       <div class="alert alert-success alert-dismissible fade show mx-3" role="alert">
         <strong>Sukses!</strong> {{ Session::get('success') }}
@@ -253,42 +326,100 @@ $role = Auth::user()->role->name;
         </button>
       </div>
       @endif
-      @if($data && $data->details()->withTrashed()->count() > 0)
+      @if($data && ((!$isWithTrashed && $data->details()->count() > 0) || ($isWithTrashed && $data->details()->withTrashed()->count() > 0)))
       @if($editable)
       <form action="{{ route($route.'.detail.update.all',['id' => $data->id]) }}" id="proposal-form" method="post" enctype="multipart/form-data" accept-charset="utf-8">
         {{ csrf_field() }}
         {{ method_field('PUT') }}
+        <input type="hidden" name="validate" value="">
+        <input type="hidden" name="budgeting_id" value="">
       @endif
+      @php
+      $viewableHistory = in_array(Auth::user()->role->name,['kepsek','wakasek','etl','ctl','fam','faspv','fas','am','akunspv']) ? true : false;
+      @endphp
         <div class="table-responsive">
           <table id="proposalDetails" class="table align-items-center table-flush">
             <thead class="thead-light">
               <tr>
                 <th style="width: 50px">#</th>
                 <th>Deskripsi</th>
-                <th>Harga</th>
+                @if($data->date && $viewableHistory)
+                <th>Nominal Diajukan</th>
+                <th>Nominal Diperiksa</th>
+                <th>Kuantitas Diajukan</th>
+                <th>Kuantitas Diperiksa</th>
+                <th>Subtotal Diajukan</th>
+                <th>Subtotal Diperiksa</th>
+                @else
+                <th>Nominal</th>
                 <th>Kuantitas</th>
                 <th>Subtotal</th>
+                @endif
                 @if($editable)
                 <th style="width: 120px">Aksi</th>
                 @endif
               </tr>
             </thead>
             <tbody>
-              @php $no = 1; @endphp
-              @foreach($data->details()->withTrashed()->get() as $d)
+              @php
+              $no = 1;
+              $datas = $isWithTrashed ? $data->details()->withTrashed()->get() : $data->details()->get();
+              @endphp
+              @foreach($datas as $d)
               <tr id="p-{{ $d->id }}">
                 <td>{{ $no++ }}</td>
                 @if($editable)
                 <td class="detail-desc">{{ $d->desc }}</td>
-                <td class="detail-price"><input name="price-{{ $d->id }}" type="text" class="form-control form-control-sm number-separator" value="{{ $d->priceOriWithSeparator }}"></td>
-                <td class="detail-qty"><input name="qty-{{ $d->id }}" type="text" class="form-control form-control-sm number-separator" value="{{ $d->quantityOriWithSeparator }}"></td>
+                @if($d->deleted_at)
+                <td class="detail-price"><input name="price-{{ $d->id }}" type="text" class="form-control form-control-sm number-separator" value="{{ $isDynamic ? $d->priceWithSeparator : $d->priceOriWithSeparator }}" disabled="disabled"></td>
+                <td class="detail-qty"><input name="qty-{{ $d->id }}" type="text" class="form-control form-control-sm number-separator" value="{{ $isDynamic ? $d->quantityWithSeparator : $d->quantityOriWithSeparator }}" disabled="disabled"></td>
+                @else
+                <td class="detail-price"><input name="price-{{ $d->id }}" type="text" class="form-control form-control-sm number-separator" value="{{ $isDynamic ? $d->priceWithSeparator : $d->priceOriWithSeparator }}"></td>
+                <td class="detail-qty"><input name="qty-{{ $d->id }}" type="text" class="form-control form-control-sm number-separator" value="{{ $isDynamic ? $d->quantityWithSeparator : $d->quantityOriWithSeparator }}"></td>
+                @endif
                 @else
                 <td>{{ $d->desc }}</td>
+                @if($isDynamic)
+                @if($d->deleted_at)
+                <td>0</td>
+                <td>0</td>
+                @else
+                @if($data->date && $viewableHistory)
+                <td>{{ $d->price_pa ? $d->pricePaWithSeparator : $d->priceWithSeparator }}</td>
+                <td>{{ $d->price_fam ? $d->priceFamWithSeparator : '-' }}</td>
+                <td>{{ $d->quantity_pa ? $d->quantityPaWithSeparator : $d->quantityWithSeparator }}</td>
+                <td>{{ $d->quantity_fam ? $d->quantityFamWithSeparator : '-' }}</td>
+                @else
+                <td>{{ $d->priceWithSeparator }}</td>
+                <td>{{ $d->quantityWithSeparator }}</td>
+                @endif
+                @endif
+                @else
                 <td>{{ $d->priceOriWithSeparator }}</td>
                 <td>{{ $d->quantityOriWithSeparator }}</td>
                 @endif
-                <td class="detail-value">{{ $d->valueOriWithSeparator }}</td>
-                @if($editable)
+                @endif
+                {{-- Summary --}}
+                @if($isDynamic)
+                @if($d->deleted_at)
+                <td>0</td>
+                @if($data->date)
+                <td>0</td>
+                @endif
+                @else
+                @if($viewableHistory)
+                <td>{{ $d->price_pa && $d->quantity_pa ? $d->valuePaWithSeparator : $d->valueWithSeparator }}</td>
+                @if($data->date)
+                <td>{{ $d->price_fam && $d->quantity_fam ? $d->valueFamWithSeparator : '-' }}</td>
+                @endif
+                @else
+                <td>{{ $d->valueWithSeparator }}</td>
+                @endif
+                @endif
+                @else
+                <td>{{ $d->valueOriWithSeparator }}</td>
+                @endif
+                @if($editable && !$d->deleted_at)
                 <td>
                   <button type="button" class="btn btn-sm btn-warning btn-edit" data-toggle="modal" data-target="#edit-form">
                     <i class="fa fa-pen"></i>
@@ -302,11 +433,16 @@ $role = Auth::user()->role->name;
           </table>
         </div>
         <div class="card-footer">
-          @if($editable)
+          @if($editable && $data->details()->count() > 0)
           <div class="row">
             <div class="col-12">
               <div class="text-center">
-                <button class="btn btn-brand-purple-dark" type="submit">Simpan</button>
+                <button class="btn btn-brand-green-dark" type="submit">Simpan</button>
+                @if($data->declined_at)
+                <button class="btn btn-secondary" type="button" disabled="disabled">Simpan & Ajukan</button>
+                @else
+                <button class="btn btn-success" type="button" data-toggle="modal" data-target="#saveAccept">Simpan & Ajukan</button>
+                @endif
               </div>
             </div>
           </div>
@@ -325,11 +461,173 @@ $role = Auth::user()->role->name;
 </div>
 <!--Row-->
 
-@if($editable)
+
+<!-- Modal -->
+<div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="detailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-brand-green border-0">
+        <h5 class="modal-title text-white" id="detailModalLabel">Detail Proposal PPA</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="row mb-0">
+          <div class="col-md-10 col-12">
+            <div class="form-group mb-0">
+              <div class="row">
+                <div class="col-lg-3 col-md-4 col-12">
+                  <label class="form-control-label">Tanggal</label>
+                </div>
+                <div class="col-lg-9 col-md-8 col-12">
+                  {{ $data->dateId ? $data->dateId : '-' }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mb-0">
+          <div class="col-md-10 col-12">
+            <div class="form-group mb-0">
+              <div class="row">
+                <div class="col-lg-3 col-md-4 col-12">
+                  <label class="form-control-label">Nama Proposal</label>
+                </div>
+                <div class="col-lg-9 col-md-8 col-12">
+                  {{ $data->title ? $data->title : '-' }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mb-0">
+          <div class="col-md-10 col-12">
+            <div class="form-group mb-0">
+              <div class="row">
+                <div class="col-lg-3 col-md-4 col-12">
+                  <label class="form-control-label">Unit</label>
+                </div>
+                <div class="col-lg-9 col-md-8 col-12">
+                  {{ $data->unit_id ? $data->unit->name : '-' }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mb-0">
+          <div class="col-md-10 col-12">
+            <div class="form-group mb-0">
+              <div class="row">
+                <div class="col-lg-3 col-md-4 col-12">
+                  <label class="form-control-label">Jabatan</label>
+                </div>
+                <div class="col-lg-9 col-md-8 col-12">
+                  {{ $data->position_id ? $data->jabatan->name : '-' }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mb-0">
+          <div class="col-md-10 col-12">
+            <div class="form-group mb-0">
+              <div class="row">
+                <div class="col-lg-3 col-md-4 col-12">
+                  <label class="form-control-label">Status</label>
+                </div>
+                <div class="col-lg-9 col-md-8 col-12">
+                  {{ $data->ppa ? 'Diajukan' : 'Menunggu' }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row mb-0">
+          <div class="col-md-10 col-12">
+            <div class="form-group mb-0">
+              <div class="row">
+                <div class="col-lg-3 col-md-4 col-12">
+                  <label class="form-control-label">Tahap</label>
+                </div>
+                <div class="col-lg-9 col-md-8 col-12">
+                  @if(!$data->date)
+                  <span class="badge badge-secondary">Draft</span>
+                  @else
+                  @if(!$data->ppa)
+                  <span class="badge badge-info">Diajukan ke PA</span>
+                  @else
+                  <span class="badge badge-success">Proses PPA</span>
+                  @endif
+                  @endif
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        @if($data->anggaran)
+        <div class="row mb-0">
+          <div class="col-md-10 col-12">
+            <div class="form-group mb-0">
+              <div class="row">
+                <div class="col-lg-3 col-md-4 col-12">
+                  <label class="form-control-label">Tujuan</label>
+                </div>
+                <div class="col-lg-9 col-md-8 col-12">
+                  {{ $data->anggaran->accJabatan->name.' - '.$data->anggaran->name }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        @endif
+        
+        @if(in_array(Auth::user()->role->name,['ketuayys','direktur','fam','faspv']) && $data->ppa)
+        <div class="row mb-0">
+          <div class="col-md-10 col-12">
+            <div class="form-group mb-0">
+              <div class="row">
+                <div class="col-lg-3 col-md-4 col-12">
+                  <label class="form-control-label">Nomor PPA</label>
+                </div>
+                <div class="col-lg-9 col-md-8 col-12">
+                  <a href="{{ route('ppa.show',['jenis' => $data->ppa->ppa->jenisAnggaranAnggaran->jenis->link, 'tahun' => $data->ppa->ppa->academic_year_id ? $data->ppa->ppa->tahunPelajaran->academicYearLink : $data->ppa->ppa->year, 'anggaran' => $data->ppa->ppa->jenisAnggaranAnggaran->anggaran->link, 'nomor' => $data->ppa->ppa->firstNumber]) }}" target="_blank" class="text-decoration-none text-info">{{ $data->ppa->ppa->number }}</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        @endif
+        
+        @if($data->desc)
+        <div class="row mb-0">
+          <div class="col-md-10 col-12">
+            <div class="form-group mb-0">
+              <div class="row">
+                <div class="col-lg-3 col-md-4 col-12">
+                  <label class="form-control-label">Deskripsi</label>
+                </div>
+                <div class="col-lg-9 col-md-8 col-12">
+                  {{ $data->desc }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        @endif
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-sm btn-light" data-dismiss="modal">Tutup</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@if($editable && $data->details()->count() > 0)
 <div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h5 class="modal-title text-white">Ubah Pengajuan</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>
@@ -406,7 +704,7 @@ $role = Auth::user()->role->name;
             <div class="col-12">
               <div class="row">
                 <div class="col-lg-9 offset-lg-3 col-md-8 offset-md-4 col-12 text-left">
-                  <input type="submit" class="btn btn-sm btn-brand-purple-dark" value="Simpan">
+                  <input type="submit" class="btn btn-sm btn-brand-green-dark" value="Simpan">
                 </div>
               </div>
             </div>
@@ -418,6 +716,39 @@ $role = Auth::user()->role->name;
 </div>
 
 @include('template.modal.konfirmasi_hapus')
+
+@if(!$data->declined_at)
+<div class="modal fade" id="saveAccept" tabindex="-1" role="dialog" aria-labelledby="simpanSetujuiModalLabel" aria-hidden="true" style="display: none;">
+  <div class="modal-dialog modal-confirm" role="document">
+    <div class="modal-content">
+      <div class="modal-header flex-column">
+        <div class="icon-box border-success">
+          <i class="material-icons text-success">&#xE5CA;</i>
+        </div>
+
+        <h4 class="modal-title w-100">Ajukan Proposal PPA?</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      </div>
+
+      <div class="modal-body p-1">
+        <div class="form-group">
+            <label for="selectBudgeting" class="col-form-label">Pengguna Anggaran Tujuan</label>
+            <select class="form-control" name="budgeting" id="selectBudgeting" required="required">
+              <option value="" {{ old('budgeting') ? '' : 'selected' }} disabled="disabled">Pilih salah satu</option>
+              @foreach($budgetings as $b)
+              <option value="{{ $b->id }}" {{ old('budgeting') == $b->id ? 'selected' : '' }}>{{ $b->accJabatan->name.' - '.$b->name }}</option>
+              @endforeach
+            </select>
+        </div>
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Kembali</button>
+        <button type="submit" id="saveAcceptBtn" class="btn btn-secondary" data-form="proposal-form" disabled="disabled">Ya, Simpan & Ajukan</button>
+      </div>
+    </div>
+</div>
+@endif
 
 @endif
 
@@ -433,8 +764,30 @@ $role = Auth::user()->role->name;
 
 <!-- Page level custom scripts -->
 @include('template.footjs.kepegawaian.tooltip')
-@if($editable)
+@if($editable && $data->details()->count() > 0)
 @include('template.footjs.modal.get_delete')
 @include('template.footjs.modal.proposal_edit')
+@if(!$data->declined_at)
+<script>
+    $(document).ready(function () {
+      $('select[name="budgeting"]').on('change',function(){
+        if($(this).val()){
+          $('#saveAcceptBtn').removeClass('btn-secondary').attr('disabled', true);
+          $('#saveAcceptBtn').addClass('btn-success').attr('disabled', false);
+        }
+        else{
+          $('#saveAcceptBtn').removeClass('btn-success').attr('disabled', true);
+          $('#saveAcceptBtn').addClass('btn-secondary').attr('disabled', false);
+        }
+      });
+      $('#saveAcceptBtn').click(function(){
+        var form = $(this).data('form');
+        $('input[name="validate"]').val('validate');
+        $('input[name="budgeting_id"]').val($('select[name="budgeting"]').val());
+        $('#'+form).submit();
+      });
+    });
+</script>
+@endif
 @endif
 @endsection

@@ -50,7 +50,7 @@ $role = Auth::user()->role->name;
                         <option value="{{ $t->target->id }}" {{ $target && $t->target->id == $target->target_position_id ? 'selected' : '' }}>{{ $t->target->name }}</option>
                         @endforeach
                       </select>
-                      <a href="{{ route('psc.aspek.index') }}" id="btn-select-position" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('psc.aspek.index') }}">Pilih</a>
+                      <a href="{{ route('psc.aspek.index') }}" id="btn-select-position" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('psc.aspek.index') }}">Pilih</a>
                     </div>
                   </div>
                 </div>
@@ -66,7 +66,7 @@ $role = Auth::user()->role->name;
   <div class="col-12">
     <div class="card">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">Tambah Aspek Evaluasi dan IKU</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">Tambah Aspek Evaluasi dan IKU</h6>
       </div>
       <div class="card-body pt-2 pb-3 px-4">
         {{ csrf_field() }}
@@ -133,7 +133,7 @@ $role = Auth::user()->role->name;
             <div class="col-lg-10 col-md-12">
               <div class="row">
                 <div class="col-lg-9 offset-lg-3 col-md-8 offset-md-4 col-12 text-left">
-                  <input type="submit" class="btn btn-sm btn-brand-purple-dark" value="Masukkan ke Daftar Aspek Evaluasi dan IKU">
+                  <input type="submit" class="btn btn-sm btn-brand-green-dark" value="Masukkan ke Daftar Aspek Evaluasi dan IKU">
                 </div>
               </div>
             </div>
@@ -216,7 +216,7 @@ $role = Auth::user()->role->name;
               <div class="col-lg-10 col-md-12">
                 <div class="row">
                   <div class="col-lg-9 offset-lg-3 col-md-8 offset-md-4 col-12 text-left">
-                    <input type="submit" class="btn btn-sm btn-brand-purple-dark" value="Tambah">
+                    <input type="submit" class="btn btn-sm btn-brand-green-dark" value="Tambah">
                   </div>
                 </div>
               </div>
@@ -235,7 +235,7 @@ $role = Auth::user()->role->name;
           {{ csrf_field() }}
           {{ method_field('PUT') }}
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Aspek Evaluasi dan IKU</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Aspek Evaluasi dan IKU</h6>
             </div>
             <div class="card-body p-3">
               @if(Session::has('success'))
@@ -349,7 +349,7 @@ $role = Auth::user()->role->name;
               <div class="row">
                 <div class="col-12">
                   <div class="text-center">
-                    <button class="btn btn-brand-purple-dark" type="submit">Simpan</button>
+                    <button class="btn btn-brand-green-dark" type="submit">Simpan</button>
                   </div>
                 </div>
               </div>
@@ -364,7 +364,7 @@ $role = Auth::user()->role->name;
 <div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h6 class="modal-title text-white">Ubah Aspek Evaluasi dan IKU</h6>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>

@@ -17,7 +17,7 @@
     <div class="col-md-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Pengajuan Kelas</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Pengajuan Kelas</h6>
             </div>
             <div class="table-responsive">
                 <table class="table align-items-center table-flush">

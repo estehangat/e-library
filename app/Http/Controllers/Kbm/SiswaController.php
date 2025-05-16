@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Kbm\SiswaDatatableCollection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Writer\Xls;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 
@@ -220,7 +222,7 @@ class SiswaController extends Controller
         ]);
         
 
-        return redirect('/kependidikan/kbm/siswa')->with('sukses','Tambah Siswa Berhasil');
+        return redirect('/kependidikan/kbm/siswa')->with('success','Tambah Siswa Berhasil');
     }
     
     public function show($id)
@@ -364,7 +366,10 @@ class SiswaController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $messages = [
+            'kelas.required' => 'Mohon pilih salah satu tingkat kelas',
+        ];
+
         $request->validate([
             "nik" => "required",
             "nis" => "required",
@@ -382,13 +387,25 @@ class SiswaController extends Controller
             "kecamatan" => "required",
             "desa" => "required",
             "semester_masuk" => "required",
-            "kelas" => "required",
             "asal_sekolah" => "required",
         ]);
+
+        $role = auth()->user()->role->name;
 
         $desa = Wilayah::where('code',$request->desa)->first();
 
         $siswa = Siswa::find($id);
+
+        if($siswa && $siswa->is_lulus != 1){
+            $validator = Validator::make($request->all(), [
+                "kelas" => "required",
+            ], $messages);
+
+            if($validator->fails()){
+                return redirect()->back()->withErrors($validator)->withInput();
+            }
+        }
+
         $idensis = $siswa->identitas;
         $parentid = $idensis->parent_id;
         $siswa->unit_id = $request->unit;
@@ -408,7 +425,9 @@ class SiswaController extends Controller
         
         $siswa->join_date = $request->tanggal_masuk;
         $siswa->semester_id = $request->semester_masuk;
-        $siswa->level_id = $request->kelas;
+        if($siswa->is_lulus != 1){
+            $siswa->level_id = $request->kelas;
+        }
         $idensis->address = $request->alamat;
         $idensis->address_number = $request->no_rumah;
         $idensis->rt = $request->rt;
@@ -440,42 +459,59 @@ class SiswaController extends Controller
         //$ortu->employee_id = $request->kode_pegawai;
         if($pegawai) $ortu->employee_id = $request->employee;
         elseif(!$pegawai && $request->employeeOpt == 'no') $ortu->employee_id = null;
-        $ortu->father_name = $request->nama_ayah;
-        $ortu->father_nik = $request->nik_ayah;
-        $ortu->father_phone = $request->hp_ayah;
-        $ortu->father_email = $request->email_ayah;
-        $ortu->father_job = $request->pekerjaan_ayah;
-        $ortu->father_position= $request->jabatan_ayah; //jabatan ayah
-        $ortu->father_phone_office = $request->telp_kantor_ayah;
-        $ortu->father_job_address= $request->alamat_kantor_ayah; //alamat kantor ayah
-        $ortu->father_salary= $request->gaji_ayah; //gaji ayah
 
-        $ortu->mother_nik = $request->nik_ibu;
-        $ortu->mother_name = $request->nama_ibu;
-        $ortu->mother_phone = $request->hp_ibu;
-        $ortu->mother_email = $request->email_ibu;
-        $ortu->mother_job = $request->pekerjaan_ibu;
-        $ortu->mother_position= $request->jabatan_ibu; //jabatan ibu
-        $ortu->mother_phone_office = $request->telp_kantor_ibu;
-        $ortu->mother_job_address= $request->alamat_kantor_ibu; //alamat kantor ibu
-        $ortu->mother_salary= $request->gaji_ibu; //gaji ibu
+        if(in_array($role,['sek'])){
+            $ortu->father_name = $request->nama_ayah;
+            $ortu->father_phone = $request->hp_ayah;
+    
+            $ortu->mother_name = $request->nama_ibu;
+            $ortu->mother_phone = $request->hp_ibu;
+    
+            $ortu->parent_address = $request->alamat_ortu;
+            $ortu->parent_phone_number = $request->no_hp_ortu;
+    
+            $ortu->guardian_name = $request->nama_wali;
+            $ortu->guardian_phone_number = $request->no_hp_wali;
+            $ortu->save();
+        }
+        elseif(in_array($role,['admin','aspv','as'])){
+            $ortu->father_name = $request->nama_ayah;
+            $ortu->father_nik = $request->nik_ayah;
+            $ortu->father_phone = $request->hp_ayah;
+            $ortu->father_email = $request->email_ayah;
+            $ortu->father_job = $request->pekerjaan_ayah;
+            $ortu->father_position= $request->jabatan_ayah; //jabatan ayah
+            $ortu->father_phone_office = $request->telp_kantor_ayah;
+            $ortu->father_job_address= $request->alamat_kantor_ayah; //alamat kantor ayah
+            $ortu->father_salary= $request->gaji_ayah; //gaji ayah
 
-        $ortu->parent_address = $request->alamat_ortu;
-        $ortu->parent_phone_number = $request->no_hp_ortu;
+            $ortu->mother_nik = $request->nik_ibu;
+            $ortu->mother_name = $request->nama_ibu;
+            $ortu->mother_phone = $request->hp_ibu;
+            $ortu->mother_email = $request->email_ibu;
+            $ortu->mother_job = $request->pekerjaan_ibu;
+            $ortu->mother_position= $request->jabatan_ibu; //jabatan ibu
+            $ortu->mother_phone_office = $request->telp_kantor_ibu;
+            $ortu->mother_job_address= $request->alamat_kantor_ibu; //alamat kantor ibu
+            $ortu->mother_salary= $request->gaji_ibu; //gaji ibu
 
-        $ortu->guardian_name = $request->nama_wali;
-        $ortu->guardian_nik = $request->nik_wali;
-        $ortu->guardian_phone_number = $request->no_hp_wali;
-        $ortu->guardian_email = $request->email_wali;
-        $ortu->guardian_job = $request->pekerjaan_wali;
-        $ortu->guardian_position= $request->jabatan_wali; //jabatan wali
-        $ortu->guardian_phone_office = $request->telp_kantor_wali;
-        $ortu->guardian_job_address = $request->alamat_kantor_wali; //alamat kantor wali
-        $ortu->guardian_salary = $request->gaji_wali; //gaji wali
-        $ortu->guardian_address = $request->alamat_wali;
-        $ortu->save();
+            $ortu->parent_address = $request->alamat_ortu;
+            $ortu->parent_phone_number = $request->no_hp_ortu;
 
-        return redirect('/kependidikan/kbm/siswa/aktif')->with('sukses','Ubah Siswa Berhasil');
+            $ortu->guardian_name = $request->nama_wali;
+            $ortu->guardian_nik = $request->nik_wali;
+            $ortu->guardian_phone_number = $request->no_hp_wali;
+            $ortu->guardian_email = $request->email_wali;
+            $ortu->guardian_job = $request->pekerjaan_wali;
+            $ortu->guardian_position= $request->jabatan_wali; //jabatan wali
+            $ortu->guardian_phone_office = $request->telp_kantor_wali;
+            $ortu->guardian_job_address = $request->alamat_kantor_wali; //alamat kantor wali
+            $ortu->guardian_salary = $request->gaji_wali; //gaji wali
+            $ortu->guardian_address = $request->alamat_wali;
+            $ortu->save();
+        }
+
+        return redirect('/kependidikan/kbm/siswa/aktif')->with('success','Ubah Siswa Berhasil');
     }
 
     /**
@@ -507,7 +543,7 @@ class SiswaController extends Controller
         $siswa->student_nisn = $request->nisn;
 
         $siswa->save();
-        return redirect('/kependidikan/kbm/siswa')->with('sukses','Ubah Siswa Berhasil');
+        return redirect('/kependidikan/kbm/siswa')->with('success','Ubah Siswa Berhasil');
 
     }
 
@@ -524,7 +560,7 @@ class SiswaController extends Controller
         // $kelas->delete();
         $siswa->is_lulus = 2;
         $siswa->save();
-        return redirect('/kependidikan/kbm/siswa')->with('sukses','Hapus Siswa Berhasil!');
+        return redirect('/kependidikan/kbm/siswa')->with('success','Hapus Siswa Berhasil!');
     }
 
     public function importView()
@@ -558,7 +594,7 @@ class SiswaController extends Controller
  
  
         // alihkan halaman kembali
-        return redirect('/siswa/import')->with('sukses','Import Siswa Berhasil!');
+        return redirect('/siswa/import')->with('success','Import Siswa Berhasil!');
     }
 
 
@@ -816,6 +852,7 @@ class SiswaController extends Controller
             'Tingkat Kelas',
             'NIPD',
             'NISN',
+            'NIK',
             'Nama',
             'Nama Panggilan',
             'Tempat Lahir',
@@ -866,7 +903,7 @@ class SiswaController extends Controller
             'Info Dari',
             'Nama',
             'Posisi',
-            'class_id',
+            'Kelas',
         ];
 
         $row = $row_init;
@@ -901,6 +938,9 @@ class SiswaController extends Controller
             
             $column++;
             $spreadsheet->setActiveSheetIndex($sheet)->setCellValue($column.$row, $siswa->student_nisn);
+            
+            $column++;
+            $spreadsheet->setActiveSheetIndex($sheet)->setCellValueExplicit($column.$row, $siswa->identitas->nik ? strval($siswa->identitas->nik) : '', DataType::TYPE_STRING);
             
             $column++;
             $spreadsheet->setActiveSheetIndex($sheet)->setCellValue($column.$row, $siswa->identitas->student_name);
@@ -939,7 +979,7 @@ class SiswaController extends Controller
             $spreadsheet->setActiveSheetIndex($sheet)->setCellValue($column.$row, $siswa->identitas->rw);
             
             $column++;
-            $spreadsheet->setActiveSheetIndex($sheet)->setCellValue($column.$row, $siswa->identitas->region_id);
+            $spreadsheet->setActiveSheetIndex($sheet)->setCellValue($column.$row, $siswa->identitas->wilayah ? $siswa->identitas->wilayah->name.', '.$siswa->identitas->wilayah->kecamatanName().', '.$siswa->identitas->wilayah->kabupatenName().', '.$siswa->identitas->wilayah->provinsiName() : '');
             
             $column++;
             $spreadsheet->setActiveSheetIndex($sheet)->setCellValue($column.$row, $siswa->identitas->orangtua->father_name);
@@ -1061,7 +1101,7 @@ class SiswaController extends Controller
             $spreadsheet->setActiveSheetIndex($sheet)->setCellValue($column.$row, $siswa->position);
             
             $column++;
-            $spreadsheet->setActiveSheetIndex($sheet)->setCellValue($column.$row, $siswa->class_id);
+            $spreadsheet->setActiveSheetIndex($sheet)->setCellValue($column.$row, $siswa->kelas ? $siswa->kelas->levelName : '');
         }
         $writer = new Xls($spreadsheet);
         header('Content-Type: application/vnd.ms-excel');
@@ -1111,6 +1151,7 @@ class SiswaController extends Controller
             'Tingkat Kelas',
             'NIPD',
             'NISN',
+            'NIK',
             'Nama',
             'Nama Panggilan',
             'Tempat Lahir',
@@ -1161,7 +1202,6 @@ class SiswaController extends Controller
             'Info Dari',
             'Nama',
             'Posisi',
-            'class_id',
         ];
 
         $row = $row_init;
@@ -1196,6 +1236,9 @@ class SiswaController extends Controller
             
             $column++;
             $spreadsheet->setActiveSheetIndex($sheet)->setCellValue($column.$row, $siswa->student_nisn);
+            
+            $column++;
+            $spreadsheet->setActiveSheetIndex($sheet)->setCellValueExplicit($column.$row, $siswa->nik ? strval($siswa->nik) : '', DataType::TYPE_STRING);
             
             $column++;
             $spreadsheet->setActiveSheetIndex($sheet)->setCellValue($column.$row, $siswa->identitas->student_name);
@@ -1354,9 +1397,6 @@ class SiswaController extends Controller
             
             $column++;
             $spreadsheet->setActiveSheetIndex($sheet)->setCellValue($column.$row, $siswa->position);
-            
-            $column++;
-            $spreadsheet->setActiveSheetIndex($sheet)->setCellValue($column.$row, $siswa->class_id);
         }
         $writer = new Xls($spreadsheet);
         header('Content-Type: application/vnd.ms-excel');

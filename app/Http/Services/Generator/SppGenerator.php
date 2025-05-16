@@ -10,7 +10,35 @@ use stdClass;
 
 class SppGenerator {
 
-    public static function generateFromTransaction()
+    public static function getTransactions()
+    {
+        $transactions = SppTransaction::whereIn('exchange_que', [0,1])->get();
+
+        if($transactions && count($transactions) > 0){
+            return response()->json(['status' => 'success', 'data' => $transactions]);
+        }
+        else return response()->json(['status' => 'error', 'message' => 'Transactions are not found']);
+    }
+
+    public static function generateFromTransaction($trx)
+    {
+        $student_id = $trx->student_id;
+        $nominal = $trx->nominal;
+
+        $sisa = self::monthlyPaid($student_id, $nominal);
+    
+        $terbayar = $nominal - $sisa;
+
+        $spp = Spp::where('student_id', $student_id)->first();
+
+        $spp->paid = $spp->paid + $terbayar;
+        $spp->remain = $spp->remain - $terbayar;
+        $spp->saldo = $spp->saldo + $sisa;
+
+        $spp->save();
+    }
+
+    public static function generateFromTransactions()
     {
         $transactions = SppTransaction::whereIn('exchange_que', [0,1])->get();
 

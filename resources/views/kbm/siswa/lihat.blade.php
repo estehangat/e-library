@@ -9,19 +9,19 @@ Lihat Data Siswa
 @endsection
 
 @section('content')
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
+<div class="d-sm-flex align-items-center justify-content-between mb-2">
     <h1 class="h3 mb-0 text-gray-800">Lihat Data Siswa</h1>
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="javascript:void(0)">Belajar Mengajar</a></li>
-        <li class="breadcrumb-item"><a href="/kependidikan/kbm/siswa">Siswa</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Lihat</li>
+        <li class="breadcrumb-item"><a href="/kependidikan/kbm/siswa/{{ $siswa->is_lulus == 1 ? 'alumni' : 'aktif' }}">Siswa</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ $siswa->id }}</li>
     </ol>
 </div>
 
-<div class="row mb-3">
+<div class="row mb-4">
     <div class="col-md-12">
         <div class="card h-100">
-        <div class="card-header py-3 bg-brand-purple-dark d-flex flex-row align-items-center justify-content-between">
+        <div class="card-header py-3 bg-brand-green-dark d-flex flex-row align-items-center justify-content-between">
             <h6 class="m-0 font-weight-bold text-white">Form Lihat Siswa</h6>
         </div>
             <div class="card-body">
@@ -31,24 +31,23 @@ Lihat Data Siswa
                     <div class="col-md-8">
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Program Siswa</h6>
+                            <h6 class="font-weight-bold text-brand-green">Program Siswa</h6>
                             </div>
                         </div>
                         <div class="form-group">
                             <div class="row mb-3">
-                            <div class="col-lg-3 col-md-4 col-12">
-                                <label for="unit" class="form-control-label">Program <span class="text-danger">*</span></label>
+                            <div class="col-sm-4">
+                                <label for="unit" class="form-control-label">Program</label>
                             </div>
-                            <div class="col-lg-9 col-md-8 col-12">
-                                <input type="radio" id="unitOpt" name="unit" class="custom-control-input" required="required" checked>
-                                <label class="custom-control-label" for="unitOpt">{{ $siswa->unit->name }}</label>
+                            <div class="col-sm-6">
+                                {{ $siswa->unit->name }}
                             </div>
                             </div>
                         </div>
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Informasi Umum Siswa</h6>
+                            <h6 class="font-weight-bold text-brand-green">Informasi Umum Siswa</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -99,14 +98,11 @@ Lihat Data Siswa
                         <!-- Jenis Kelamin -->
                         <div class="form-group">
                             <div class="row mb-3">
-                            <div class="col-lg-3 col-md-4 col-12">
-                                <label for="jenis_kelamin" class="form-control-label">Jenis Kelamin <span class="text-danger">*</span></label>
+                            <div class="col-sm-4">
+                                <label for="jenis_kelamin" class="form-control-label">Jenis Kelamin</label>
                             </div>
-                            <div class="col-lg-9 col-md-8 col-12">
-                                <div class="custom-control custom-radio custom-control-inline">
-                                <input type="radio" id="genderOpt" name="jenis_kelamin" class="custom-control-input" value="" required="required" checked>
-                                <label class="custom-control-label" for="genderOpt">{{ $siswa->identitas->gender_id?$siswa->identitas->jeniskelamin->name:'-' }}</label>
-                                </div>
+                            <div class="col-sm-6">
+                                {{ $siswa->identitas->gender_id?$siswa->identitas->jeniskelamin->name:'-' }}
                             </div>
                             </div>
                         </div>
@@ -140,16 +136,18 @@ Lihat Data Siswa
                                 <input type="text" class="form-control" name="tanggal_masuk" placeholder="" value="{{ $siswa->semester->semester_id }}" disabled>
                             </div>
                         </div>
+                        @if($siswa->is_lulus != 1)
                         <div class="form-group row">
                             <label for="kelas" class="col-sm-4 control-label">Kelas</label>
                             <div class="col-sm-6">
                                 <input type="text" class="form-control" name="tanggal_masuk" placeholder="" value="{{ $siswa->level?$siswa->level->level:'-' }}" disabled>
                             </div>
                         </div>
+                        @endif
                         <hr>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Informasi Alamat Siswa</h6>
+                            <h6 class="font-weight-bold text-brand-green">Informasi Alamat Siswa</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -242,7 +240,7 @@ Lihat Data Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Informasi Orang Tua</h6>
+                            <h6 class="font-weight-bold text-brand-green">Informasi Orang Tua</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -379,7 +377,7 @@ Lihat Data Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Informasi Wali</h6>
+                            <h6 class="font-weight-bold text-brand-green">Informasi Wali</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -457,7 +455,7 @@ Lihat Data Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Sekolah Asal</h6>
+                            <h6 class="font-weight-bold text-brand-green">Sekolah Asal</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -475,7 +473,7 @@ Lihat Data Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Saudara Kandung</h6>
+                            <h6 class="font-weight-bold text-brand-green">Saudara Kandung</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -495,7 +493,7 @@ Lihat Data Siswa
                         <hr/>
                         <div class="row mb-4">
                             <div class="col-12">
-                            <h6 class="font-weight-bold text-brand-purple">Sumber Informasi</h6>
+                            <h6 class="font-weight-bold text-brand-green">Sumber Informasi</h6>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -504,11 +502,11 @@ Lihat Data Siswa
                                 <select name="info_dari" class="select2 form-control select2-hidden-accessible auto_width" id="kelas" style="width:100%;" tabindex="-1" aria-hidden="true" disabled>
                                         <option value="">{{ $siswa->info_from }}</option>
                                         <option value="">== Pilih ==</option>
-                                        <option value="Orangtua Auliya">Orangtua Auliya</option>
+                                        <option value="Orangtua Sekolah Digiyok">Orangtua Sekolah Digiyok</option>
                                         <option value="Guru/Staf">Guru/Staf</option>
                                         <option value="Brosur">Brosur</option>
                                         <option value="Spanduk">Spanduk</option>
-                                        <option value="Website dan Sosmed Auliya Keren">Website dan Sosmed Auliya Keren</option>
+                                        <option value="Website dan Sosmed Sekolah Digiyok">Website dan Sosmed Sekolah Digiyok</option>
                                         <option value="Media Cetak">Media Cetak</option>
                                         <option value="Sering Lewat">Sering Lewat</option>
                                         <option value="Teman">Teman</option>

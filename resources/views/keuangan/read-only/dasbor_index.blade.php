@@ -5,14 +5,7 @@ Beranda
 @endsection
 
 @section('sidebar')
-@php
-$role = Auth::user()->role->name;
-@endphp
-@if(in_array($role,['admin','pembinayys','ketuayys','kepsek','wakasek','keu','direktur','etl','etm','fam','faspv','fas','ctl','ctm','am','aspv','ftm','ftspv','fts','keulsi']))
-@include('template.sidebar.keuangan.'.$role)
-@else
-@include('template.sidebar.keuangan.employee')
-@endif
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -31,12 +24,12 @@ $unit = Auth::user()->pegawai->unit;
   <div class="col-12">
     <div class="card shadow mb-4">
       <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-brand-purple">Unit Anda</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">Unit Anda</h6>
       </div>
       <div class="card-body pt-1">
         <div class="d-flex align-items-center mb-3">
           <span class="fa-stack fa-2x">
-            <i class="fas fa-square fa-stack-2x text-brand-purple-dark"></i>
+            <i class="fas fa-square fa-stack-2x text-brand-green-dark"></i>
             <i class="fas fa-building fa-stack-1x fa-inverse"></i>
           </span>
           <h3 class="pt-1 mb-0">{{ $unit->desc }}</h3>
@@ -112,12 +105,12 @@ $unit = Auth::user()->pegawai->unit;
   <div class="col-12">
     <div class="card shadow mb-4">
       <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-brand-purple">Unit Anda</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">Unit Anda</h6>
       </div>
       <div class="card-body pt-1">
         <div class="d-flex align-items-center mb-3">
           <span class="fa-stack fa-2x">
-            <i class="fas fa-square fa-stack-2x text-brand-purple-dark"></i>
+            <i class="fas fa-square fa-stack-2x text-brand-green-dark"></i>
             <i class="fas fa-building fa-stack-1x fa-inverse"></i>
           </span>
           <h3 class="pt-1 mb-0">{{ $unit->desc }}</h3>

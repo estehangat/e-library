@@ -61,7 +61,7 @@ Kenaikan Kelas
                             @csrf
                             <input type="hidden" name="naik" value="1" />
                             <table class="table align-items-center table-flush">
-                                <thead class="bg-brand-purple text-white">
+                                <thead class="bg-brand-green text-white">
                                     <tr>
                                         <th>Nama Siswa</th>
                                         <th class="text-center">Status Kenaikan Kelas</th>
@@ -77,11 +77,11 @@ Kenaikan Kelas
                                             <select class="form-control" name="kenaikan[]" required>
                                                 <option value="">== Pilih ==</option>
                                                 @if($siswas->level_id == 2 || $siswas->level_id == 8 || $siswas->level_id == 11 || $siswas->level_id == 14)
-                                                <option value="lulus" <?php if ($pas && $pas[$key]->conclusion == "lulus") echo "selected"; ?>>Lulus</option>
+                                                <option value="lulus" <?php if ($pas && isset($pas[$key]) && $pas[$key]->conclusion == "lulus") echo "selected"; ?>>Lulus</option>
                                                 @else
-                                                <option value="naik" <?php if ($pas && $pas[$key]->conclusion == "naik") echo "selected"; ?>>Naik Kelas</option>
+                                                <option value="naik" <?php if ($pas && isset($pas[$key]) && $pas[$key]->conclusion == "naik") echo "selected"; ?>>Naik Kelas</option>
                                                 @endif
-                                                <option value="tinggal" <?php if ($pas && $pas[$key]->conclusion == "tinggal") echo "selected"; ?>>Tinggal Kelas</option>
+                                                <option value="tinggal" <?php if ($pas && isset($pas[$key]) && $pas[$key]->conclusion == "tinggal") echo "selected"; ?>>Tinggal Kelas</option>
                                             </select>
                                         </td>
                                     </tr>
@@ -97,12 +97,12 @@ Kenaikan Kelas
                             @if($countrapor > 0)
                             @if($validasi > 0)
                             <div class="text-center mt-4">
-                                <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+                                <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
                             </div>
                             @endif
                             @else
                             <div class="text-center mt-4">
-                                <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+                                <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
                             </div>
                             @endif
                             @endif

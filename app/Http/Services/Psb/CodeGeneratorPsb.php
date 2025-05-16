@@ -13,6 +13,7 @@ class CodeGeneratorPsb {
         if($register_number){
             $register_number->number += 1;
             $register_number->save();
+            $register_number->fresh();
         }else{
             $register_number = RegisterNumber::create([
                 'unit_id' => $unit_id,

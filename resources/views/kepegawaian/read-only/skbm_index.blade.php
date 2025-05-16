@@ -52,7 +52,7 @@ SKBM
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Unit Tersedia</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Unit Tersedia</h6>
             </div>
             <div class="card-body p-3">
               @php
@@ -81,7 +81,7 @@ SKBM
                       </div>
                     </div>
                     <div class="col-4 d-flex justify-content-end align-items-center">
-                      <a href="{{ route('skbm.tampil', ['tahunpelajaran' => $aktif->academicYearLink, 'unit' => $u->name])}}" class="btn btn-sm btn-outline-brand-purple-dark">Pilih</a>
+                      <a href="{{ route('skbm.tampil', ['tahunpelajaran' => $aktif->academicYearLink, 'unit' => $u->name])}}" class="btn btn-sm btn-outline-brand-green-dark">Pilih</a>
                     </div>
                   </div>
                 </div>

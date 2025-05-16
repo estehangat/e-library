@@ -16,7 +16,7 @@ class CreatePpaProposalTable extends Migration
         Schema::create('ppa_proposal', function (Blueprint $table) {
             $table->id();
 			$table->bigInteger('ppa_detail_id')->nullable();
-			$table->date('date');
+			$table->date('date')->nullable();
 			$table->year('year')->nullable();
 			$table->bigInteger('academic_year_id')->nullable();
 			$table->string('title',100);

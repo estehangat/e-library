@@ -296,7 +296,6 @@ class PengetahuanController extends Controller
                                         $raporCount++;
                                         $pengetahuan = $rapor->pengetahuan()->where('subject_id',$mataPelajaran->id)->first();
                                         if(!$pengetahuan){
-                                            $scorePts = $request->{$inputName};
                                             $nilai = new NilaiPengetahuan();
                                             $nilai->score_id = $rapor->id;
                                             $nilai->subject_id = $mataPelajaran->id;

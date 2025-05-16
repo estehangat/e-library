@@ -5,7 +5,7 @@
 @endsection
 
 @section('headmeta')
-  <link href="{{ asset('public/buttons.dataTables.min.css') }}" rel="stylesheet">
+<!-- DataTables -->
 <link href="{{ asset('vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
 <meta name="csrf-token" content="{{ Session::token() }}" />
 @endsection
@@ -15,7 +15,7 @@
 @endsection
 
 @section('content')
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
+<div class="d-sm-flex align-items-center justify-content-between mb-2">
     <h1 class="h3 mb-0 text-gray-800">{{$title}} Daftar Ulang </h1>
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="javascript:void(0)">Psb</a></li>
@@ -34,11 +34,11 @@
                 <a class="nav-link active" href="{{ route($route, ['bayar' => 'sebagian']) }}">Membayar Sebagian</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link text-brand-purple" href="{{ route($route, ['bayar' => 'belum']) }}">Belum Membayar</a>
+                <a class="nav-link text-brand-green" href="{{ route($route, ['bayar' => 'belum']) }}">Belum Membayar</a>
               </li>
               @else
               <li class="nav-item">
-                <a class="nav-link text-brand-purple" href="{{ route($route, ['bayar' => 'sebagian']) }}">Membayar Sebagian</a>
+                <a class="nav-link text-brand-green" href="{{ route($route, ['bayar' => 'sebagian']) }}">Membayar Sebagian</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link active" href="{{ route($route, ['bayar' => 'belum']) }}">Belum Membayar</a>
@@ -50,37 +50,13 @@
 </div>
 @endif
 
-<div class="row mb-3">
+<div class="row mb-4">
     <div class="col-md-12">
         <div class="card h-100">
             <div class="card-body">
-                @if(Session::has('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <strong>Sukses!</strong> {{ Session::get('success') }}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                @endif
                 {{-- <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-brand-purple">Bayar Daftar Ulang</h6>
+                    <h6 class="m-0 font-weight-bold text-brand-green">Bayar Daftar Ulang</h6>
                 </div> --}}
-                @if(Session::has('sukses'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <strong>Sukses!</strong> {{ Session::get('sukses') }}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                @endif
-                @if(Session::has('error'))
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <strong>Gagal!</strong> {{ Session::get('error') }}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                @endif
                 <div class="row">
                     <div class="col-md-8">
                         <form action="/{{Request::path()}}" method="GET">
@@ -115,56 +91,9 @@
                                         @endforeach
                                     </select>
                                 </div>
-                                <button class="btn btn-brand-purple-dark btn-sm" type="submit">Saring</button>
+                                <button class="btn btn-brand-green-dark btn-sm" type="submit">Saring</button>
                             </div>
                         </form>
-                    </div>
-                    <div class="table-responsive">
-                        <table id="dataTable" class="table align-items-center table-flush">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th>Nama</th>
-                                    <th>Kelas</th>
-                                    <th>VA</th>
-                                    <th>Nominal Daftar Ulang</th>
-                                    <th>Tanggungan Daftar Ulang</th>
-                                    <th>Info Asal Sekolah</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ( $lists as $index => $list )
-                                @if ($list->siswa && $list->siswa->status_id == 4) 
-                                <tr>
-                                    <td>{{$list->siswa->student_name}}</td>
-                                    <td>{{$list->siswa->level->level}}</td>
-                                    <td>{{$list->siswa->virtualAccount->bms_va}}</td>
-                                    <td>Rp {{number_format($list->register_nominal)}}</td>
-                                    <td>Rp {{number_format($list->register_nominal - $list->register_paid)}}</td>
-                                    <td>{{ucwords($list->siswa->origin_school)}}</td>
-                                    <td>
-                                        @if($title == "Sudah Lunas")
-                                        @php
-                                        $whatsAppText = rawurlencode("Assalamu'alaikum Ayah Bunda Ananda ".$list->siswa->student_name.". Terima kasih telah melunasi pembayaran Daftar Ulang. Kami mengucapkan kepada Ananda ".$list->siswa->student_name." SELAMAT BERGABUNG di ".$list->siswa->unit->islamic_name." AULIYA. Untuk informasi lebih lanjut Ayah Bunda silakan mengakses SISTA melalui link: ".route('psb.index'));
-                                        @endphp
-                                        @if($list->siswa->orangtua->mother_phone && (substr($list->siswa->orangtua->mother_phone, 0, 2) == "62" || substr($list->siswa->orangtua->mother_phone, 0, 1) == "0"))<a href="https://api.whatsapp.com/send?phone={{ substr($list->siswa->orangtua->mother_phone, 0, 2) == "62" ? $list->siswa->orangtua->mother_phone : ('62'.substr($list->siswa->orangtua->mother_phone, 1)) }}&text={{ $whatsAppText }}" class="btn btn-sm btn-warning" target="_blank"><i class="fas fa-bell"></i></a>@endif
-                                        @if( in_array((auth()->user()->role_id), array(8)))
-                                        <a href="#" class="btn btn-sm btn-success"   data-toggle="modal" data-target="#DiterimaModal" data-id="{{$list->candidate_student_id}}"><i class="fas fa-check"></i></a>
-                                        @endif
-                                        @elseif($title == "Belum Lunas")
-                                        <a href="#" class="btn btn-sm btn-success"   data-toggle="modal" data-target="#UbahDaftarUlang" data-du="{{($list->register_nominal)}}" data-id="{{$list->candidate_student_id}}"><i class="fa fa-info-circle"></i></a>
-                                        @php
-                                        $whatsAppText = rawurlencode("Assalamu’alaikum Ayah Bunda Ananda ".$list->siswa->student_name.". Terima kasih telah menunggu hasil Wawancara dan Observasi. Ayah Bunda dapat melihat pengumuman hasilnya pada SISTA melalui link: ".route('psb.index')." Link ini juga menginformasikan mengenai pembayaran uang sekolah sesuai dengan kesepakatan Wawancara Keuangan.");
-                                        @endphp
-                                        @if($list->siswa->orangtua->mother_phone && (substr($list->siswa->orangtua->mother_phone, 0, 2) == "62" || substr($list->siswa->orangtua->mother_phone, 0, 1) == "0"))<a href="https://api.whatsapp.com/send?phone={{ substr($list->siswa->orangtua->mother_phone, 0, 2) == "62" ? $list->siswa->orangtua->mother_phone : ('62'.substr($list->siswa->orangtua->mother_phone, 1)) }}&text={{ $whatsAppText }}" class="btn btn-sm btn-warning" target="_blank"><i class="fas fa-bell"></i></a>@endif
-                                        @endif
-                                        <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#BatalBayarModal" data-id="{{$list->siswa->id}}"><i class="fas fa-trash"></i></a>
-                                    </td>
-                                </tr>
-                                @endif
-                                @endforeach
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>
@@ -172,6 +101,100 @@
     </div>
 </div>
 
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-brand-green-dark">{{$title}} Daftar Ulang</h6>
+                @if(in_array(Auth::user()->role->name,['ctl']))
+                <form action="/{{Request::path().'/ekspor'}}" method="get">
+                    <input type="hidden" name="level" value="{{ $request->level }}">
+                    <input type="hidden" name="year" value="{{ $request->year }}">
+                    @if(isset($bayar))<input type="hidden" name="bayar" value="{{ $bayar }}">@endif
+                    <button type="submit" class="m-0 float-right btn btn-brand-green-dark btn-sm">Ekspor<i class="fas fa-file-export ml-2"></i></button>
+                </form>
+                @endif
+            </div>
+            <div class="card-body">
+                @if(Session::has('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <strong>Sukses!</strong> {{ Session::get('success') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                @endif
+                @if(Session::has('sukses'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <strong>Sukses!</strong> {{ Session::get('sukses') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                @endif
+                @if(Session::has('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>Gagal!</strong> {{ Session::get('error') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                @endif
+                <div class="table-responsive">
+                    <table id="dataTable" class="table align-items-center table-flush">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Nama</th>
+                                <th>Kelas</th>
+                                <th>VA</th>
+                                <th>Nominal Daftar Ulang</th>
+                                <th>Tanggungan Daftar Ulang</th>
+                                <th>Info Asal Sekolah</th>
+                                @if(!in_array(auth()->user()->role->name,['am','aspv','cspv']))
+                                <th>Aksi</th>
+                                @endif
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ( $lists as $index => $list )
+                            @if ($list->siswa && $list->siswa->status_id == 4) 
+                            <tr>
+                                <td>{{$list->siswa->student_name}}</td>
+                                <td>{{$list->siswa->level->level}}</td>
+                                <td>{{$list->siswa->virtualAccount->bms_va}}</td>
+                                <td>Rp {{number_format($list->register_nominal)}}</td>
+                                <td>Rp {{number_format($list->register_nominal - $list->register_paid)}}</td>
+                                <td>{{ucwords($list->siswa->origin_school)}}</td>
+                                @if(!in_array(auth()->user()->role->name,['am','aspv','cspv']))
+                                <td>
+                                    @if($title == "Sudah Lunas")
+                                    @php
+                                    $whatsAppText = rawurlencode("Assalamu'alaikum Ayah Bunda Ananda ".$list->siswa->student_name.". Terima kasih telah melunasi pembayaran Daftar Ulang. Kami mengucapkan kepada Ananda ".$list->siswa->student_name." SELAMAT BERGABUNG di ".$list->siswa->unit->islamic_name." DIGIYOK. Untuk informasi lebih lanjut Ayah Bunda silakan mengakses Aplikasi DIGIYOK melalui link: ".route('psb.index'));
+                                    @endphp
+                                    @if($list->siswa->orangtua->mother_phone && (substr($list->siswa->orangtua->mother_phone, 0, 2) == "62" || substr($list->siswa->orangtua->mother_phone, 0, 1) == "0"))<a href="https://api.whatsapp.com/send?phone={{ substr($list->siswa->orangtua->mother_phone, 0, 2) == "62" ? $list->siswa->orangtua->mother_phone : ('62'.substr($list->siswa->orangtua->mother_phone, 1)) }}&text={{ $whatsAppText }}" class="btn btn-sm btn-warning" target="_blank"><i class="fas fa-bell"></i></a>@endif
+                                    @if( in_array((auth()->user()->role_id), array(8)))
+                                    <a href="#" class="btn btn-sm btn-success"   data-toggle="modal" data-target="#DiterimaModal" data-id="{{$list->candidate_student_id}}"><i class="fas fa-check"></i></a>
+                                    @endif
+                                    @elseif($title == "Belum Lunas")
+                                    <a href="#" class="btn btn-sm btn-success"   data-toggle="modal" data-target="#UbahDaftarUlang" data-du="{{($list->register_nominal)}}" data-id="{{$list->candidate_student_id}}"><i class="fa fa-info-circle"></i></a>
+                                    @php
+                                    $whatsAppText = rawurlencode("Assalamu’alaikum Ayah Bunda Ananda ".$list->siswa->student_name.". Terima kasih telah menunggu hasil Wawancara dan Observasi. Ayah Bunda dapat melihat pengumuman hasilnya pada Aplikasi DIGIYOK melalui link: ".route('psb.index')." Link ini juga menginformasikan mengenai pembayaran uang sekolah sesuai dengan kesepakatan Wawancara Keuangan.");
+                                    @endphp
+                                    @if($list->siswa->orangtua->mother_phone && (substr($list->siswa->orangtua->mother_phone, 0, 2) == "62" || substr($list->siswa->orangtua->mother_phone, 0, 1) == "0"))<a href="https://api.whatsapp.com/send?phone={{ substr($list->siswa->orangtua->mother_phone, 0, 2) == "62" ? $list->siswa->orangtua->mother_phone : ('62'.substr($list->siswa->orangtua->mother_phone, 1)) }}&text={{ $whatsAppText }}" class="btn btn-sm btn-warning" target="_blank"><i class="fas fa-bell"></i></a>@endif
+                                    @endif
+                                    <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#BatalBayarModal" data-id="{{$list->siswa->id}}"><i class="fas fa-trash"></i></a>
+                                </td>
+                                @endif
+                            </tr>
+                            @endif
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 @if( in_array((auth()->user()->role_id), array(8)))
 <!-- Modal Konfirmasi -->
@@ -291,11 +314,6 @@
 <!-- DataTables -->
 <script src="{{ asset('vendor/datatables/jquery.dataTables.min.js') }}"></script>
 <script src="{{ asset('vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
-<script src="{{ asset('vendor/datatablestambahan/dataTables.buttons.min.js') }}"></script>
-<script src="{{ asset('vendor/datatablestambahan/jszip.min.js') }}"></script>
-<script src="{{ asset('vendor/datatablestambahan/pdfmake.min.js') }}"></script>
-<script src="{{ asset('vendor/datatablestambahan/vfs_fonts.js') }}"></script>
-<script src="{{ asset('vendor/datatablestambahan/buttons.html5.min.js') }}"></script>
 
 <script src="{{ asset('vendor/easy-number-separator/easy-number-separator.js') }}"></script>
 <script>
@@ -344,6 +362,6 @@
 </script>
 
 <!-- Page level custom scripts -->
-@include('template.footjs.kbm.cetakdatatables')
+@include('template.footjs.global.datatables')
 @include('template.footjs.kbm.hideelement')
 @endsection

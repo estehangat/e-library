@@ -39,11 +39,11 @@
                 <a class="nav-link active" href="{{ route('pegawai.index', ['category' => $category, 'status' => 'aktif']) }}">Aktif</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link text-brand-purple" href="{{ route('pegawai.index', ['category' => $category, 'status' => 'nonaktif']) }}">Nonaktif</a>
+                <a class="nav-link text-brand-green" href="{{ route('pegawai.index', ['category' => $category, 'status' => 'nonaktif']) }}">Nonaktif</a>
               </li>
               @else
               <li class="nav-item">
-                <a class="nav-link text-brand-purple" href="{{ route('pegawai.index', ['category' => $category, 'status' => 'aktif']) }}">Aktif</a>
+                <a class="nav-link text-brand-green" href="{{ route('pegawai.index', ['category' => $category, 'status' => 'aktif']) }}">Aktif</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link active" href="{{ route('pegawai.index', ['category' => $category, 'status' => 'nonaktif']) }}">Nonaktif</a>
@@ -60,7 +60,7 @@
         <div class="card">
             <form action="{{ route('pegawai.index') }}" id="filter-form" method="get">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Filter</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Filter</h6>
             </div>
             <div class="card-body p-3">
               <div class="row">
@@ -92,7 +92,7 @@
                   <div class="row">
                     <div class="col-lg-10 offset-lg-2 col-md-12">
                       <div class="text-left">
-                        <button class="btn btn-sm btn-brand-purple-dark" type="submit">Terapkan</button>
+                        <button class="btn btn-sm btn-brand-green-dark" type="submit">Terapkan</button>
                       </div>
                     </div>
                   </div>
@@ -109,7 +109,7 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">{{ $category ? ucwords($category) : 'Sivitas Akademika' }} {{ $status == 'nonaktif' ? ucwords($status) : 'Aktif' }}</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">{{ $category ? ucwords($category) : 'Sivitas Akademika' }} {{ $status == 'nonaktif' ? ucwords($status) : 'Aktif' }}</h6>
                 @if($importable)
                 <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="#" data-toggle="modal" data-target="#import-modal">Impor <i class="fas fa-file-import ml-1"></i></a>
                 @endif
@@ -194,7 +194,7 @@
                         <a href="#" class="btn btn-sm btn-info" data-toggle="modal" data-target="#disjoin-confirm" onclick="disjoinModal('{{ addslashes(htmlspecialchars($p->name)) }}', '{{ route('pegawai.validasi', ['id' => $p->id]) }}')"><i class="fas fa-check"></i></a>
                         @endif
                         @endif
-                        <a href="{{ route('pegawai.detail', ['id' => $p->id]) }}" class="btn btn-sm btn-brand-purple-dark" target="_blank"><i class="fas fa-eye"></i></a>
+                        <a href="{{ route('pegawai.detail', ['id' => $p->id]) }}" class="btn btn-sm btn-brand-green-dark" target="_blank"><i class="fas fa-eye"></i></a>
                         @if(!isset($status) || $status != 'nonaktif')
                         @if(in_array($role,['etm']))
                         <a href="{{ route('pegawai.ubah', ['id' => $p->id]) }}" class="btn btn-sm btn-warning"><i class="fas fa-pen"></i></a>
@@ -233,7 +233,7 @@
 <div class="modal fade" id="import-modal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple-dark border-0">
+      <div class="modal-header bg-brand-green-dark border-0">
         <h5 class="modal-title text-white">Impor Data Pegawai</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>
@@ -259,7 +259,7 @@
                     </div>
                     <input type="text" class="form-control @error('excel') is-invalid @enderror" disabled placeholder="Pilih dokumen (.xls/.xlsx)" id="file">
                     <div class="input-group-append">
-                      <button type="button" class="browse btn btn-brand-purple-dark">Pilih</button>
+                      <button type="button" class="browse btn btn-brand-green-dark">Pilih</button>
                     </div>
                   </div>
                 </div>
@@ -272,7 +272,7 @@
             <button type="button" class="btn btn-light" data-dismiss="modal">Kembali</button>
           </div>
           <div class="col-6 text-right">
-            <input type="submit" class="btn btn-brand-purple-dark" value="Impor">
+            <input type="submit" class="btn btn-brand-green-dark" value="Impor">
           </div>
         </div>
       </form>

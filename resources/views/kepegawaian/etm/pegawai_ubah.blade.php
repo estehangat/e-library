@@ -34,7 +34,7 @@ Ubah Pegawai
           <input id="id" type="hidden" name="id" required="required" value="{{ $pegawai->id }}">
           <div class="row mb-4">
             <div class="col-12">
-              <h6 class="font-weight-bold text-brand-purple">Info Umum</h6>
+              <h6 class="font-weight-bold text-brand-green">Info Umum</h6>
             </div>
           </div>
           <div class="row">
@@ -84,7 +84,7 @@ Ubah Pegawai
                     <div class="input-group mt-3">
                       <input type="text" class="form-control @error('photo') is-invalid @enderror" disabled placeholder="Ubah foto..." id="file">
                       <div class="input-group-append">
-                        <button type="button" class="browse btn btn-brand-purple-dark">Pilih</button>
+                        <button type="button" class="browse btn btn-brand-green-dark">Pilih</button>
                       </div>
                     </div>
                     <small id="photoHelp" class="form-text text-muted">Ekstensi .jpg, .jpeg, .png dan maksimum 5 MB</small>
@@ -297,7 +297,7 @@ Ubah Pegawai
           <hr>
           <div class="row mb-4">
             <div class="col-12">
-              <h6 class="font-weight-bold text-brand-purple">Info Alamat dan Kontak</h6>
+              <h6 class="font-weight-bold text-brand-green">Info Alamat dan Kontak</h6>
             </div>
           </div>
           <div class="row">
@@ -469,7 +469,7 @@ Ubah Pegawai
                   </div>
                   <div class="col-lg-6 col-md-8 col-12">
                     <input id="inputPhoneNumber" class="form-control @error('phone_number') is-invalid @enderror" type="text" name="phone_number" maxlength="15" value="{{ old('phone_number', $pegawai->phone_number) }}"  required="required">
-                    <small id="emailHelp" class="form-text text-muted">Angka [0-9], Contoh: 081234567890</small>
+                    <small id="phoneHelp" class="form-text text-muted">Angka [0-9], Contoh: 081234567890</small>
                     @error('phone_number')
                     <span class="text-danger">{{ $message }}</span>
                     @enderror
@@ -481,7 +481,7 @@ Ubah Pegawai
           <hr>
           <div class="row mb-4">
             <div class="col-12">
-              <h6 class="font-weight-bold text-brand-purple">Pendidikan</h6>
+              <h6 class="font-weight-bold text-brand-green">Pendidikan</h6>
             </div>
           </div>
           <div class="row">
@@ -550,10 +550,66 @@ Ubah Pegawai
               </div>
             </div>
           </div>
+		  <hr>
+          <div class="row mb-4">
+            <div class="col-12">
+              <h6 class="font-weight-bold text-brand-green">Rekomendasi</h6>
+            </div>
+          </div>
+		      <div class="row">
+            <div class="col-lg-10 col-md-12">
+              <div class="form-group">
+                <div class="row mb-3">
+                  <div class="col-lg-3 col-md-4 col-12">
+                    <label for="inputUnit" class="form-control-label">Unit Penempatan <span class="text-danger">*</span></label>
+                  </div>
+                  <div id="inputUnit" class="col-lg-9 col-md-8 col-12">
+                    <div class="row">
+                      @foreach($unit as $u)
+                      <div class="col-6">
+                        <div class="custom-control custom-checkbox mb-1">
+                          <input id="unit-{{$u->id}}" type="checkbox" name="unit[]" class="custom-control-input" value="{{ $u->id }}" {{ old('unit',$pegawai->units()->pluck('unit_id')->toArray()) && is_array(old('unit',$pegawai->units()->pluck('unit_id')->toArray())) && in_array($u->id, old('unit',$pegawai->units()->pluck('unit_id')->toArray())) ? 'checked' : '' }}>
+                          <label class="custom-control-label" for="unit-{{$u->id}}">{{ $u->name }}</label>
+                        </div>
+                      </div>
+                      @endforeach
+                    </div>
+                    @error('unit')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+    		  @if($pegawai->employee_status_id != 1)
+    		  <div class="row">
+            <div class="col-lg-10 col-md-12">
+              <div class="form-group">
+                <div class="row mb-3">
+                  <div class="col-lg-3 col-md-4 col-12">
+                    <label for="statusOpt" class="form-control-label">Status <span class="text-danger">*</span></label>
+                  </div>
+                  <div  class="col-lg-9 col-md-8 col-12">
+                    @foreach($status as $s)
+                    <div class="custom-control custom-radio mb-1">
+                      <input type="radio" id="statusOpt{{ $s->id }}" name="employee_status" class="custom-control-input" value="{{ $s->id }}" {{ old('employee_status',$pegawai->employee_status_id) == $s->id ? 'checked' : '' }}>
+                      <label class="custom-control-label" for="statusOpt{{ $s->id }}">{{ $s->status }}</label>
+                    </div>
+                    @endforeach
+                    @error('employee_status')
+                    <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+		      @endif
           <div class="row">
             <div class="col-lg-10 col-md-12">
               <div class="text-right">
-                <button class="btn btn-brand-purple-dark" type="submit">Simpan</button>
+                <button class="btn btn-brand-green-dark" type="submit">Simpan</button>
               </div>
             </div>
           </div>

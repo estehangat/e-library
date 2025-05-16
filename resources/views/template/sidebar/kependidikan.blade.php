@@ -29,7 +29,7 @@ Kependidikan @endsection
     @else
     @include('template.sidebar.penilaianmapel')
     @endif
-<?php } elseif(in_array(Auth::user()->role->name, ['pembinayys','ketuayys','direktur','etl'])){ ?>
+<?php } elseif(in_array(Auth::user()->role->name, ['pembinayys','ketuayys','direktur','etl','etm'])){ ?>
     @include('template.sidebar.penilaianmanajemen')
 <?php } ?>
 

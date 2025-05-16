@@ -114,14 +114,14 @@
 							if($semester->is_active == 1)
 							    $indikators = $a->indikator()->aktif()->where('level_id',$rapor->kelas->level->id)->get();
 							else
-							    $indikators = $a->indikator()->where('level_id',$rapor->kelas->level->id)->whereIn('id',$rapor->pas_tk->nilai()->pluck('aspect_indicator_id'))->get();
+							    $indikators = $rapor->pas_tk && $rapor->pas_tk->nilai()->count() > 0 ? $a->indikator()->where('level_id',$rapor->kelas->level->id)->whereIn('id',$rapor->pas_tk->nilai()->pluck('aspect_indicator_id'))->get() : null;
 							@endphp
 							@foreach($indikators as $i)
 							<tr>
 								<td class="text-center align-top">{{ $k++ }}</td>
 								<td class="align-top">{{ $i->indicator }}</td>
 								@php
-								$nilai_aspek = $rapor->pas_tk->nilai()->where('aspect_indicator_id',$i->id)->first();
+								$nilai_aspek = $rapor->pas_tk && $rapor->pas_tk->nilai()->count() > 0 ? $rapor->pas_tk->nilai()->where('aspect_indicator_id',$i->id)->first() : null;
 								@endphp
 								@if($nilai_aspek)
 								<td class="text-center align-top">
@@ -181,14 +181,14 @@
 							if($semester->is_active == 1)
 							    $indikators = $a->indikator()->aktif()->where('level_id',$rapor->kelas->level->id)->get();
 							else
-							    $indikators = $a->indikator()->where('level_id',$rapor->kelas->level->id)->whereIn('id',$rapor->pas_tk->nilai()->pluck('aspect_indicator_id'))->get();
+							    $indikators = $rapor->pas_tk ? $a->indikator()->where('level_id',$rapor->kelas->level->id)->whereIn('id',$rapor->pas_tk->nilai()->pluck('aspect_indicator_id'))->get() : null;
 							@endphp
 							@foreach($indikators as $i)
 							<tr>
 								<td class="text-center align-top">{{ $k++ }}</td>
 								<td class="align-top">{{ $i->indicator }}</td>
 								@php
-								$nilai_aspek = $rapor->pas_tk->nilai()->where('aspect_indicator_id',$i->id)->first();
+								$nilai_aspek = $rapor->pas_tk ? $rapor->pas_tk->nilai()->where('aspect_indicator_id',$i->id)->first() : null;
 								@endphp
 								@if($nilai_aspek)
 								<td class="text-center align-top">
@@ -214,8 +214,181 @@
 	@endif
 	<div class="page">
 		<div class="subpage">
+			<div id="alquran" class="m-t-22">
+				<p class="komponen-rapor">II. AL QURAN</p>
+				<div class="m-l-18">
+					<p class="text-uppercase fs-14 font-weight-bold">A. KHATAMAN</p>
+					<div class="m-t-16 m-b-16">
+						<table class="table-border">
+							<tr>
+								<th style="width: 45%">
+									Capaian Tilawah
+								</th>
+								<th style="width: 55%">
+									Deskripsi
+								</th>
+							</tr>
+							<tr>
+	                            <td class="text-center" rowspan="2">
+	                            	@if(isset($capaian['khataman']['type']))
+	                            	@php $isKhatamanFilled = false @endphp
+	                            	@if($capaian['khataman']['type']->type_id == 1 && $capaian['khataman']['quran'] && count($capaian['khataman']['quran']) > 0)
+	                            	@php
+		                            $khatamanQuran = null;
+		                            $qCount = 1;
+		                            foreach($capaian['khataman']['quran'] as $c){
+		                            	if($c->jenis && $c->jenis->mem_type == 'Juz'){
+				                            $status = $c->status ? $c->status->status : null;
+				                            $surat[$qCount] = $c->juz ? $c->juz->juz : ($c->surat ? $c->surat->surah : null);
+				                            if($status && $status != 'Penuh'){
+				                                $surat[$qCount] = $surat[$qCount].' ('.$status.')';
+				                            }
+			                        	}
+			                        	elseif($c->jenis && $c->jenis->mem_type == 'Surat'){
+			                        		$surat[$qCount] = $c->surat ? $c->surat->surah.($c->verse ? ' ('.$c->verse.')' : null) : null;
+			                        	}
+			                        	if(isset($surat[$qCount])){
+			                        		if(!$khatamanQuran) $khatamanQuran = $surat[$qCount];
+			                        		else $khatamanQuran = $khatamanQuran.' - '.$surat[$qCount];
+			                        	}
+			                        	$qCount++;
+			                        }
+		                            @endphp
+	                            	{{ $khatamanQuran ? $khatamanQuran : null }}
+	                            	@php $isKhatamanFilled = true; @endphp
+	                        		@elseif($capaian['khataman']['type']->type_id == 2 && $capaian['khataman']['buku'])
+	                        		{{ $capaian['khataman']['buku'] }}
+	                        		@php $isKhatamanFilled = true; @endphp
+	                        		@endif
+	                        		{!! isset($capaian['khataman']['type']) ? ($isKhatamanFilled ? '<br>' : null).$capaian['khataman']['type']->percentage.'%' : null !!}
+	                        		@endif
+	                            </td>
+	                            <td class="text-center" style="vertical-align: middle">{!! isset($capaian['khataman']['kelancaran']['desc']) ? $capaian['khataman']['kelancaran']['desc'] : '&nbsp;' !!}</td>
+	                        </tr>
+	                        <tr>
+	                        	<td class="text-center" style="vertical-align: middle">{!! isset($capaian['khataman']['kebagusan']['desc']) ? $capaian['khataman']['kebagusan']['desc'] : '&nbsp;' !!}</td>
+	                        </tr>
+						</table>
+					</div>
+				</div>
+				<div class="m-l-18">
+					<p class="text-uppercase fs-14 font-weight-bold">B. HAFALAN</p>
+					@php
+	                $j = null;
+	                $b = $i = 1;
+	                $kategori = 'quran';
+	                @endphp
+					<div class="m-t-16 m-b-16">
+						<table class="table-border">
+							<tr>
+								<th style="width: 3%">
+									B.{{ $b++ }}
+								</th>
+								<th style="width: 42%">
+									Capaian Hafalan Quran
+								</th>
+								<th style="width: 55%">
+									Deskripsi
+								</th>
+							</tr>
+	                        @php
+	                        $j = 'a';
+	                        @endphp
+	                        @if($capaian[$kategori]['hafalan'] && count($capaian[$kategori]['hafalan']) > 0)
+	                        @foreach($capaian[$kategori]['hafalan'] as $c)
+	                        <tr>
+	                            <td class="text-center">{{ $i++ }}</td>
+	                            @php
+	                            $surat = null;
+	                            if($c->jenis && $c->jenis->mem_type == 'Juz'){
+		                            $status = $c->status ? $c->status->status : null;
+		                            $surat = $c->juz ? $c->juz->juz : ($c->surat ? $c->surat->surah : null);
+		                            if($status && $status != 'Penuh'){
+		                                $surat = $surat.' ('.$status.')';
+		                            }
+	                        	}
+	                        	elseif($c->jenis && $c->jenis->mem_type == 'Surat'){
+	                        		$surat = $c->surat ? $c->surat->surah.($c->verse ? ' ('.$c->verse.')' : null) : null;
+	                        	}
+	                            @endphp
+	                            <td>{!! $surat ? $surat : '&nbsp;' !!}</td>
+	                            @if($j == 'a')
+	                            <td class="text-center" rowspan="{{ count($capaian[$kategori]['hafalan']) }}" style="vertical-align: middle">{{ $capaian[$kategori]['desc'] }}</td>
+	                            @endif
+	                        </tr>
+	                        @php
+	                        $j = chr(ord($j)+1);
+	                        @endphp
+	                        @endforeach
+	                        @else
+	                        <tr>
+	                            <td class="text-center">&nbsp;</td>
+	                            <td>&nbsp;</td>
+	                            <td class="text-center">&nbsp;</td>
+	                        </tr>
+	                        @endif
+						</table>
+					</div>
+					@php
+	                $jenis = null;
+	                @endphp
+	                @if($kategoriList['hafalan'] && count($kategoriList['hafalan']) > 0)
+	                @foreach($kategoriList['hafalan'] as $kategori)
+	                @php
+	                $i = 1;
+	                $kategori = $kategori->mem_type;
+	                @endphp
+	                @if($jenis != $kategori)
+					<div class="m-t-16 m-b-16">
+						<table class="table-border">
+							<tr>
+								<th style="width: 3%">
+									B.{{ $b++ }}
+								</th>
+								<th style="width: 42%">
+									Capaian Hafalan {{ $kategori }}
+								</th>
+								<th style="width: 55%">
+									Deskripsi
+								</th>
+							</tr>
+	                        @php
+	                        $jenis = $kategori;
+	                        $j = 'a';
+	                        @endphp
+	                        @endif
+	                        @if($capaian[$kategori]['hafalan'] && count($capaian[$kategori]['hafalan']) > 0)
+	                        @foreach($capaian[$kategori]['hafalan'] as $c)
+	                        <tr>
+	                            <td class="text-center">{{ $i++ }}</td>
+	                            <td>{{ $c->desc }}</td>
+	                            @if($j == 'a')
+	                            <td class="text-center" rowspan="{{ count($capaian[$kategori]['hafalan']) }}" style="vertical-align: middle">{{ $capaian[$kategori]['desc'] }}</td>
+	                            @endif
+	                        </tr>
+	                        @php
+	                        $j = chr(ord($j)+1);
+	                        @endphp
+	                        @endforeach
+	                        @else
+	                        <tr>
+	                            <td class="text-center">&nbsp;</td>
+	                            <td>&nbsp;</td>
+	                            <td class="text-center">&nbsp;</td>
+	                        </tr>
+	                        @endif
+						</table>
+					</div>
+					@endforeach
+					@endif
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="page">
+		<div class="subpage">
 			<div id="ekstrakurikuler" class="m-t-22">
-				<p class="komponen-rapor">II. EKSTRAKURIKULER</p>
+				<p class="komponen-rapor">III. EKSTRAKURIKULER</p>
 				<div class="m-l-18">
 					<div class="m-t-8 m-b-16">
 						<table class="table-border">
@@ -257,7 +430,7 @@
 				</div>
 			</div>
 			<div id="ketidakhadiran" class="m-t-22">
-				<p class="komponen-rapor">III. KEHADIRAN</p>
+				<p class="komponen-rapor">IV. KEHADIRAN</p>
 				<div class="m-l-18">
 					<div class="m-t-8 m-b-16">
 						<table class="table-border" style="width: 50%">
@@ -298,12 +471,12 @@
 				</div>
 			</div>
 			<div id="catatanWaliKelas" class="m-t-22">
-				<p class="komponen-rapor">IV. CATATAN GURU</p>
+				<p class="komponen-rapor">V. CATATAN GURU</p>
 				<div class="m-l-18">
 					<div class="m-t-8 m-b-16">
 						<table class="table-border table-catatan" style="width: 100%">
 							<tr>
-								<td>{{ str_replace("@nama",$siswa->identitas->student_name ? $siswa->identitas->student_name : '',$rapor->pas_tk->notes) }}</td>
+								<td>{{ $rapor->pas_tk ? str_replace("@nama",$siswa->identitas->student_name ? $siswa->identitas->student_name : '',$rapor->pas_tk->notes) : null }}</td>
 							</tr>
 						</table>
 					</div>
@@ -393,6 +566,81 @@
 				</table>
 			</div>
 			@endif
+		</div>
+	</div>
+	<div class="page">
+		<div class="subpage">
+			<div id="lampiranKurikulumTilawah">
+				<p class="komponen-rapor">I. INDIKATOR KOMPETENSI TILAWAH</p>
+				<div class="m-l-18">
+					<div class="m-t-8 m-b-16">
+						<table class="table-border">
+							<tr>
+								<th style="width: 3%">
+									No
+								</th>
+								<th style="width: 37%">
+									Kompetensi
+								</th>
+								<th style="width: 60%">
+									Indikator
+								</th>
+							</tr>
+							<tr>
+								<td class="text-center" rowspan="4" style="vertical-align: top">1</td>
+								<td rowspan="4" style="vertical-align: top">Nama Huruf dan Tanda Baca</td>
+								<td>a. Nama Huruf Hijaiyyah</td>
+							</tr>
+							<tr>
+								<td>b. Tanda baca A-I-U</td>
+							</tr>
+							<tr>
+								<td>c. Tanda baca AN-IN-UN</td>
+							</tr>
+							<tr>
+								<td>d. Huruf Sambung</td>
+							</tr>
+							<tr>
+								<td class="text-center" rowspan="4" style="vertical-align: top">2</td>
+								<td rowspan="4" style="vertical-align: top">Tajwid Dasar</td>
+								<td>a. Huruf Mati</td>
+							</tr>
+							<tr>
+								<td>b. Huruf Panjang</td>
+							</tr>
+							<tr>
+								<td>c. Huruf Ganda</td>
+							</tr>
+							<tr>
+								<td>d. Huruf Terpisah di Awal Surat</td>
+							</tr>
+							<tr>
+								<td class="text-center" rowspan="8" style="vertical-align: top">3</td>
+								<td rowspan="8" style="vertical-align: top">Tajwid Lengkap</td>
+								<td>a. 4 Jenis Nun Mati / Tanwin</td>
+							</tr>
+							<tr>
+								<td>b. Bacaan Lam dan Ro</td>
+							</tr>
+							<tr>
+								<td>c. 3 Jenis Mim Mati</td>
+							</tr>
+							<tr>
+								<td>d. Angka Arab</td>
+							</tr>
+							<tr>
+								<td>e. 9 Jenis Tanda Berhenti</td>
+							</tr>
+							<tr>
+								<td>f. Bacaan Panjang I</td>
+							</tr>
+							<tr>
+								<td>g. Bacaan Panjang II</td>
+							</tr>
+						</table>
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>

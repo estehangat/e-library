@@ -58,7 +58,7 @@ class NominalBmsController extends Controller
         $route = $this->route;
 
         $editable = false;
-        if(in_arraY($role,['fam'])) $editable = true;
+        if(in_array($role,['am'])) $editable = true;
 
         return view($this->template.$route.'-index', compact('data','used','active','route','unit','type','editable'));
     }

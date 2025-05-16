@@ -184,9 +184,7 @@ class PengajuanKelasController extends Controller
         $kelas = Kelas::where('id',$id)->first();
 
         // search student class
-        $siswas = Siswa::where('class_id',$kelas->id)->orderBy('student_name','asc')->get();
-
-
+        $siswas = Siswa::where('class_id',$kelas->id)->with('identitas:id,student_name')-> get()->sortBy('identitas.student_name');
 
         $pdf = PDF::loadView('kbm.ampu.pdf',compact('siswas','kelas'));
         

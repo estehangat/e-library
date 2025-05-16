@@ -300,9 +300,9 @@ class StatusSppController extends Controller
                         return redirect()->back()->with(['danger' => 'Email orang tua tidak ditemukan.']);
                     }
                 
-                    $data["title"] = "Informasi Tagihan ".($number ? "#".$number." " : null)."Auliya Bulan ".$date;
+                    $data["title"] = "Informasi Tagihan ".($number ? "#".$number." " : null)."DIGIYOK Bulan ".$date;
                     // Override Email for Testing
-                    //$data["email"] = 'ihsfwz@information-computer.com';
+                    $data["email"] = 'ihsfwz@information-computer.com';
                     //$data["email"] = 'arif@sekolahauliya.sch.id';
                     
                     //$files = [public_path('../img/boy.png')];
@@ -335,7 +335,7 @@ class StatusSppController extends Controller
                     }
                     
                     Mail::send('email.reminder_spp',compact('data','number','kelas','lastMonthDate','date','thisMonthBill','deadline','financeAdmin','hm','unit','unitPhone','units'), function($message)use($data, $file) {
-                        $message->from($address = 'estatement@sekolahauliya.sch.id', $name = 'SIT Auliya e-Statement');
+                        $message->from($address = 'estatement@digiyok.com', $name = 'Sekolah DIGIYOK e-Statement');
                         $message->to($data["email"]);
                         $message->subject($data["title"]);
              
@@ -434,12 +434,12 @@ class StatusSppController extends Controller
 
 Assalamu’alaikum Ayah Bunda,
 
-".($number == 1 ? "Bersama ini kami informasikan Tanggungan SPP per ".$date." atas nama *".$data->siswa->identitas->student_name."* ".($kelas && $kelas != '-' ? "(Kelas: ".$kelas.") " : null)."melalui email resmi sekolah estatement@sekolahauliya.sch.id. Berdasarkan catatan kami, pembayaran Tanggungan SPP ananda belum diterima pada rekening Auliya per tanggal 10 ".$date."." : "Berdasarkan catatan kami, pembayaran Tanggungan SPP sebagaimana Tagihan #1 sebelumnya per ".$date." atas nama *".$data->siswa->identitas->student_name."* ".($kelas && $kelas != '-' ? "(Kelas: ".$kelas.") " : null)."belum diterima pada rekening Auliya per hari ini.")." Mohon Ayah Bunda segera melakukan pembayaran melalui VA SPP ananda di Bank BSI.
+".($number == 1 ? "Bersama ini kami informasikan Tanggungan SPP per ".$date." atas nama *".$data->siswa->identitas->student_name."* ".($kelas && $kelas != '-' ? "(Kelas: ".$kelas.") " : null)."melalui email resmi sekolah estatement@digiyok.com. Berdasarkan catatan kami, pembayaran Tanggungan SPP ananda belum diterima pada rekening DIGIYOK per tanggal 10 ".$date."." : "Berdasarkan catatan kami, pembayaran Tanggungan SPP sebagaimana Tagihan #1 sebelumnya per ".$date." atas nama *".$data->siswa->identitas->student_name."* ".($kelas && $kelas != '-' ? "(Kelas: ".$kelas.") " : null)."belum diterima pada rekening DIGIYOK per hari ini.")." Mohon Ayah Bunda segera melakukan pembayaran melalui VA SPP ananda di Bank BSI.
 
-Informasi lebih lanjut ".($number == 2 ? "kami sampaikan melalui email estatement@sekolahauliya.sch.id atau " : null)."dapat menghubungi bagian Administrasi Keuangan ".str_replace("Auliya","AULIYA",$unit->desc)." di nomor ".($unitPhone ? $unitPhone." (via _Telephone_)".($financeAdmin ? " atau " : null) : null).($financeAdmin ? $financeAdmin->phoneNumberWithDashId." (via _WhatsApp_)." : ($unitPhone ? "." : null))."
+Informasi lebih lanjut ".($number == 2 ? "kami sampaikan melalui email estatement@digiyok.com atau " : null)."dapat menghubungi bagian Administrasi Keuangan ".str_replace("Digiyok","DIGIYOK",$unit->desc)." di nomor ".($unitPhone ? $unitPhone." (via _Telephone_)".($financeAdmin ? " atau " : null) : null).($financeAdmin ? $financeAdmin->phoneNumberWithDashId." (via _WhatsApp_)." : ($unitPhone ? "." : null))."
 Wassalamu’alaikum Warahmatullahi Wabarakatuh.
 
-Kepala ".str_replace("Auliya","AULIYA",$unit->desc)."
+Kepala ".str_replace("Digiyok","DIGIYOK",$unit->desc)."
 ".($hm ? "*".$hm->name."*" : '...')."
 
 _Notes : Apabila pada saat menerima informasi ini Ayah Bunda sudah membayarkan SPP tersebut, kami mengucapkan terima kasih._");

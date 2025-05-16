@@ -17,8 +17,8 @@ Reset Sandi @endsection
                 <div class="login100-logo m-b-5">
                     <img src="{{ asset('img/logo/logomark.png') }}">
                 </div>
-                <span class="login100-form-title">SISTA</span>
-                <span class="login100-form-subtitle p-b-27">Sistem Informasi SIT Auliya</span>
+                <span class="login100-form-title">MUDA</span>
+                <span class="login100-form-subtitle p-b-27">Make Ur Digital Assistant <i>for School</i></span>
                   @if(Session::has('danger'))
                   <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     {{ Session::get('danger') }}

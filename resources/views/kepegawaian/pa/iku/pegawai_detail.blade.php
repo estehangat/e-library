@@ -54,7 +54,7 @@ $role = Auth::user()->role->name;
                         @endif
                         @endforeach
                       </select>
-                      <a href="{{ route('iku.pegawai.index') }}" id="btn-select-year" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('iku.pegawai.index') }}">Pilih</a>
+                      <a href="{{ route('iku.pegawai.index') }}" id="btn-select-year" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('iku.pegawai.index') }}">Pilih</a>
                     </div>
                   </div>
                 </div>
@@ -90,7 +90,7 @@ $role = Auth::user()->role->name;
   <div class="col-12">
     <div class="card shadow">
       <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-brand-purple">Grafik</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">Grafik</h6>
       </div>
       <div class="card-body">
         <div class="chart-bar">
@@ -109,9 +109,9 @@ $role = Auth::user()->role->name;
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
                 @if(in_array($s,['C+']))
-                <h6 class="m-0 font-weight-bold text-brand-purple">Daftar Pegawai yang Mendapat C+ / C</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Daftar Pegawai yang Mendapat C+ / C</h6>
                 @else
-                <h6 class="m-0 font-weight-bold text-brand-purple">Daftar Pegawai yang Mendapat {{ $s }}</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Daftar Pegawai yang Mendapat {{ $s }}</h6>
                 @endif
             </div>
             <div class="card-body p-3">

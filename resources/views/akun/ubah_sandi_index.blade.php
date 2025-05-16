@@ -38,7 +38,7 @@ $role = Auth::user()->role->name;
               @if(Auth::user()->pegawai->gender_id == '1')
               <span class="badge badge-info font-weight-normal">{{ ucwords(Auth::user()->pegawai->jenisKelamin->name) }}</span>
               @elseif(Auth::user()->pegawai->gender_id == '2')
-              <span class="badge badge-brand-purple font-weight-normal">{{ ucwords(Auth::user()->pegawai->jenisKelamin->name) }}</span>
+              <span class="badge badge-brand-green font-weight-normal">{{ ucwords(Auth::user()->pegawai->jenisKelamin->name) }}</span>
               @endif
               @if(Auth::user()->pegawai->statusBaru && Auth::user()->pegawai->statusBaru->status == 'aktif' && !Auth::user()->pegawai->statusPhk)
               <span class="badge badge-primary font-weight-normal">Baru</span>
@@ -151,7 +151,7 @@ $role = Auth::user()->role->name;
           <div class="row">
             <div class="col-lg-10 col-md-12">
               <div class="text-right">
-                <button class="btn btn-brand-purple-dark" type="submit">Simpan</button>
+                <button class="btn btn-brand-green-dark" type="submit">Simpan</button>
               </div>
             </div>
           </div>

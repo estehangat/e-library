@@ -5,6 +5,8 @@ namespace App\Http\Resources\Keuangan\Spp;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Crypt;
 
+use Auth;
+
 class LaporanSppSiswaResource extends JsonResource
 {
     /**
@@ -25,6 +27,11 @@ class LaporanSppSiswaResource extends JsonResource
             $download_button = '';
         }
 
+        if(Auth::user()->role->name == 'faspv' || in_array(Auth::user()->pegawai->position_id,[57])){
+            $delete_button = '<a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#delete-confirm" onclick="deleteModal(\'Laporan SPP Siswa\', \''.addslashes(htmlspecialchars($this->siswa->identitas->student_name)).'\', \''. route('spp.laporan.destroy', ['id' => $this->id]).'\')"><i class="fas fa-trash"></i></a>';
+        }
+        else $delete_button = null;
+
         return [
             $this->siswa->student_nis,
             $this->monthId,
@@ -33,7 +40,7 @@ class LaporanSppSiswaResource extends JsonResource
             number_format($this->deduction_nominal),
             number_format($this->spp_paid),
             $this->status=='0'?'Belum':'Lunas',
-            '<button class="m-0 btn btn-warning btn-sm" data-toggle="modal" data-target="#PotonganModal" data-id="'.$this->id.'" data-name="'.$this->siswa->identitas->student_name.'" data-nominal="'.$this->sppNominalWithSeparator.'" data-potongan="'.$this->deduction_id.'"><i class="fas fa-cogs"></i></button>'.$download_button,
+            '<button class="m-0 btn btn-warning btn-sm" data-toggle="modal" data-target="#PotonganModal" data-id="'.$this->id.'" data-name="'.$this->siswa->identitas->student_name.'" data-nominal="'.$this->sppNominalWithSeparator.'" data-potongan="'.$this->deduction_id.'"><i class="fas fa-cogs"></i></button>'.$download_button.$delete_button,
             
         ];
     }

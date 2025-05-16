@@ -6,6 +6,7 @@ use App\Models\Pembayaran\BmsCalonSiswa;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use DateTime;
 use Jenssegers\Date\Date;
 
 class CalonSiswa extends Model
@@ -47,7 +48,11 @@ class CalonSiswa extends Model
         'info_name',    // informasi nama
         'position',     // posisi
 
-        'status_id',     // posisi
+        'status_id',
+        'last_status_id',
+        'bank_id',
+        'account_number',
+        'account_holder',
         'reject_reason',     // posisi
         'link',
         'interview_date',
@@ -109,6 +114,11 @@ class CalonSiswa extends Model
         return $this->belongsTo('App\Models\Wilayah', 'region_id');
     }
 
+    public function bank()
+    {
+        return $this->belongsTo('App\Models\Bank', 'bank_id');
+    }
+
     public function accEdukasi()
     {
         return $this->belongsTo('App\Models\Rekrutmen\Pegawai','education_acc_id');
@@ -128,6 +138,12 @@ class CalonSiswa extends Model
     public function bms()
     {
         return $this->hasOne(BmsCalonSiswa::class,'candidate_student_id');
+    }
+
+    public function getIsBirthDateValidAttribute()
+    {
+        $d = DateTime::createFromFormat('Y-m-d', $this->birth_date);
+        return $d && $d->format('Y-m-d') === $this->birth_date;
     }
 
     public function getInterviewDateIdAttribute()

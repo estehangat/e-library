@@ -36,4 +36,9 @@ class JadwalPelajaran extends Model
         return $this->belongsTo('App\Models\Rekrutmen\Pegawai','teacher_id');
     }
 
+    public function semester()
+    {
+        return $this->belongsTo('App\Models\Kbm\Semester', 'semester_id');
+    }
+
 }

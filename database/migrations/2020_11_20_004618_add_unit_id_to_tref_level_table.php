@@ -14,8 +14,7 @@ class AddUnitIdToTrefLevelTable extends Migration
     public function up()
     {
         Schema::table('tref_level', function (Blueprint $table) {
-            //
-            $table->integer('unit_id'); 
+            $table->integer('unit_id')->after('id'); 
         });
     }
 

@@ -82,8 +82,8 @@ Cetak Rapor PAS
                                     @if($siswas->unit_id == 1)
                                     <td class="text-center">
                                         <div class="btn-group">
-                                          <a href="{{ route('pas.cetak.laporantk',['id'=>$siswas->id])}}" class="btn btn-sm btn-brand-purple" target="_blank"><i class="fa fa-print"></i> Cetak Rapor</a>
-                                          <button type="button" class="btn btn-sm btn-brand-purple dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                          <a href="{{ route('pas.cetak.laporantk',['id'=>$siswas->id])}}" class="btn btn-sm btn-brand-green" target="_blank"><i class="fa fa-print"></i> Cetak Rapor</a>
+                                          <button type="button" class="btn btn-sm btn-brand-green dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             <span class="sr-only">Lainnya</span>
                                           </button>
                                           <div class="dropdown-menu">
@@ -94,8 +94,8 @@ Cetak Rapor PAS
                                     @else
                                     <td class="text-center">
                                         <div class="btn-group">
-                                          <a href="{{ route('pas.cetak.laporan',['id'=>$siswas->id])}}" class="btn btn-sm btn-brand-purple" target="_blank"><i class="fa fa-print"></i> Cetak Rapor</a>
-                                          <button type="button" class="btn btn-sm btn-brand-purple dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                          <a href="{{ route('pas.cetak.laporan',['id'=>$siswas->id])}}" class="btn btn-sm btn-brand-green" target="_blank"><i class="fa fa-print"></i> Cetak Rapor</a>
+                                          <button type="button" class="btn btn-sm btn-brand-green dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                             <span class="sr-only">Lainnya</span>
                                           </button>
                                           <div class="dropdown-menu">
@@ -111,12 +111,12 @@ Cetak Rapor PAS
                                     </td>
                                     <td colspan="3" class="text-center">
                                         @if(!$nilairapor[$key])
-                                        <button type="button" class="btn btn-sm btn-brand-purple" disabled="disabled"><i class="fa fa-eye"></i> Pratinjau Rapor</button>
+                                        <button type="button" class="btn btn-sm btn-brand-green" disabled="disabled"><i class="fa fa-eye"></i> Pratinjau Rapor</button>
                                         @else
                                         @if($siswas->unit_id == 1)
-                                        <a href="{{ route('pas.cetak.laporantk',['id'=>$siswas->id])}}" class="btn btn-sm btn-brand-purple" target="_blank"><i class="fa fa-eye"></i> Pratinjau Rapor</a>
+                                        <a href="{{ route('pas.cetak.laporantk',['id'=>$siswas->id])}}" class="btn btn-sm btn-brand-green" target="_blank"><i class="fa fa-eye"></i> Pratinjau Rapor</a>
                                         @else
-                                        <a href="{{ route('pas.cetak.laporan',['id'=>$siswas->id])}}" class="btn btn-sm btn-brand-purple" target="_blank"><i class="fa fa-eye"></i> Pratinjau Rapor</a>
+                                        <a href="{{ route('pas.cetak.laporan',['id'=>$siswas->id])}}" class="btn btn-sm btn-brand-green" target="_blank"><i class="fa fa-eye"></i> Pratinjau Rapor</a>
                                         @endif
                                         @endif
                                     </td>

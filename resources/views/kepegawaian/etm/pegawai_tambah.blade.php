@@ -27,7 +27,7 @@ Tambah Pegawai
 <div class="row mb-4">
   <div class="col-12">
     <div class="card">
-      <div class="card-header py-3 bg-brand-purple-dark d-flex flex-row align-items-center justify-content-between">
+      <div class="card-header py-3 bg-brand-green-dark d-flex flex-row align-items-center justify-content-between">
         <h6 class="m-0 font-weight-bold text-white">Form Pegawai</h6>
       </div>
       <div class="card-body p-4">
@@ -35,7 +35,7 @@ Tambah Pegawai
           {{ csrf_field() }}
           <div class="row mb-4">
             <div class="col-12">
-              <h6 class="font-weight-bold text-brand-purple">Info Umum</h6>
+              <h6 class="font-weight-bold text-brand-green">Info Umum</h6>
             </div>
           </div>
           <div class="row">
@@ -85,7 +85,7 @@ Tambah Pegawai
                     <div class="input-group mt-3">
                       <input type="text" class="form-control @error('photo') is-invalid @enderror" disabled placeholder="Unggah foto..." id="file">
                       <div class="input-group-append">
-                        <button type="button" class="browse btn btn-brand-purple-dark">Pilih</button>
+                        <button type="button" class="browse btn btn-brand-green-dark">Pilih</button>
                       </div>
                     </div>
                     <small id="photoHelp" class="form-text text-muted">Ekstensi .jpg, .jpeg, .png dan maksimum 5 MB</small>
@@ -281,7 +281,7 @@ Tambah Pegawai
           <hr>
           <div class="row mb-4">
             <div class="col-12">
-              <h6 class="font-weight-bold text-brand-purple">Info Alamat dan Kontak</h6>
+              <h6 class="font-weight-bold text-brand-green">Info Alamat dan Kontak</h6>
             </div>
           </div>
           <div class="row">
@@ -456,7 +456,7 @@ Tambah Pegawai
           <hr>
           <div class="row mb-4">
             <div class="col-12">
-              <h6 class="font-weight-bold text-brand-purple">Pendidikan</h6>
+              <h6 class="font-weight-bold text-brand-green">Pendidikan</h6>
             </div>
           </div>
           <div class="row">
@@ -528,7 +528,7 @@ Tambah Pegawai
           <hr>
           <div class="row mb-4">
             <div class="col-12">
-              <h6 class="font-weight-bold text-brand-purple">Kepegawaian</h6>
+              <h6 class="font-weight-bold text-brand-green">Kepegawaian</h6>
             </div>
           </div>
           <div class="row">
@@ -597,7 +597,7 @@ Tambah Pegawai
           <div class="row">
             <div class="col-lg-10 col-md-12">
               <div class="text-right">
-                <button class="btn btn-brand-purple-dark" type="submit">Simpan</button>
+                <button class="btn btn-brand-green-dark" type="submit">Simpan</button>
               </div>
             </div>
           </div>

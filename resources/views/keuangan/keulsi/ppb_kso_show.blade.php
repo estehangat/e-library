@@ -9,7 +9,7 @@ PPB
 @endsection
 
 @section('sidebar')
-@include('template.sidebar.keuangan.'.Auth::user()->role->name)
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -99,7 +99,7 @@ PPB
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Daftar PPA</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Daftar PPA</h6>
                 @if($bbkAktif && $bbkAktif->director_acc_status_id == 1)
                 <div class="m-0 float-right">
                 <a href="{{ route('ppb.ekspor',['jenis' => $jenisAktif->link, 'tahun' => $isKso ? $tahun->academicYearLink : $tahun, 'nomor' => $bbkAktif->firstNumber]) }}" class="btn btn-brand-green-dark btn-sm">Ekspor <i class="fas fa-file-export ml-1"></i></a>

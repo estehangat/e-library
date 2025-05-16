@@ -116,11 +116,14 @@ class PpaDetail extends Model
         if($this->ppa->type_id == 2){
             if($this->proposals()->count() > 0){
                 $note = '';
-                $lastId = $this->proposals()->select('id')->orderBy('id','DESC')->first()->id;
-                foreach($this->proposals as $p){
-                    $note .= implode(', ',$p->details->pluck('desc')->toArray());
-                    if($lastId != $p->id) $note .= ', ';
-                }
+                // Use detail descriptions
+                // $lastId = $this->proposals()->select('id')->orderBy('id','DESC')->first()->id;
+                // foreach($this->proposals as $p){
+                //     $note .= implode(', ',$p->details->pluck('desc')->toArray());
+                //     if($lastId != $p->id) $note .= ', ';
+                // }
+                // Use titles
+                $note .= implode(', ',$this->proposals()->select('title')->get()->pluck('title')->toArray());
                 return $note;
             }
             else return '-';

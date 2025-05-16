@@ -178,7 +178,7 @@ class Pegawai extends Model
 
     public function login()
     {
-        return $this->hasOne('App\Models\LoginUser','user_id');
+        return $this->hasOne('App\Models\LoginUser','user_id')->where('role_id','!=',36);
     }
 
     public function getTitleNameAttribute()

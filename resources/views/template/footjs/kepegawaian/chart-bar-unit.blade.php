@@ -38,8 +38,8 @@ var unitBarChart = new Chart(ctx, {
     labels: labels_array,
     datasets: [{
       label: "Pegawai",
-      backgroundColor: "#8dc73f",
-      hoverBackgroundColor: "#72a32f",
+      backgroundColor: "#0cb9f9",
+      hoverBackgroundColor: "#0cb9f9",
       borderColor: "#4e73df",
       data: data_array,
     }],

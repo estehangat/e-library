@@ -64,7 +64,7 @@ Indikator Aspek Perkembangan
                 </div>
                 <div class="row">
                     <div class="col-md-12" id="getindikator">
-                        <a class="m-0 float-right btn btn-brand-purple-dark btn-sm mb-2" href="javascript:void(0)" data-toggle="modal" data-target="#TambahModal">Tambah <i class="fas fa-plus"></i></a>
+                        <a class="m-0 float-right btn btn-brand-green-dark btn-sm mb-2" href="javascript:void(0)" data-toggle="modal" data-target="#TambahModal">Tambah <i class="fas fa-plus"></i></a>
                         <div class="table-responsive">
                             <table class="table align-items-center table-flush">
                                 <thead class="thead-light">
@@ -121,7 +121,7 @@ Indikator Aspek Perkembangan
             <form action="{{route('indikatoraspek.tambah')}}" method="POST">
                 @csrf
                 <input type="hidden" name="level_id" id="idlevelsubmit" value="{{ $level->id }}"/>
-                <div class="modal-header bg-brand-purple-dark text-white">
+                <div class="modal-header bg-brand-green-dark text-white">
                     <h5 class="modal-title" id="exampleModalLongTitle">Tambah Indikator</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
@@ -162,7 +162,7 @@ Indikator Aspek Perkembangan
             <form action="{{route('indikatoraspek.ubah')}}" method="POST">
                 @csrf
                 <input type="hidden" name="id" id="ubahid">
-                <div class="modal-header bg-brand-purple-dark text-white">
+                <div class="modal-header bg-brand-green-dark text-white">
                     <h5 class="modal-title" id="exampleModalLongTitle">Ubah Indikator</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>

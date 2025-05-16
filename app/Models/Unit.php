@@ -98,6 +98,31 @@ class Unit extends Model
         return $this->hasMany('App\Models\Iku\IkuAchievement','unit_id');
     }
 
+    public function levels()
+    {
+        return $this->hasMany('App\Models\Level','unit_id');
+    }
+
+    public function kompetensiIklas()
+    {
+        return $this->hasMany('App\Models\Penilaian\Iklas\KompetensiIklas','unit_id');
+    }
+
+    public function indikatorIklas()
+    {
+        return $this->hasMany('App\Models\Penilaian\Iklas\IndikatorIklas','unit_id');
+    }
+
+    public function kompetensiKategoriIklas()
+    {
+        return $this->hasMany('App\Models\Penilaian\Iklas\KompetensiKategoriIklas','unit_id');
+    }
+
+    public function books()
+    {
+        return $this->hasMany('App\Models\Penilaian\Kurdeka\UnitBuku','unit_id');
+    }
+
     public function psbRegisterCounter()
     {
         return $this->hasMany('App\Models\Psb\RegisterCounter','unit_id');

@@ -3,7 +3,7 @@
     <input type="hidden" name="mapel_id" id="idmapel" />
     <input type="hidden" name="class_id" id="idkelas" />
     <table class="table align-items-center table-flush">
-        <thead class="bg-brand-purple text-white">
+        <thead class="bg-brand-green text-white">
             <tr>
                 <th>Nama Siswa</th>
                 <th class="text-center">Nilai Sikap</th>
@@ -23,6 +23,7 @@
                         <option value="B" <?php if ($nilaisikap[$key] && $nilaisikap[$key]->predicate == "B") echo "selected"; ?>>B</option>
                         <option value="C" <?php if ($nilaisikap[$key] && $nilaisikap[$key]->predicate == "C") echo "selected"; ?>>C</option>
                         <option value="D" <?php if ($nilaisikap[$key] && $nilaisikap[$key]->predicate == "D") echo "selected"; ?>>D</option>
+                        <option value="-" <?php if ($nilaisikap[$key] && $nilaisikap[$key]->predicate == "-") echo "selected"; ?>>-</option>
                     </select>
                 </td>
             </tr>
@@ -38,12 +39,12 @@
     @if($countrapor > 0)
     @if($validasi > 0)
     <div class="text-center mt-4">
-        <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+        <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
     </div>
     @endif
     @else
     <div class="text-center mt-4">
-        <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+        <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
     </div>
     @endif
 </form>

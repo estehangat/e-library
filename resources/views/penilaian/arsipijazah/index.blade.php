@@ -53,7 +53,7 @@ Arsip Ijazah
                     </div>
                     <div class="col-md-12">
                         <table class="table align-items-center table-flush">
-                            <thead class="bg-brand-purple text-white">
+                            <thead class="bg-brand-green text-white">
                                 <tr>
                                     <th width="50%">Nama Siswa</th>
                                     <th width="50%" class="text-center">Ijazah&nbsp;<strong style="color:red;">*</strong></th>
@@ -70,11 +70,11 @@ Arsip Ijazah
                                         <td>
                                             @if( $siswa->arsip()->ijazah()->count() > 0 )
 
-                                            <a class="m-0 float-right btn btn-brand-purple-dark btn-sm" href="/arsip/Ijazah_{{$siswa->student_nis}}_{{$siswa->identitas->student_name}}.pdf">Unduh <i class="fas fa-download"></i></a>
+                                            <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="/arsip/Ijazah_{{$siswa->student_nis}}_{{$siswa->identitas->student_name}}.pdf">Unduh <i class="fas fa-download"></i></a>
                                             @else
                                             <div class="form-group row">
                                                 <input name="file" type="file" class="form-control col-sm-8" accept="application/pdf">
-                                                <button type="submit" class="m-0 float-right btn btn-brand-purple-dark">Simpan</button>
+                                                <button type="submit" class="m-0 float-right btn btn-brand-green-dark">Simpan</button>
                                             </div>
                                             @endif
                                         </td>

@@ -21,35 +21,37 @@ Pengajuan Kelas
     <div class="col-md-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Pengajuan Kelas{{ !$kelases->isEmpty()?'':' : Tidak ada pengajuan kelas' }}</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Pengajuan Kelas{{ !$kelases->isEmpty()?'':' : Tidak ada pengajuan kelas' }}</h6>
             </div>
-            <div class="table-responsive">
-            @if (!$kelases->isEmpty())
-                <table class="table align-items-center table-flush">
-                    <thead class="thead-light">
-                        <tr>
-                            <th>No</th>
-                            <th>Kelas</th>
-                            <th>Nama Kelas</th>
-                            <th>Wali Kelas</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach( $kelases as $index => $kelas)
-                        <tr>
-                            <td>{{ $index+1 }}</td>
-                            <td>{{ $kelas->level->level }}</td>
-                            <td>{{ $kelas->namakelases->class_name }}</td>
-                            <td>{{ $kelas->walikelas->name }}</td>
-                            <td>
-                                <a href="/kependidikan/kbm/kelas/pengajuan-kelas/lihat/{{$kelas->id}}" class="btn btn-sm btn-primary"><i class="fas fa-eye"></i></a>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            @endif
+            <div class="card-body">
+                <div class="table-responsive">
+                @if (!$kelases->isEmpty())
+                    <table class="table align-items-center table-flush">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>No</th>
+                                <th>Kelas</th>
+                                <th>Nama Kelas</th>
+                                <th>Wali Kelas</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach( $kelases as $index => $kelas)
+                            <tr>
+                                <td>{{ $index+1 }}</td>
+                                <td>{{ $kelas->level->level }}</td>
+                                <td>{{ $kelas->namakelases->class_name }}</td>
+                                <td>{{ $kelas->walikelas ? $kelas->walikelas->name : '-' }}</td>
+                                <td>
+                                    <a href="/kependidikan/kbm/kelas/pengajuan-kelas/lihat/{{$kelas->id}}" class="btn btn-sm btn-primary"><i class="fas fa-eye"></i></a>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @endif
+                </div>
             </div>
             <div class="card-footer"></div>
         </div>
@@ -60,35 +62,37 @@ Pengajuan Kelas
     <div class="col-md-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Kelas yang telah disetujui{{ !$setuju->isEmpty()?'':' : Tidak ada' }}</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Kelas yang telah disetujui{{ !$setuju->isEmpty()?'':' : Tidak ada' }}</h6>
             </div>
-            <div class="table-responsive">
-            @if (!$setuju->isEmpty())
-                <table class="table align-items-center table-flush">
-                    <thead class="thead-light">
-                        <tr>
-                            <th>No</th>
-                            <th>Kelas</th>
-                            <th>Nama Kelas</th>
-                            <th>Wali Kelas</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach( $setuju as $index => $kelas)
-                        <tr>
-                            <td>{{ $index+1 }}</td>
-                            <td>{{ $kelas->level->level }}</td>
-                            <td>{{ $kelas->namakelases->class_name }}</td>
-                            <td>{{ $kelas->walikelas->name }}</td>
-                            <td>
-                                <a href="/kependidikan/kbm/kelas/pengajuan-kelas/lihat/{{$kelas->id}}" class="btn btn-sm btn-primary"><i class="fas fa-eye"></i></a>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            @endif
+            <div class="card-body">
+                <div class="table-responsive">
+                @if (!$setuju->isEmpty())
+                    <table class="table align-items-center table-flush">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>No</th>
+                                <th>Kelas</th>
+                                <th>Nama Kelas</th>
+                                <th>Wali Kelas</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach( $setuju as $index => $kelas)
+                            <tr>
+                                <td>{{ $index+1 }}</td>
+                                <td>{{ $kelas->level->level }}</td>
+                                <td>{{ $kelas->namakelases->class_name }}</td>
+                                <td>{{ $kelas->walikelas ? $kelas->walikelas->name : '-' }}</td>
+                                <td>
+                                    <a href="/kependidikan/kbm/kelas/pengajuan-kelas/lihat/{{$kelas->id}}" class="btn btn-sm btn-primary"><i class="fas fa-eye"></i></a>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @endif
+                </div>
             </div>
             <div class="card-footer"></div>
         </div>
@@ -100,9 +104,10 @@ Pengajuan Kelas
     <div class="col-md-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Kelas yang belum mengajukan{{ !$tunggu->isEmpty()?'':' : Tidak ada' }}</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Kelas yang belum mengajukan{{ !$tunggu->isEmpty()?'':' : Tidak ada' }}</h6>
             </div>
-            <div class="table-responsive">
+            <div class="card-body">
+                <div class="table-responsive">
             @if (!$tunggu->isEmpty())
                 <table class="table align-items-center table-flush">
                     <thead class="thead-light">
@@ -120,7 +125,7 @@ Pengajuan Kelas
                             <td>{{ $index+1 }}</td>
                             <td>{{ $kelas->level->level }}</td>
                             <td>{{ $kelas->namakelases->class_name }}</td>
-                            <td>{{ $kelas->walikelas->name }}</td>
+                            <td>{{ $kelas->walikelas ? $kelas->walikelas->name : '-' }}</td>
                             <td>
                                 <a href="/kependidikan/kbm/kelas/pengajuan-kelas/lihat/{{$kelas->id}}" class="btn btn-sm btn-primary"><i class="fas fa-eye"></i></a>
                             </td>
@@ -129,6 +134,7 @@ Pengajuan Kelas
                     </tbody>
                 </table>
             @endif
+            </div>
             </div>
             <div class="card-footer"></div>
         </div>

@@ -13,7 +13,7 @@ Tambah Kelompok Mata Pelajaran
     <h1 class="h3 mb-0 text-gray-800">Tambah Kelompok Mata Pelajaran</h1>
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="javascript:void(0)">Belajar Mengajar</a></li>
-        <li class="breadcrumb-item"><a href="/kependidikan/kbm/kelompok-mata-pelajaran">Kelompok Mata Pelajaran</a></li>
+        <li class="breadcrumb-item"><a href="/kependidikan/kbm/pelajaran/kelompok-mata-pelajaran">Kelompok Mata Pelajaran</a></li>
         <li class="breadcrumb-item active" aria-current="page">Tambah</li>
     </ol>
 </div>
@@ -29,7 +29,7 @@ Tambah Kelompok Mata Pelajaran
                         <div class="form-group row">
                             <label for="kelompok" class="col-sm-4 control-label">Kelompok Mata Pelajaran</label>
                             <div class="col-sm-6">
-                                <input type="text" class="form-control" name="kelompok" value="Kelompok C (Peminatan) IPA/IPS">
+                                <input type="text" class="form-control" name="kelompok" placeholder="Kelompok C (Peminatan) IPA/IPS">
                             </div>
                         </div>
                         @if( auth()->user()->pegawai->unit_id == 4)
@@ -48,7 +48,7 @@ Tambah Kelompok Mata Pelajaran
                     </div>
                     <div class="col-md-12">
                         <div class="text-center mt-4">
-                            <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+                            <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
                         </div>
                     </div>
                 </div>
@@ -58,10 +58,4 @@ Tambah Kelompok Mata Pelajaran
     </div>
 </div>
 <!--Row-->
-@endsection
-
-@section('footjs')
-<!-- Plugins and scripts required by this view-->
-<script src="{{asset('vendor/chart.js/Chart.min.js')}}"></script>
-<script src="{{asset('js/demo/chart-area-demo.js')}}"></script>
 @endsection

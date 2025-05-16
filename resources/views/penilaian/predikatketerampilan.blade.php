@@ -41,7 +41,7 @@ Predikat Keterampilan
     <div class="col-md-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Predikat & Deskripsi Nilai Keterampilan</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Predikat & Deskripsi Nilai Keterampilan</h6>
             </div>
             <div class="card-body">
                 <div class="row">
@@ -91,7 +91,7 @@ Predikat Keterampilan
                 @csrf
                 <input type="hidden" name="idmapel" id="idmapelsubmit">
                 <input type="hidden" name="idlevel" id="idlevelsubmit">
-                <div class="modal-header bg-brand-purple-dark text-white">
+                <div class="modal-header bg-brand-green-dark text-white">
                     <h5 class="modal-title" id="exampleModalLongTitle">Tambah Predikat - Deskripsi</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
@@ -135,7 +135,7 @@ Predikat Keterampilan
                 <input type="hidden" name="id" id="ubahid">
                 <input type="hidden" name="idmapel" id="idmapelsubmit">
                 <input type="hidden" name="idlevel" id="idlevelsubmit">
-                <div class="modal-header bg-brand-purple-dark text-white">
+                <div class="modal-header bg-brand-green-dark text-white">
                     <h5 class="modal-title" id="exampleModalLongTitle">Ubah Predikat - Deskripsi</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>

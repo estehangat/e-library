@@ -35,7 +35,7 @@ $role = Auth::user()->role->name;
   <div class="col-12">
     <div class="card">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">Aspek Evaluasi dan IKU</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">Aspek Evaluasi dan IKU</h6>
       </div>
       <div class="card-body p-3">
           @if(Session::has('success'))
@@ -79,7 +79,7 @@ $role = Auth::user()->role->name;
               <div class="row">
                 <div class="col-lg-7 offset-lg-5 col-md-4 offset-md-8 col-sn-3 offset-sm-9 col-12">
                   <div class="text-left">
-                    <button class="btn btn-brand-purple-dark" type="submit">Simpan</button>
+                    <button class="btn btn-brand-green-dark" type="submit">Simpan</button>
                   </div>
                 </div>
               </div>

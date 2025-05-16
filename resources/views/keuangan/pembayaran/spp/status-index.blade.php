@@ -5,14 +5,7 @@
 @endsection
 
 @section('sidebar')
-@php
-$role = Auth::user()->role->name;
-@endphp
-@if(in_array($role,['admin','am','aspv','direktur','etl','etm','fam','faspv','kepsek','keu','pembinayys','ketuayys','wakasek']))
-@include('template.sidebar.keuangan.'.$role)
-@else
-@include('template.sidebar.keuangan.employee')
-@endif
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('headmeta')
@@ -41,7 +34,7 @@ $role = Auth::user()->role->name;
         <div class="card h-100">
             <div class="card-body p-0">
                 <div class="row align-items-center mx-0">
-                    <div class="col-auto px-3 py-2 {{ isset($siswa) && $siswa == $opt ? 'bg-brand-green' : 'bg-brand-purple' }}">
+                    <div class="col-auto px-3 py-2 {{ isset($siswa) && $siswa == $opt ? 'bg-brand-green' : 'bg-brand-green' }}">
                         <i class="mdi mdi-account-outline mdi-24px text-white"></i>
                     </div>
                     <div class="col">
@@ -49,7 +42,7 @@ $role = Auth::user()->role->name;
                     </div>
                     <div class="col-auto">
                         @if(!isset($siswa) || (isset($siswa) && $siswa != $opt))
-                        <a href="{{ route($route.'.index', ['siswa' => $opt])}}" class="btn btn-sm btn-outline-brand-purple">Pilih</a>
+                        <a href="{{ route($route.'.index', ['siswa' => $opt])}}" class="btn btn-sm btn-outline-brand-green">Pilih</a>
                         @else
                         <a href="javascript:void(0)" class="btn btn-sm btn-outline-secondary disabled"role="button" aria-disabled="true">Pilih</a>
                         @endif
@@ -92,7 +85,7 @@ $role = Auth::user()->role->name;
                         <option value="">Semua</option>
                     </select>
                 </div>
-                <button id="filter_submit" class="btn btn-brand-purple-dark btn-sm" type="button">Saring</button>
+                <button id="filter_submit" class="btn btn-brand-green-dark btn-sm" type="button">Saring</button>
             </div>
             </form>
           </div>
@@ -105,7 +98,7 @@ $role = Auth::user()->role->name;
   <div class="col-12">
     <div class="card shadow">
       <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-brand-purple">{{ $active }}</h6>
+        <h6 class="m-0 font-weight-bold text-brand-green">{{ $active }}</h6>
       </div>
       <div class="card-body">
         @if(Session::has('success'))
@@ -186,7 +179,7 @@ $role = Auth::user()->role->name;
 <div class="modal fade" id="edit-form" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="display: none;">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-header bg-brand-purple border-0">
+      <div class="modal-header bg-brand-green border-0">
         <h5 class="modal-title text-white">Kirim Email Pengingat Tagihan SPP</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">x</span>

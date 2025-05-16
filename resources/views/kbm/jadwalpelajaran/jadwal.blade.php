@@ -75,70 +75,103 @@ Jadwal Pelajaran
                                         @endif
                                 </select>
                             </div>
-                                <button type="submit" class="btn btn-brand-purple-dark">Cari</button>
+                                <button type="submit" class="btn btn-brand-green-dark">Cari</button>
                         </div>
                     </form>
                     </div>
-                    <div class="col-md-12">
-                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                            <h6 class="m-0 font-weight-bold text-brand-purple">Jadwal Pelajaran</h6>
-                            <div class="m-0 float-right">
-                                @if( in_array((auth()->user()->role_id), array(1,2,3)))
-                                <button type="submit" class="btn btn-brand-purple-dark btn-sm" data-toggle="modal" data-target="#TambahModal">Tambah Jadwal <i class="fas fa-plus"></i></button>
-                                @endif
-
-                                @if( in_array((auth()->user()->role_id), array(1,2)))
-                                <a class="btn btn-success btn-sm" href="/kependidikan/kbm/pelajaran/jadwal-pelajaran/unduh">Ekspor Semua <i class="fas fa-file-export"></i></a>
-                                @endif
-                            </div>
-                        </div>
-                        @if(Session::has('sukses'))
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            <strong>Sukses!</strong> {{ Session::get('sukses') }}
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        @endif
-                        <table class="table align-items-center table-flush">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th>Jam Ke</th>
-                                    <th>Mulai</th>
-                                    <th>Selesai</th>
-                                    <th>Kegiatan/Mata Pelajaran</th>
-                                    <th>Guru</th>
-                                    @if( in_array((auth()->user()->role_id), array(1,2,3)))
-                                    <th>Aksi</th>
-                                    @endif
-                                </tr>
-                            </thead>
-                            <tbody>
-                            @foreach( $jadwals as $index => $jadwal )
-                                <tr>
-                                    <td>{{$index+1}}</td>
-                                    <td>{{ Carbon\Carbon::parse($jadwal->jam->hour_start)->format('H:i') }}</td>
-                                    <td>{{ Carbon\Carbon::parse($jadwal->jam->hour_end)->format('H:i') }}</td>
-                                    @if((is_null($jadwal->subject_id)))
-                                    <td>{{$jadwal->jam->description}}</td>
-                                    @else
-                                    <td>{{$jadwal->mapel->subject_name}}</td>
-                                    @endif
-                                    @if((is_null($jadwal->teacher_id)))
-                                    <td>-</td>
-                                    @else
-                                    <td>{{$jadwal->guru->name}}</td>
-                                    @endif
-                                    @if( in_array((auth()->user()->role_id), array(1,2,3)))
-                                    <td><button href="#" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#UbahModal{{$jadwal->id}}"><i class="fas fa-pen"></i></button>&nbsp;<button href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#HapusModal{{$jadwal->id}}"><i class="fas fa-trash"></i></button></td>
-                                    @endif
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
-                    </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-brand-green-dark">Jadwal Pelajaran</h6>
+                <div class="m-0 float-right">
+                    @if(in_array((auth()->user()->role_id), array(1,2,3)))
+                    <a href="javascript:void(0)" class="btn btn-brand-green-dark btn-sm" data-toggle="modal" data-target="#TambahModal">Tambah<i class="fas fa-plus-circle ml-2"></i></a>
+                    @endif
+                    @if( in_array((auth()->user()->role_id), array(1,2)))
+                    <a href="/kependidikan/kbm/pelajaran/jadwal-pelajaran/unduh" class="btn btn-success btn-sm">Ekspor Semua<i class="fas fa-file-export ml-2"></i></a>
+                    @endif
+                </div>
+            </div>
+            @if($jadwals && count($jadwals) > 0)
+            <div class="card-body">
+                @if(Session::has('success'))
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <strong>Sukses!</strong> {{ Session::get('success') }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                @endif
+                <div class="table-responsive">
+                    <table class="table align-items-center table-flush">
+                        <thead class="thead-light">
+                            <tr>
+                                <th style="width: 60px">Jam Ke</th>
+                                <th>Mulai</th>
+                                <th>Selesai</th>
+                                <th>Kegiatan/Mata Pelajaran</th>
+                                <th>Guru</th>
+                                @if( in_array((auth()->user()->role_id), array(1,2,3)))
+                                <th style="width: 120px">Aksi</th>
+                                @endif
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach( $jadwals as $index => $jadwal )
+                            <tr>
+                                <td>{{$index+1}}</td>
+                                <td>{{ $jadwal->jam ? Carbon\Carbon::parse($jadwal->jam->hour_start)->format('H:i') : '-' }}</td>
+                                <td>{{ $jadwal->jam ? Carbon\Carbon::parse($jadwal->jam->hour_end)->format('H:i') : '-' }}</td>
+                                @if((is_null($jadwal->subject_id)))
+                                <td>{{$jadwal->jam->description}}</td>
+                                @else
+                                <td>{{$jadwal->mapel->subject_name}}</td>
+                                @endif
+                                @if((is_null($jadwal->teacher_id)))
+                                <td>-</td>
+                                @else
+                                <td>{{$jadwal->guru->name}}</td>
+                                @endif
+                                @if( in_array((auth()->user()->role_id), array(1,2,3)))
+                                <td>
+                                    <button href="#" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#UbahModal{{$jadwal->id}}"><i class="fas fa-pen"></i></button>
+                                    <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#HapusModal{{ $jadwal->id }}"><i class="fas fa-trash"></i></a>
+                                </td>
+                                @endif
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            @else
+            @if(Session::has('success'))
+            <div class="alert alert-success alert-dismissible fade show m-3" role="alert">
+                <strong>Sukses!</strong> {{ Session::get('success') }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            @endif
+            @if(Session::has('danger'))
+            <div class="alert alert-danger alert-dismissible fade show m-3" role="alert">
+                <strong>Gagal!</strong> {{ Session::get('danger') }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            @endif
+            <div class="text-center mx-3 my-5">
+                <h3 class="text-center">Mohon Maaf,</h3>
+                <h6 class="font-weight-light mb-3">Tidak ada data jadwal pelajaran yang ditemukan</h6>
+            </div>
+            @endif
         </div>
     </div>
 </div>
@@ -195,7 +228,7 @@ Jadwal Pelajaran
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                <button type="submit" class="btn btn-primary">Tambah</button>
+                <button type="submit" class="btn btn-brand-green-dark">Tambah</button>
             </div>
         </form>
     </div>
@@ -308,8 +341,6 @@ Jadwal Pelajaran
 
 @section('footjs')
 <!-- Plugins and scripts required by this view-->
-<script src="{{asset('vendor/chart.js/Chart.min.js')}}"></script>
-<script src="{{asset('js/demo/chart-area-demo.js')}}"></script>
 <script src="{{asset('js/jadwal.js')}}"></script>
 @include('template.footjs.kbm.datatables')
 @endsection

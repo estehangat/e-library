@@ -61,6 +61,24 @@ class IdentitasSiswa extends Model
         return $this->hasMany(Siswa::class, 'student_id');
     }
 
+    public function getLatestUnitAttribute()
+    {
+        if($this->siswas()->count() > 0){
+            $siswa = $this->siswas()->select('unit_id')->latest()->first();
+            return $siswa->unit_id;
+        }
+        else return null;
+    }
+
+    public function getLatestLevelAttribute()
+    {
+        if($this->siswas()->count() > 0){
+            $siswa = $this->siswas()->select('unit_id','class_id','is_lulus','graduate_year')->latest()->first();
+            return $siswa->is_lulus == 0 ? ($siswa->kelas ? $siswa->kelas->levelName : null) : 'Lulus'.($siswa->tahunLulus ? ' '.$siswa->tahunLulus->academic_year_end : null);
+        }
+        else return null;
+    }
+
     public function getBirthDateIdAttribute()
     {
         Date::setLocale('id');

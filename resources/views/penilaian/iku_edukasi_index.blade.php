@@ -61,7 +61,7 @@ Ledger Kelas
                       @endif
                       @endforeach
                     </select>
-                    <a href="{{ route('penilaian.ikuEdukasi.kelas') }}" id="btn-select-year" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('penilaian.ikuEdukasi.kelas') }}">Atur</a>
+                    <a href="{{ route('penilaian.ikuEdukasi.kelas') }}" id="btn-select-year" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('penilaian.ikuEdukasi.kelas') }}">Atur</a>
                     </div>
                   </div>
                 </div>
@@ -94,7 +94,7 @@ Ledger Kelas
                           <option value="{{ $k->id }}" {{ $kelas && $kelas->id == $k->id ? 'selected' : '' }}>{{ $k->levelName }}</option>
                           @endforeach
                         </select>
-                        <a href="{{ route('penilaian.ikuEdukasi.kelas', ['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber]) }}" id="btn-select-class" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('penilaian.ikuEdukasi.kelas', ['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber]) }}">Pilih</a>
+                        <a href="{{ route('penilaian.ikuEdukasi.kelas', ['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber]) }}" id="btn-select-class" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('penilaian.ikuEdukasi.kelas', ['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber]) }}">Pilih</a>
                     </div>
                     @endif
                   </div>
@@ -113,7 +113,7 @@ Ledger Kelas
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Daftar Siswa</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Daftar Siswa</h6>
                 <!-- <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="{{ route('penilaian.ikuEdukasi.kelas') }}">Ekspor <i class="fas fa-file-export ml-1"></i></a> -->
             </div>
             <div class="card-body p-3">

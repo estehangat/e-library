@@ -5,7 +5,7 @@
 @endsection
 
 @section('headmeta')
-  <link href="{{ asset('public/buttons.dataTables.min.css') }}" rel="stylesheet">
+<!-- DataTables -->
 <link href="{{ asset('vendor/datatables/dataTables.bootstrap4.min.css') }}" rel="stylesheet">
 <meta name="csrf-token" content="{{ Session::token() }}" />
 @endsection
@@ -15,7 +15,7 @@
 @endsection
 
 @section('content')
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
+<div class="d-sm-flex align-items-center justify-content-between mb-2">
     <h1 class="h3 mb-0 text-gray-800">Calon Siswa {{$title}}</h1>
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="javascript:void(0)">Psb</a></li>
@@ -24,26 +24,10 @@
     </ol>
 </div>
 
-<div class="row mb-3">
+<div class="row mb-4">
     <div class="col-md-12">
         <div class="card h-100">
             <div class="card-body">
-                @if(Session::has('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <strong>Sukses!</strong> {{ Session::get('success') }}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                @endif
-                @if(Session::has('error'))
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <strong>Gagal!</strong> {{ Session::get('error') }}
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                @endif
                 <div class="row">
                     <div class="col-md-8">
                     <form action="/{{Request::path()}}" method="GET">
@@ -76,129 +60,185 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <button class="btn btn-brand-purple-dark btn-sm" type="submit">Saring</button>
+                            <button class="btn btn-brand-green-dark btn-sm" type="submit">Saring</button>
                         </div>
                     </form>
-                    </div>
-                    <div class="table-responsive">
-                        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                            <h6 class="m-0 font-weight-bold text-brand-purple">Calon Siswa {{$title}}</h6>
-                        </div>
-                        <table id="dataTable" class="table align-items-center table-flush">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th>No Pendaftaran</th>
-                                    <th>Tanggal Daftar</th>
-                                    <th>Program</th>
-                                    <th>Tingkat Kelas</th>
-                                    <th>Nama</th>
-                                    <th>Tanggal Lahir</th>
-                                    <th>Jenis Kelamin</th>
-                                    <th>Info Asal Sekolah</th>
-                                    <th>Asal Informasi</th>
-                                    @if ($title == 'Formulir Terisi')
-                                    <th>Wawancara dan Observasi</th>
-                                    @endif
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            @foreach( $calons as $index => $calon )
-                                <tr>
-                                    <td>{{$calon->reg_number}}</td>
-                                    <td>{{ date('d-m-Y', strtotime($calon->created_at)) }}</td>
-                                    <td>{{$calon->unit->name}}</td>
-                                    <td>{{$calon->level->level}}</td>
-                                    <td>{{$calon->student_name}}</td>
-                                    <td>{{ date('d-m-Y', strtotime($calon->birth_date)) }}</td>
-                                    <td>{{ucwords($calon->jeniskelamin->name)}}</td>
-                                    <td>{{ucwords($calon->origin_school)}}</td>
-                                    <td>{{ucwords($calon->info_from)}}</td>
-                                    @if ($title == 'Formulir Terisi')
-                                    <td>
-                                        {{$calon->interview_type==2?'Offline':$calon->link}} <br>{{$calon->interview_date}}  {{$calon->interview_time}}
-                                    </td>
-                                    @endif
-                                    <td>
-                                        <a href="/kependidikan/psb/calon/lihat/{{$calon->id}}" class="btn btn-sm btn-primary"><i class="fas fa-eye"></i></a>
-                                        @if($status_id == 1 )
-                                        @if(in_array(Auth::user()->role->name,['sek']))
-                                        <a href="#" class="btn btn-sm btn-info" data-toggle="modal" data-target="#WawancaraLink" data-link="{{$calon->link}}" data-id="{{$calon->id}}"data-name="{{$calon->student_name}}" data-link="{{$calon->link}}" data-interview_date="{{$calon->interview_date}}" data-interview_time="{{$calon->interview_time}}"
-                                        >
-                                            <i class="fa fa-info-circle"></i>
-                                        </a>
-                                        @endif
-                                        @php
-                                        if($calon->interview_date || $calon->interview_time){
-                                            $whatsAppText = rawurlencode("Assalamu'alaikum Ayah Bunda Ananda ".$calon->student_name.". Terima kasih sudah menunggu informasi jadwal Wawancara dan Observasi. Ayah Bunda dapat mengisi form upload file foto/scan dokumen terkait pada link: ".$calon->unit->psb_document_link." dan melakukan pembayaran biaya Observasi/Psikotes. Adapun jadwal Wawancara dan Observasi. Ayah Bunda dapat mengakses SISTA melalui link: ".route('psb.index').". Catatan: Bagi Siswa AULIYA yang melanjutkan ke jenjang berikutnya, tidak mengikuti observasi/psikotes dan tidak dikenakan biayanya.");
-                                        }
-                                        else{
-                                            $whatsAppText = rawurlencode("Assalamu’alaikum Ayah Bunda Ananda ".$calon->student_name.". Terima kasih sudah mendaftar di ".$calon->unit->islamic_name." AULIYA. Sementara menunggu informasi jadwal Wawancara dan Observasi, Ayah Bunda dapat menyiapkan sejumlah dokumen. Untuk informasi/proses lebih lanjut silakan mengakses SISTA melalui link: ".route('psb.index').". Catatan: Bagi Siswa AULIYA yang melanjutkan ke jenjang berikutnya, tidak mengikuti observasi/psikotes dan tidak dikenakan biayanya.");
-                                        }
-                                        @endphp
-                                        @if($calon->orangtua->mother_phone && (substr($calon->orangtua->mother_phone, 0, 2) == "62" || substr($calon->orangtua->mother_phone, 0, 1) == "0"))<a href="https://api.whatsapp.com/send?phone={{ substr($calon->orangtua->mother_phone, 0, 2) == "62" ? $calon->orangtua->mother_phone : ('62'.substr($calon->orangtua->mother_phone, 1)) }}&text={{ $whatsAppText }}" class="btn btn-sm btn-warning" target="_blank"><i class="fas fa-bell"></i></a>@endif
-                                        @if(in_array(Auth::user()->role->name,['keu']))
-                                        <a href="#" class="btn btn-sm btn-success" data-name="{{$calon->student_name}}" data-toggle="modal" data-target="#SavingSeatModal" data-id="{{$calon->id}}"><i class="fas fa-check"></i></a>
-                                        @endif
-                                        @elseif($status_id == 2)
-                                        @if($calon->interview_date || $calon->interview_time)
-                                        @php
-                                        $whatsAppText = rawurlencode("Assalamu'alaikum Ayah Bunda ananda ".$calon->student_name.". Terima kasih telah melakukan pembayaran biaya Observasi/Psikotes. Ayah Bunda dapat mengisi form upload file foto/scan dokumen pada link: ".$calon->unit->psb_document_link." untuk keperluan Wawancara dan Observasi dengan jadwal tercantum dalam SISTA pada link: ".route('psb.index').". Catatan: Bagi Siswa AULIYA yang melanjutkan ke jenjang berikutnya, tidak mengikuti observasi/psikotes dan tidak dikenakan biayanya.");
-                                        @endphp
-                                        @if($calon->orangtua->mother_phone && (substr($calon->orangtua->mother_phone, 0, 2) == "62" || substr($calon->orangtua->mother_phone, 0, 1) == "0"))<a href="https://api.whatsapp.com/send?phone={{ substr($calon->orangtua->mother_phone, 0, 2) == "62" ? $calon->orangtua->mother_phone : ('62'.substr($calon->orangtua->mother_phone, 1)) }}&text={{ $whatsAppText }}" class="btn btn-sm btn-warning" target="_blank"><i class="fas fa-bell"></i></a>@endif
-                                        @endif
-                                        @if($calon->semester_id)
-                                        @if(in_array(Auth::user()->role->name,['keu']))
-                                        <a href="#" class="btn btn-sm btn-success" data-name="{{$calon->student_name}}" data-toggle="modal" data-target="#WawancaraDone" data-id="{{$calon->id}}" data-unit="{{$calon->unit_id}}">
-                                            <i class="fas fa-check"></i>
-                                        </a>
-                                        @endif
-                                        @endif
-                                        @elseif($status_id == 3)
-                                        <!-- <a href="{{ route('kependidikan.psb.komitmen',['id' => $calon->id]) }}" class="btn btn-sm btn-brand-purple" target="_blank"><i class="fas fa-print"></i></a> -->
-                                        @php
-                                        $whatsAppText = rawurlencode("Assalamu'alaikum Ayah Bunda Ananda ".$calon->student_name.". Terima kasih kepada Ananda yang telah mengikuti Wawancara dan Observasi. Untuk informasi lebih lanjut, Ayah Bunda silakan mengakses SISTA melalui link: ".route('psb.index'));
-                                        @endphp
-                                        @if($calon->orangtua->mother_phone && (substr($calon->orangtua->mother_phone, 0, 2) == "62" || substr($calon->orangtua->mother_phone, 0, 1) == "0"))<a href="https://api.whatsapp.com/send?phone={{ substr($calon->orangtua->mother_phone, 0, 2) == "62" ? $calon->orangtua->mother_phone : ('62'.substr($calon->orangtua->mother_phone, 1)) }}&text={{ $whatsAppText }}" class="btn btn-sm btn-warning" target="_blank"><i class="fas fa-bell"></i></a>@endif
-                                        @if(in_array(Auth::user()->role->name,['sek']))
-                                        <a href="#" class="btn btn-sm btn-success"   data-name="{{$calon->student_name}}" data-toggle="modal" data-target="#DiterimaModal" data-id="{{$calon->id}}"><i class="fas fa-check"></i></a>
-                                        <a href="#" class="btn btn-sm btn-danger"   data-name="{{$calon->student_name}}" data-toggle="modal" data-target="#DicadangkanModal" data-id="{{$calon->id}}"><i class="fas fa-times"></i></a>
-                                        @endif
-                                        @elseif($status_id == 4)
-
-                                        @elseif($status_id == 5)
-                                        @if( in_array((auth()->user()->role_id), array(20)))
-                                            <a href="#" class="btn btn-sm btn-success"   data-name="{{$calon->student_name}}" data-toggle="modal" data-target="#ResmikanModal" data-id="{{$calon->id}}"><i class="fas fa-check"></i></a>
-                                        @endif
-                                        @if(in_array((auth()->user()->role->name), ['fam','faspv']))
-                                        <a href="#" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#awalSppModal" data-id="{{$calon->id}}" data-name="{{$calon->student_name}}" data-year="{{$calon->year_spp}}" data-month="{{$calon->month_spp}}"><i class="fas fa-calendar-alt"></i></a>
-                                        @endif
-                                        @elseif($status_id == 6)
-                                        @if(in_array(Auth::user()->role->name,['sek']))
-                                        <a href="#" class="btn btn-sm btn-success" data-name="{{$calon->student_name}}" data-toggle="modal" data-target="#DiterimaModal" data-id="{{$calon->id}}"><i class="fas fa-check"></i></a>
-                                        @endif
-                                        @elseif($status_id == 7)
-                                        @endif
-                                        @if (in_array($status_id,[1,2]))
-                                            <a href="#" class="btn btn-sm btn-danger"  data-name="{{$calon->student_name}}" data-toggle="modal" data-target="#HapusModal" data-id="{{$calon->id}}"><i class="fas fa-trash"></i></a>
-                                        @endif
-                                        @if($status_id >= 3)
-                                            @if(in_array(auth()->user()->role->name,['fam']))
-                                                <a href="#" class="btn btn-sm btn-success" data-du="{{number_format($calon->bms->register_nominal,0,',','.')}}" data-name="{{$calon->student_name}}" data-toggle="modal" data-target="#ubahBms" data-id="{{$calon->id}}" data-unit="{{$calon->unit_id}}">
-                                                    <i class="far fa-edit"></i>
-                                                </a>
-                                            @endif
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card shadow">
+      <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-brand-green-dark">Calon Siswa {{$title}}</h6>
+        @if(in_array(Auth::user()->role->name,['ctl']) || (in_array(Auth::user()->role->name,['sek']) && in_array($status_id,[1,2,3,4])))
+        <form action="/{{Request::path().'/ekspor'}}" method="get">
+            <input type="hidden" name="level" value="{{ $request->level }}">
+            <input type="hidden" name="year" value="{{ $request->year }}">
+            <button type="submit" class="m-0 float-right btn btn-brand-green-dark btn-sm">Ekspor<i class="fas fa-file-export ml-2"></i></button>
+        </form>
+        @endif
+      </div>
+      <div class="card-body">
+        @if(Session::has('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <strong>Sukses!</strong> {{ Session::get('success') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        @endif
+        @if(Session::has('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Gagal!</strong> {{ Session::get('error') }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        @endif
+        <div class="table-responsive">
+            <table id="dataTable" class="table align-items-center table-flush">
+                <thead class="thead-light">
+                    <tr>
+                        <th>No Pendaftaran</th>
+                        <th>Tanggal Daftar</th>
+                        @if(in_array($status_id,[1,2,3,4]))
+                        <th>Baru/Pindahan</th>
+                        <th>Tahun Pelajaran</th>
+                        @endif
+                        <th>Program</th>
+                        <th>Tingkat Kelas</th>
+                        <th>Nama</th>
+                        <th>Tanggal Lahir</th>
+                        <th>Jenis Kelamin</th>
+                        <th>Info Asal Sekolah</th>
+                        <th>Asal Informasi</th>
+                        @if ($title == 'Formulir Terisi')
+                        <th>Wawancara dan Observasi</th>
+                        @endif
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach( $calons as $index => $calon )
+                    <tr>
+                        <td>{{$calon->reg_number}}</td>
+                        <td>{{ date('d-m-Y', strtotime($calon->created_at)) }}</td>
+                        @if(in_array($status_id,[1,2,3,4]))
+                        <td>{{$calon->statusSiswa ? $calon->statusSiswa->status : '-'}}</td>
+                        <td>{{$calon->semester ? $calon->semester->semester_id : '-'}}</td>
+                        @endif
+                        <td>{{$calon->unit->name}}</td>
+                        <td>{{$calon->level->level}}</td>
+                        <td>{{$calon->student_name}}</td>
+                        <td @if(!$calon->isBirthDateValid) class="text-danger" @endif>{{ date('d-m-Y', strtotime($calon->birth_date)) }}</td>
+                        <td>{{ucwords($calon->jeniskelamin->name)}}</td>
+                        <td>{{ucwords($calon->origin_school)}}</td>
+                        <td>{{ucwords($calon->info_from)}}</td>
+                        @if ($title == 'Formulir Terisi')
+                        <td>
+                            {{$calon->interview_type==2?'Offline':$calon->link}} <br>{{$calon->interview_date}}  {{$calon->interview_time}}
+                        </td>
+                        @endif
+                        <td>
+                            <a href="/kependidikan/psb/calon/lihat/{{$calon->id}}" class="btn btn-sm btn-primary"><i class="fas fa-eye"></i></a>
+                            @if($status_id == 1 )
+                            @if(in_array(Auth::user()->role->name,['sek']))
+                            <a href="#" class="btn btn-sm btn-info" data-toggle="modal" data-target="#WawancaraLink" data-link="{{$calon->link}}" data-id="{{$calon->id}}"data-name="{{$calon->student_name}}" data-link="{{$calon->link}}" data-interview_date="{{$calon->interview_date}}" data-interview_time="{{$calon->interview_time}}" {{-- data-bank="{{$calon->bank_id ? $calon->bank_id : '13'}}" --}} data-account_number="{{$calon->account_number ? $calon->account_number : $calon->unit->va_number}}" {{-- data-account_holder="{{$calon->account_holder}}"--}}
+                            >
+                                <i class="fa fa-info-circle"></i>
+                            </a>
+                            @endif
+                            @if(!in_array(auth()->user()->role->name,['am','aspv','cspv','lay']))
+                            @php
+                            if($calon->interview_date || $calon->interview_time){
+                                $whatsAppText = rawurlencode("Assalamu'alaikum Ayah Bunda Ananda ".$calon->student_name.". Terima kasih sudah menunggu informasi jadwal Wawancara dan Observasi. Ayah Bunda dapat mengisi form upload file foto/scan dokumen terkait pada link: ".$calon->unit->psb_document_link." dan melakukan pembayaran biaya Observasi/Psikotes. Adapun jadwal Wawancara dan Observasi. Ayah Bunda dapat mengakses Aplikasi MUDA melalui link: ".route('psb.index').". Catatan: Bagi Siswa MUDA yang melanjutkan ke jenjang berikutnya, tidak mengikuti observasi/psikotes dan tidak dikenakan biayanya.");
+                            }
+                            else{
+                                $whatsAppText = rawurlencode("Assalamu’alaikum Ayah Bunda Ananda ".$calon->student_name.". Terima kasih sudah mendaftar di ".$calon->unit->islamic_name." MUDA. Sementara menunggu informasi jadwal Wawancara dan Observasi, Ayah Bunda dapat menyiapkan sejumlah dokumen. Untuk informasi/proses lebih lanjut silakan mengakses Aplikasi MUDA melalui link: ".route('psb.index').". Catatan: Bagi Siswa MUDA yang melanjutkan ke jenjang berikutnya, tidak mengikuti observasi/psikotes dan tidak dikenakan biayanya.");
+                            }
+                            @endphp
+                            @if($calon->orangtua->mother_phone && (substr($calon->orangtua->mother_phone, 0, 2) == "62" || substr($calon->orangtua->mother_phone, 0, 1) == "0"))<a href="https://api.whatsapp.com/send?phone={{ substr($calon->orangtua->mother_phone, 0, 2) == "62" ? $calon->orangtua->mother_phone : ('62'.substr($calon->orangtua->mother_phone, 1)) }}&text={{ $whatsAppText }}" class="btn btn-sm btn-warning" target="_blank"><i class="fas fa-bell"></i></a>@endif
+                            @if(in_array(Auth::user()->role->name,['keu']))
+                            @if($calon->isBirthDateValid)
+                            <a href="#" class="btn btn-sm btn-success" data-name="{{$calon->student_name}}" data-toggle="modal" data-target="#SavingSeatModal" data-id="{{$calon->id}}"><i class="fas fa-check"></i></a>
+                            @else
+                            <button type="button" class="btn btn-sm btn-secondary" disabled><i class="fas fa-check"></i></button>
+                            @endif
+                            @endif
+                            @endif
+                            @elseif($status_id == 2)
+                            @if(!in_array(auth()->user()->role->name,['am','aspv','cspv','lay']))
+                            @if($calon->interview_date || $calon->interview_time)
+                            @php
+                            $whatsAppText = rawurlencode("Assalamu'alaikum Ayah Bunda ananda ".$calon->student_name.". Terima kasih telah melakukan pembayaran biaya Observasi/Psikotes. Ayah Bunda dapat mengisi form upload file foto/scan dokumen pada link: ".$calon->unit->psb_document_link." untuk keperluan Wawancara dan Observasi dengan jadwal tercantum dalam Aplikasi MUDA pada link: ".route('psb.index').". Catatan: Bagi Siswa MUDA yang melanjutkan ke jenjang berikutnya, tidak mengikuti observasi/psikotes dan tidak dikenakan biayanya.");
+                            @endphp
+                            @if($calon->orangtua->mother_phone && (substr($calon->orangtua->mother_phone, 0, 2) == "62" || substr($calon->orangtua->mother_phone, 0, 1) == "0"))<a href="https://api.whatsapp.com/send?phone={{ substr($calon->orangtua->mother_phone, 0, 2) == "62" ? $calon->orangtua->mother_phone : ('62'.substr($calon->orangtua->mother_phone, 1)) }}&text={{ $whatsAppText }}" class="btn btn-sm btn-warning" target="_blank"><i class="fas fa-bell"></i></a>@endif
+                            @endif
+                            @if($calon->semester_id)
+                            @if(in_array(Auth::user()->role->name,['keu']))
+                            <a href="#" class="btn btn-sm btn-success" data-name="{{$calon->student_name}}" data-toggle="modal" data-target="#WawancaraDone" data-id="{{$calon->id}}" data-unit="{{$calon->unit_id}}">
+                                <i class="fas fa-check"></i>
+                            </a>
+                            @endif
+                            @endif
+                            @endif
+                            @elseif($status_id == 3)
+                            @if(!in_array(auth()->user()->role->name,['am','aspv','cspv','lay']))
+                            <!-- <a href="{{ route('kependidikan.psb.komitmen',['id' => $calon->id]) }}" class="btn btn-sm btn-brand-green" target="_blank"><i class="fas fa-print"></i></a> -->
+                            @php
+                            $whatsAppText = rawurlencode("Assalamu'alaikum Ayah Bunda Ananda ".$calon->student_name.". Terima kasih kepada Ananda yang telah mengikuti Wawancara dan Observasi. Untuk informasi lebih lanjut, Ayah Bunda silakan mengakses Aplikasi MUDA melalui link: ".route('psb.index'));
+                            @endphp
+                            @if($calon->orangtua->mother_phone && (substr($calon->orangtua->mother_phone, 0, 2) == "62" || substr($calon->orangtua->mother_phone, 0, 1) == "0"))<a href="https://api.whatsapp.com/send?phone={{ substr($calon->orangtua->mother_phone, 0, 2) == "62" ? $calon->orangtua->mother_phone : ('62'.substr($calon->orangtua->mother_phone, 1)) }}&text={{ $whatsAppText }}" class="btn btn-sm btn-warning" target="_blank"><i class="fas fa-bell"></i></a>@endif
+                            @endif
+                            @if(in_array(Auth::user()->role->name,['sek']))
+                            <a href="#" class="btn btn-sm btn-success"   data-name="{{$calon->student_name}}" data-toggle="modal" data-target="#DiterimaModal" data-id="{{$calon->id}}"><i class="fas fa-check"></i></a>
+                            <a href="#" class="btn btn-sm btn-danger"   data-name="{{$calon->student_name}}" data-toggle="modal" data-target="#DicadangkanModal" data-id="{{$calon->id}}"><i class="fas fa-times"></i></a>
+                            @endif
+                            @elseif($status_id == 4)
+
+                            @elseif($status_id == 5)
+                            @if( in_array((auth()->user()->role_id), array(20)))
+                                <a href="#" class="btn btn-sm btn-success"   data-name="{{$calon->student_name}}" data-toggle="modal" data-target="#ResmikanModal" data-id="{{$calon->id}}"><i class="fas fa-check"></i></a>
+                                <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#BatalBayarModal" data-id="{{$calon->id}}"><i class="fas fa-trash"></i></a>
+                            @endif
+                            @if(in_array((auth()->user()->role->name), ['fam','faspv']))
+                            <a href="#" class="btn btn-sm btn-warning" data-toggle="modal" data-target="#awalSppModal" data-id="{{$calon->id}}" data-name="{{$calon->student_name}}" data-year="{{$calon->year_spp}}" data-month="{{$calon->month_spp}}"><i class="fas fa-calendar-alt"></i></a>
+                            @endif
+                            @elseif($status_id == 6)
+                            @if(in_array(Auth::user()->role->name,['sek']))
+                            <a href="#" class="btn btn-sm btn-success" data-name="{{$calon->student_name}}" data-toggle="modal" data-target="#DiterimaModal" data-id="{{$calon->id}}"><i class="fas fa-check"></i></a>
+                            @endif
+                            @elseif($status_id == 7)
+                            @if(in_array(Auth::user()->role->name,['ctl']))
+                                <a href="#" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#revertBatalBayarModal" data-id="{{$calon->id}}"><i class="fas fa-trash"></i></a>
+                            @endif
+                            @endif
+                            @if (in_array($status_id,[1,2]))
+                            @if(!in_array(auth()->user()->role->name,['am','aspv','cspv','lay']))
+                                <a href="#" class="btn btn-sm btn-danger"  data-name="{{$calon->student_name}}" data-toggle="modal" data-target="#HapusModal" data-id="{{$calon->id}}"><i class="fas fa-trash"></i></a>
+                            @endif
+                            @endif
+                            @if($status_id >= 3)
+                                @if(in_array(auth()->user()->role->name,['fam']))
+                                    <a href="#" class="btn btn-sm btn-success" data-du="{{number_format($calon->bms->register_nominal,0,',','.')}}" data-name="{{$calon->student_name}}" data-toggle="modal" data-target="#ubahBms" data-id="{{$calon->id}}" data-unit="{{$calon->unit_id}}">
+                                        <i class="far fa-edit"></i>
+                                    </a>
+                                @endif
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 @if( in_array((auth()->user()->role_id), array(20)))
@@ -580,6 +620,26 @@
                   <label for="year_spp" class="col-form-label">Jam Wawancara dan Observasi</label>
                   <input type="time" name="interview_time" class="form-control" id="interview_time" value="2021" required>
                 </div>
+                {{--
+                @if($banks && count($banks) > 0)
+                <div class="form-group">
+                    <label for="bank" class="col-form-label">Nama Bank</label>
+                    <select name="bank" class="select2 form-control" id="bank">
+                        @foreach($banks as $bank)
+                        <option value="{{ $bank->id }}" {{ $bank->name == "Bank Syariah Indonesia" ? 'selected' : null }}>{{ $bank->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                @endif
+                --}}
+                <div class="form-group">
+                  <label for="account_number" class="col-form-label">Nomor Rekening</label>
+                  <input type="text" name="account_number" class="form-control" id="account_number">
+                </div>
+                {{-- <div class="form-group">
+                  <label for="account_holder" class="col-form-label">Nama Pemilik Rekening</label>
+                  <input type="text" name="account_holder" class="form-control" id="account_holder">
+                </div> --}}
             </div>
             <div class="modal-footer justify-content-center">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
@@ -592,6 +652,58 @@
     </div>
 </div>
 
+<!-- Modal BatalBayar -->
+<div id="BatalBayarModal" class="modal fade">
+    <div class="modal-dialog modal-confirm">
+        <div class="modal-content">
+            <div class="modal-header flex-column">
+                <div class="icon-box">
+                    <i class="material-icons">&#xE5CD;</i>
+                </div>
+                <h4 class="modal-title w-100">Apakah Anda yakin?</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin akan membatalkan pembayaran calon siswa?</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                <form action="{{route('kependidikan.psb.batalDaftarUlang')}}" method="POST">
+                    @csrf
+                    <input type="text" name="id" id="id" class="id" hidden/>
+                    <button type="submit" class="btn btn-danger">Batalkan</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal RevertBatalBayar -->
+<div id="revertBatalBayarModal" class="modal fade">
+    <div class="modal-dialog modal-confirm">
+        <div class="modal-content">
+            <div class="modal-header flex-column">
+                <div class="icon-box">
+                    <i class="material-icons">&#xE5CD;</i>
+                </div>
+                <h4 class="modal-title w-100">Apakah Anda yakin?</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin akan mengurungkan pembatalan pembayaran calon siswa?</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                <form action="{{route('kependidikan.psb.revertBatalDaftarUlang')}}" method="POST">
+                    @csrf
+                    <input type="text" name="id" id="id" class="id" hidden/>
+                    <button type="submit" class="btn btn-danger">Urungkan</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!--Row-->
 @endsection
 
@@ -599,11 +711,6 @@
 <!-- DataTables -->
 <script src="{{ asset('vendor/datatables/jquery.dataTables.min.js') }}"></script>
 <script src="{{ asset('vendor/datatables/dataTables.bootstrap4.min.js') }}"></script>
-<script src="{{ asset('vendor/datatablestambahan/dataTables.buttons.min.js') }}"></script>
-<script src="{{ asset('vendor/datatablestambahan/jszip.min.js') }}"></script>
-<script src="{{ asset('vendor/datatablestambahan/pdfmake.min.js') }}"></script>
-<script src="{{ asset('vendor/datatablestambahan/vfs_fonts.js') }}"></script>
-<script src="{{ asset('vendor/datatablestambahan/buttons.html5.min.js') }}"></script>
 
 <script src="{{ asset('vendor/easy-number-separator/easy-number-separator.js') }}"></script>
 <script>
@@ -618,6 +725,7 @@
             bms_potongan = (potongan/100)*bms_total;
         else
             bms_potongan = potongan;
+        bms_potongan = Math.round(bms_potongan);
         var bms_bersih = bms_total - bms_potongan;
         $('#bms_potongan').val(bms_potongan);
         $('#bms_bersih').val(bms_bersih);
@@ -728,6 +836,9 @@
             var observation_link = button.data('observation_link') // Extract info from data-* attributes
             var observation_date = button.data('observation_date') // Extract info from data-* attributes
             var observation_time = button.data('observation_time') // Extract info from data-* attributes
+            //var bank = button.data('bank') // Extract info from data-* attributes
+            var account_number = button.data('account_number') // Extract info from data-* attributes
+            //var account_holder = button.data('account_holder') // Extract info from data-* attributes
             var modal = $(this)
             console.log(link)
             modal.find('input[name="id"]').val(id)
@@ -737,6 +848,9 @@
             modal.find('input[name="observation_link"]').val(observation_link)
             modal.find('input[name="observation_date"]').val(observation_date)
             modal.find('input[name="observation_time"]').val(observation_time)
+            if(typeof bank !== 'undefined') modal.find('select[name="bank"]').val(bank)
+            if(typeof account_number !== 'undefined') modal.find('input[name="account_number"]').val(account_number)
+            if(typeof account_holder !== 'undefined') modal.find('input[name="account_holder"]').val(account_holder)
         });
         $('#ResmikanModal').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget) // Button that triggered the modal
@@ -744,6 +858,18 @@
             var modal = $(this)
             modal.find('input[name="id"]').val(id)
         });
+        $('#BatalBayarModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget) // Button that triggered the modal
+            var id = button.data('id') // Extract info from data-* attributes
+            var modal = $(this)
+            modal.find('input[name="id"]').val(id)
+        })
+        $('#revertBatalBayarModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget) // Button that triggered the modal
+            var id = button.data('id') // Extract info from data-* attributes
+            var modal = $(this)
+            modal.find('input[name="id"]').val(id)
+        })
         $('#awalSppModal').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget) // Button that triggered the modal
             var id = button.data('id') // Extract info from data-* attributes
@@ -873,6 +999,6 @@
 
 
 <!-- Page level custom scripts -->
-@include('template.footjs.kbm.cetakdatatables')
+@include('template.footjs.global.datatables')
 @include('template.footjs.kbm.hideelement')
 @endsection

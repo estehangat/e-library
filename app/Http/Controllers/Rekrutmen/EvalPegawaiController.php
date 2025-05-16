@@ -262,7 +262,7 @@ class EvalPegawaiController extends Controller
                         if(!$pegawai->phk){
                             $spk = Spk::where('employee_id',$pegawai->id)->update(['status_id' => 2]);
 
-                            $login = LoginUser::where('user_id',$pegawai->id)->first();
+                            $login = LoginUser::where('user_id',$pegawai->id)->pegawai()->first();
                             $login->delete();
 
                             $phk = new Phk();

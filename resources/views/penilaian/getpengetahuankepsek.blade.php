@@ -32,7 +32,7 @@
     <hr>
     <div class="table-responsive">
         <table class="table align-items-center table-sm" style="width:100%">
-            <thead class="bg-brand-purple text-white">
+            <thead class="bg-brand-green text-white">
                 <tr>
                     <th>Nama</th>
                     <?php
@@ -102,7 +102,7 @@
         <div class="col-md-4">&nbsp;</div>
     </div>
     <div class="text-center mt-4">
-        <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+        <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
     </div>
     @endif
 </form>

@@ -55,7 +55,7 @@ Nilai Hafalan
                       @endif
                       @endforeach
                     </select>
-                    <a href="{{ route('penilaian.hafalan.index') }}" id="btn-select-year" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('penilaian.hafalan.index') }}">Atur</a>
+                    <a href="{{ route('penilaian.hafalan.index') }}" id="btn-select-year" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('penilaian.hafalan.index') }}">Atur</a>
                     </div>
                   </div>
                 </div>
@@ -88,7 +88,7 @@ Nilai Hafalan
                           <option value="{{ $k->id }}" {{ $kelas && $kelas->id == $k->id ? 'selected' : '' }}>{{ $k->levelName }}</option>
                           @endforeach
                         </select>
-                        <a href="{{ route('penilaian.hafalan.index', ['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber]) }}" id="btn-select-class" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('penilaian.hafalan.index', ['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber]) }}">Pilih</a>
+                        <a href="{{ route('penilaian.hafalan.index', ['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber]) }}" id="btn-select-class" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('penilaian.hafalan.index', ['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber]) }}">Pilih</a>
                     </div>
                     @endif
                   </div>
@@ -127,7 +127,7 @@ Nilai Hafalan
                           <option value="{{ $s->id }}" {{ $siswa && $siswa->id == $s->id ? 'selected' : '' }}>{{ $s->identitas->student_name }}</option>
                           @endforeach
                         </select>
-                        <a href="{{ route('penilaian.hafalan.index', ['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber, 'kelas' => $kelas->id]) }}" id="btn-select-student" class="btn btn-brand-purple ml-2 pt-2" data-href="{{ route('penilaian.hafalan.index', ['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber, 'kelas' => $kelas->id]) }}">Lihat</a>
+                        <a href="{{ route('penilaian.hafalan.index', ['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber, 'kelas' => $kelas->id]) }}" id="btn-select-student" class="btn btn-brand-green ml-2 pt-2" data-href="{{ route('penilaian.hafalan.index', ['tahun' => $semester->tahunAjaran->academicYearLink, 'semester' => $semester->semesterNumber, 'kelas' => $kelas->id]) }}">Lihat</a>
                         @else
                         <input type="text" class="form-control" value="Tidak ada data siswa" disabled>
                         <button type="button" class="btn btn-secondary ml-2 pt-2" disabled="disabled">Lihat</button>
@@ -149,7 +149,7 @@ Nilai Hafalan
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">Daftar Hafalan</h6>
+                <h6 class="m-0 font-weight-bold text-brand-green">Daftar Hafalan</h6>
                 <div class="m-0 float-right">
                 <button type="button" class="btn btn-brand-green-dark btn-sm" id="tambahhafalan">Tambah Surah <i class="fa fa-plus ml-1"></i></button>
                 </div>
@@ -175,7 +175,7 @@ Nilai Hafalan
                     {{ csrf_field() }}
                     <div class="table-responsive">
                         <table class="table align-items-center table-sm" style="width:100%">
-                            <thead class="bg-brand-purple text-white">
+                            <thead class="bg-brand-green text-white">
                                 <tr>
                                     <th class="text-center" width="75%" colspan="3">Nama Surat</th>
                                     <th class="text-center" width="25%">Predikat</th>
@@ -303,7 +303,7 @@ Nilai Hafalan
                         <div class="col-md-4">&nbsp;</div>
                     </div>
                     <div class="text-center mt-4">
-                        <button type="submit" class="btn btn-brand-purple-dark">Simpan</button>
+                        <button type="submit" class="btn btn-brand-green-dark">Simpan</button>
                     </div>
                 </form>
             </div>

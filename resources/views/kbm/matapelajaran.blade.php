@@ -20,8 +20,8 @@
                 <div class="row">
                     <div class="table-responsive">
                         <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                            <h6 class="m-0 font-weight-bold text-brand-purple">Mata Pelajaran</h6>
-                            <a class="m-0 float-right btn btn-brand-purple-dark btn-sm" href="/penilaian/tambahpredikatsikap">Tambah <i class="fas fa-plus"></i></a>
+                            <h6 class="m-0 font-weight-bold text-brand-green">Mata Pelajaran</h6>
+                            <a class="m-0 float-right btn btn-brand-green-dark btn-sm" href="/penilaian/tambahpredikatsikap">Tambah <i class="fas fa-plus"></i></a>
                         </div>
                         <table class="table align-items-center table-flush">
                             <thead class="thead-light">

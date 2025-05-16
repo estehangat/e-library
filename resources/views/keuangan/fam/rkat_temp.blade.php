@@ -9,7 +9,7 @@ RKAB
 @endsection
 
 @section('sidebar')
-@include('template.sidebar.keuangan.'.Auth::user()->role->name)
+@include('template.sidebar.keuangan.pengelolaan')
 @endsection
 
 @section('content')
@@ -25,8 +25,8 @@ RKAB
     <div class="col-12">
         <div class="card">
             <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-brand-purple">RKAB</h6>
-                <button type="button" class="m-0 float-right btn btn-brand-purple-dark btn-sm" data-toggle="modal" data-target="#add-form">Sinkronisasi Ulang <i class="fas fa-redo ml-1"></i></button>
+                <h6 class="m-0 font-weight-bold text-brand-green">RKAB</h6>
+                <button type="button" class="m-0 float-right btn btn-brand-green-dark btn-sm" data-toggle="modal" data-target="#add-form">Sinkronisasi Ulang <i class="fas fa-redo ml-1"></i></button>
             </div>
             @if(Session::has('success'))
             <div class="alert alert-success alert-dismissible fade show mx-3" role="alert">
